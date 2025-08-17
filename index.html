@@ -1048,6 +1048,23 @@
         // --- MODAL & FORM LOGIC ---
         const mainModal = document.getElementById('mainModal'); const modalTitle = document.getElementById('modalTitle'); const modalContent = document.getElementById('modalContent'); const mainModalContainer = mainModal.querySelector('div');
         
+        const renderCompetencyBars = (competencies) => {
+            if (!competencies || Object.keys(competencies).length === 0) {
+                return '<p class="text-sm text-gray-500">شایستگی‌ای ثبت نشده است.</p>';
+            }
+            return Object.entries(competencies).map(([name, score]) => `
+                <div>
+                    <div class="flex justify-between items-center mb-1 text-sm">
+                        <span class="text-gray-600">${name}</span>
+                        <span class="font-medium text-blue-600">${score}/5</span>
+                    </div>
+                    <div class="progress-bar w-full">
+                        <div class="progress-bar-fill" style="width: ${score * 20}%;"></div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
         const imageUploadInput = document.getElementById('image-upload-input');
         let onImageResizedCallback = null;
 
