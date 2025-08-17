@@ -871,10 +871,59 @@
             document.getElementById('statusFilter')?.addEventListener('change', renderEmployeeTable); 
             document.getElementById('add-employee-btn')?.addEventListener('click', () => showEmployeeForm());
             document.getElementById('add-employee-btn-empty')?.addEventListener('click', () => showEmployeeForm());
+
+            // Specific click listener for the table
+            const tableBody = document.getElementById('employeeTableBody');
+            if (tableBody) {
+                tableBody.addEventListener('click', (e) => {
+                    const viewEmpBtn = e.target.closest('.view-employee-profile-btn'); 
+                    const editEmpBtn = e.target.closest('.edit-employee-btn'); 
+                    const deleteEmpBtn = e.target.closest('.delete-employee-btn'); 
+
+                    if (viewEmpBtn) {
+                        viewEmployeeProfile(viewEmpBtn.dataset.employeeId);
+                    } else if (editEmpBtn) {
+                        showEmployeeForm(editEmpBtn.dataset.employeeId);
+                    } else if (deleteEmpBtn) {
+                        showConfirmationModal("حذف کارمند", "آیا از حذف این کارمند مطمئن هستید؟", async () => { 
+                            try { 
+                                await deleteDoc(doc(db, `artifacts/${appId}/public/data/employees`, deleteEmpBtn.dataset.employeeId)); 
+                                showToast("کارمند با موفقیت حذف شد."); 
+                            } catch (error) { 
+                                console.error("Error deleting employee:", error); 
+                                showToast("خطا در حذف کارمند.", "error"); 
+                            } 
+                        });
+                    }
+                });
+            }
         };
         const setupOrganizationPageListeners = () => {
             document.getElementById('add-team-btn')?.addEventListener('click', () => showTeamForm());
             document.getElementById('add-team-btn-empty')?.addEventListener('click', () => showTeamForm());
+            
+            const teamGrid = mainContent.querySelector('.grid');
+            if(teamGrid) {
+                teamGrid.addEventListener('click', (e) => {
+                    const viewTeamBtn = e.target.closest('.view-team-profile-btn');
+                    const editTeamBtn = e.target.closest('.edit-team-btn');
+                    const deleteTeamBtn = e.target.closest('.delete-team-btn');
+
+                    if (viewTeamBtn) viewTeamProfile(viewTeamBtn.dataset.teamId);
+                    else if (editTeamBtn) showTeamForm(editTeamBtn.dataset.teamId);
+                    else if (deleteTeamBtn) {
+                        showConfirmationModal("حذف تیم", "آیا از حذف این تیم مطمئن هستید؟", async () => { 
+                            try { 
+                                await deleteDoc(doc(db, `artifacts/${appId}/public/data/teams`, deleteTeamBtn.dataset.teamId)); 
+                                showToast("تیم با موفقیت حذف شد."); 
+                            } catch (error) { 
+                                console.error("Error deleting team:", error); 
+                                showToast("خطا در حذف تیم.", "error"); 
+                            } 
+                        });
+                    }
+                });
+            }
         };
         const setupSettingsPageListeners = () => {
             // Role management
@@ -1270,27 +1319,19 @@
 
 
             // General App Listeners
-            document.getElementById('closeModal').addEventListener('click', () => closeModal(mainModal, mainModalContainer)); mainModal.addEventListener('click', (e) => { if (e.target === mainModal) closeModal(mainModal, mainModalContainer); });
-            mainContent.addEventListener('click', async (e) => {
-                const viewEmpBtn = e.target.closest('.view-employee-profile-btn'); 
-                const editEmpBtn = e.target.closest('.edit-employee-btn'); 
-                const deleteEmpBtn = e.target.closest('.delete-employee-btn'); 
-                const viewTeamBtn = e.target.closest('.view-team-profile-btn');
-                const editTeamBtn = e.target.closest('.edit-team-btn');
-                const deleteTeamBtn = e.target.closest('.delete-team-btn');
-
-                if (viewEmpBtn) viewEmployeeProfile(viewEmpBtn.dataset.employeeId);
-                else if (editEmpBtn) showEmployeeForm(editEmpBtn.dataset.employeeId);
-                else if (deleteEmpBtn) { showConfirmationModal("حذف کارمند", "آیا از حذف این کارمند مطمئن هستید؟", async () => { try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/employees`, deleteEmpBtn.dataset.employeeId)); showToast("کارمند با موفقیت حذف شد."); } catch (error) { console.error("Error deleting employee:", error); showToast("خطا در حذف کارمند.", "error"); } }); }
-                else if (viewTeamBtn) viewTeamProfile(viewTeamBtn.dataset.teamId);
-                else if (editTeamBtn) showTeamForm(editTeamBtn.dataset.teamId);
-                else if (deleteTeamBtn) { showConfirmationModal("حذف تیم", "آیا از حذف این تیم مطمئن هستید؟", async () => { try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/teams`, deleteTeamBtn.dataset.teamId)); showToast("تیم با موفقیت حذف شد."); } catch (error) { console.error("Error deleting team:", error); showToast("خطا در حذف تیم.", "error"); } }); }
-            });
+            document.getElementById('closeModal').addEventListener('click', () => closeModal(mainModal, mainModalContainer));
+            mainModal.addEventListener('click', (e) => { if (e.target === mainModal) closeModal(mainModal, mainModalContainer); });
+            
+            // Mobile Menu
             const menuBtn = document.getElementById('menu-btn'); const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('sidebar-overlay'); const toggleMenu = () => { sidebar.classList.toggle('translate-x-full'); overlay.classList.toggle('hidden'); };
-            menuBtn.addEventListener('click', toggleMenu); overlay.addEventListener('click', toggleMenu);
+            menuBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+            
+            // Navigation
             const handleNavClick = (e) => { const link = e.target.closest('a'); if (link && (link.classList.contains('sidebar-item') || link.classList.contains('sidebar-logo'))) { e.preventDefault(); const pageName = link.getAttribute('href').substring(1); navigateTo(pageName); if (window.innerWidth < 768) toggleMenu(); } };
             document.getElementById('sidebar').addEventListener('click', handleNavClick);
             document.querySelector('header .sidebar-logo')?.addEventListener('click', handleNavClick);
+            
             window.addEventListener('hashchange', router);
         };
 
