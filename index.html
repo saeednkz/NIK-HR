@@ -436,35 +436,6 @@
             console.log("Current user role:", state.currentUser.role);
         }
         
-        // --- DATA SEEDING (FOR DEMO PURPOSES) ---
-        async function seedDatabaseWithDemoData() {
-            const demoData = {
-                employees: [
-                    { id: 'HN-1001', name: 'آریا ستوده', department: 'فنی', jobTitle: 'کارشناس ارشد فنی', status: 'فعال', gender: 'مرد', startDate: '2020-05-15', contractEndDate: '2025-05-14', performance: 4.5, skills: {'Python': 5, 'React': 4, 'DevOps': 3, 'SQL': 5}, avatar: 'https://placehold.co/100x100/E2E8F0/4A5568?text=آS', okrs: [{title: 'کاهش زمان پاسخ سرور به ۲۰۰ میلی‌ثانیه', progress: 80}], careerPath: [{role: 'کارشناس فنی', period: '2020-2022'}, {role: 'کارشناس ارشد فنی', period: '2022-اکنون'}], performanceHistory: [4.1, 4.3, 4.5], competencies: {'رهبری': 4, 'ارتباطات': 3, 'کار تیمی': 5}, nineBox: 'ستاره', attritionRisk: {score: 75, impact: 'بالا'}, personalInfo: {nationalId: '0012345678', birthDate: '1990-01-01', phone: '09123456789', email: 'aria.sotoodeh@example.com'} },
-                    { id: 'HN-1002', name: 'سارا حسینی', department: 'محصول', jobTitle: 'مدیر محصول', status: 'فعال', gender: 'زن', startDate: '2019-02-20', contractEndDate: '2025-08-19', performance: 4.8, skills: {'Product Mng.': 5, 'UX Research': 4, 'Agile': 5}, avatar: 'https://placehold.co/100x100/E2E8F0/4A5568?text=SH', okrs: [{title: 'افزایش نرخ فعال‌سازی کاربران جدید به ۲۰٪', progress: 90}], careerPath: [{role: 'مدیر محصول', period: '2019-اکنون'}], performanceHistory: [4.5, 4.7, 4.8], competencies: {'رهبری': 5, 'ارتباطات': 5, 'کار تیمی': 4}, nineBox: 'پتانسیل بالا', attritionRisk: {score: 60, impact: 'بسیار بالا'} },
-                ],
-                teams: [
-                    { id: 'T-01', name: 'تیم زیرساخت', leaderId: 'HN-1001', memberIds: ['HN-1001'], mission: 'توسعه و نگهداری زیرساخت‌های پایدار.', avatar: 'https://placehold.co/200x200/dbeafe/4338ca?text=Infra', okrs: [{title: 'افزایش پایداری سرویس‌ها به 99.95%', progress: 75}]},
-                    { id: 'T-02', name: 'تیم محصول آلفا', leaderId: 'HN-1002', memberIds: ['HN-1002'], mission: 'ارائه بهترین تجربه کاربری.', avatar: 'https://placehold.co/200x200/dbeafe/4338ca?text=Alpha', okrs: [{title: 'افزایش رضایت کاربران (NPS) به ۵۰', progress: 60}]},
-                ]
-            };
-            
-            console.log("Seeding database with demo data...");
-            const collectionsToDelete = ['employees', 'teams', 'reminders', 'surveyResponses'];
-            for (const colName of collectionsToDelete) {
-                const snapshot = await getDocs(collection(db, `artifacts/${appId}/public/data/${colName}`));
-                const deleteBatch = writeBatch(db);
-                snapshot.docs.forEach(doc => deleteBatch.delete(doc.ref));
-                await deleteBatch.commit();
-            }
-            const seedBatch = writeBatch(db);
-            demoData.employees.forEach(emp => seedBatch.set(doc(db, `artifacts/${appId}/public/data/employees`, emp.id), emp));
-            demoData.teams.forEach(team => seedBatch.set(doc(db, `artifacts/${appId}/public/data/teams`, team.id), team));
-            await seedBatch.commit();
-            showToast("داده‌های نمونه با موفقیت بارگذاری شدند.");
-        }
-
-
         // --- REAL-TIME DATA LISTENERS ---
         function listenToData() {
             const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses', 'users'];
@@ -700,7 +671,7 @@
                 const usersHtml = state.users.map(user => `
                     <tr class="bg-white border-b">
                         <td class="px-6 py-4">${user.email}</td>
-                        <td class="px-6 py-4">${new Date(user.createdAt?.toDate()).toLocaleDateString('fa-IR')}</td>
+                        <td class="px-6 py-4">${user.createdAt?.toDate() ? new Date(user.createdAt.toDate()).toLocaleDateString('fa-IR') : 'نامشخص'}</td>
                         <td class="px-6 py-4">
                             <select data-uid="${user.firestoreId}" class="role-select p-2 border rounded-md bg-gray-50" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
                                 <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
@@ -711,9 +682,13 @@
                     </tr>
                 `).join('');
 
-                return `<h1 class="text-3xl font-bold text-gray-800 mb-6">تنظیمات و مدیریت کاربران</h1>
+                return `<div class="flex justify-between items-center mb-6">
+                            <h1 class="text-3xl font-bold text-gray-800">مدیریت کاربران</h1>
+                            <button id="add-user-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2">
+                                <i data-lucide="plus"></i> افزودن کاربر جدید
+                            </button>
+                        </div>
                         <div class="bg-white p-6 rounded-lg shadow-md">
-                            <h2 class="text-xl font-semibold mb-4">لیست کاربران سیستم</h2>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-right text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
@@ -726,9 +701,7 @@
                                     <tbody>${usersHtml}</tbody>
                                 </table>
                             </div>
-                        </div>
-                        <div class="mt-8 bg-white p-10 rounded-lg shadow-md text-center"><i data-lucide="database" class="mx-auto text-gray-500 w-16 h-16 mb-4"></i><h2 class="text-2xl font-semibold mb-2">مدیریت داده‌ها</h2><p class="text-gray-600 mb-4">می‌توانید تمام داده‌های موجود را پاک کرده و داده‌های نمونه را برای دمو بارگذاری کنید.</p><button id="seed-data-btn" class="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition">بارگذاری داده‌های نمونه</button></div>
-                        `
+                        </div>`
             }
         };
 
@@ -849,14 +822,7 @@
             document.getElementById('add-team-btn-empty')?.addEventListener('click', () => showTeamForm());
         };
         const setupSettingsPageListeners = () => {
-            document.getElementById('seed-data-btn')?.addEventListener('click', () => {
-                showConfirmationModal("بارگذاری داده‌های نمونه", "تمام اطلاعات فعلی حذف و داده‌های نمونه جایگزین خواهند شد. آیا مطمئن هستید؟",
-                    async () => {
-                        document.getElementById('loading-overlay').style.display = 'flex';
-                        await seedDatabaseWithDemoData();
-                        document.getElementById('loading-overlay').style.display = 'none';
-                    }, "تایید و بارگذاری");
-            });
+             document.getElementById('add-user-btn')?.addEventListener('click', showAddUserForm);
             document.querySelectorAll('.role-select').forEach(select => {
                 select.addEventListener('change', async (e) => {
                     const uid = e.target.dataset.uid;
@@ -1175,6 +1141,70 @@
         };
         
         // --- EDIT FORM FUNCTIONS ---
+        const showAddUserForm = () => {
+            modalTitle.innerText = 'افزودن کاربر جدید';
+            modalContent.innerHTML = `
+                <form id="add-user-form" class="space-y-4">
+                    <div>
+                        <label for="new-user-email" class="block text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                        <input id="new-user-email" type="email" required class="w-full px-3 py-2 mt-1 border rounded-md">
+                    </div>
+                    <div>
+                        <label for="new-user-password" class="block text-sm font-medium text-gray-700">رمز عبور موقت</label>
+                        <input id="new-user-password" type="password" required class="w-full px-3 py-2 mt-1 border rounded-md">
+                    </div>
+                    <div>
+                        <label for="new-user-role" class="block text-sm font-medium text-gray-700">سطح دسترسی</label>
+                        <select id="new-user-role" class="w-full p-2 mt-1 border rounded-md">
+                            <option value="viewer">Viewer</option>
+                            <option value="editor">Editor</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="pt-4 flex justify-end">
+                        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">افزودن کاربر</button>
+                    </div>
+                </form>
+            `;
+            openModal(mainModal, mainModalContainer);
+
+            document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('new-user-email').value;
+                const password = document.getElementById('new-user-password').value;
+                const role = document.getElementById('new-user-role').value;
+
+                // NOTE: The client-side SDK's createUserWithEmailAndPassword will automatically
+                // sign in the new user. This is a known limitation. In a production app, this
+                // should be handled by a server-side function (e.g., Firebase Functions) to
+                // avoid logging out the admin. For this client-only app, the admin will need
+                // to log out and log back in after creating a new user.
+                try {
+                    // This creates the user in Firebase Authentication
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const newUser = userCredential.user;
+
+                    // Now, create the user role document in Firestore
+                    const userRef = doc(db, `artifacts/${appId}/public/data/users`, newUser.uid);
+                    await setDoc(userRef, {
+                        email: newUser.email,
+                        role: role,
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    closeModal(mainModal, mainModalContainer);
+                    showToast("کاربر جدید با موفقیت ایجاد شد. لطفا مجددا با حساب ادمین خود وارد شوید.");
+                    
+                    // Sign out the newly created user and prompt admin to log back in
+                    await signOut(auth);
+
+                } catch (error) {
+                    console.error("Error creating new user:", error);
+                    showToast(`خطا در ایجاد کاربر: ${error.message}`, "error");
+                }
+            });
+        };
+
         const showEditOkrsForm = (emp) => {
             modalTitle.innerText = `ویرایش OKR برای ${emp.name}`;
             const okrsHtml = (emp.okrs || []).map((okr) => `<div class="okr-item grid grid-cols-12 gap-2 items-center"><input type="text" value="${okr.title}" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" value="${okr.progress}" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`).join('');
