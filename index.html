@@ -718,7 +718,12 @@
                     <h1 class="text-3xl font-bold text-gray-800 mb-6">تنظیمات سیستم</h1>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="card bg-white p-6 rounded-lg shadow-md">
-                            <h3 class="font-semibold mb-4">مدیریت کاربران</h3>
+                             <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-semibold">مدیریت کاربران</h3>
+                                <button id="add-user-btn" class="bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700 transition text-sm flex items-center gap-1">
+                                    <i data-lucide="plus" class="w-4 h-4"></i> افزودن
+                                </button>
+                            </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-right text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
@@ -926,6 +931,7 @@
             }
         };
         const setupSettingsPageListeners = () => {
+            document.getElementById('add-user-btn')?.addEventListener('click', showAddUserForm);
             // Role management
             document.querySelectorAll('.role-select').forEach(select => {
                 select.addEventListener('change', async (e) => {
@@ -1238,7 +1244,7 @@
                                 <!-- Team Overview Tab -->
                                 <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img src="${m.avatar}" class="w-full h-full object-cover"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
                                  <!-- Team Health Tab -->
-                                <div id="tab-team-health" class="profile-tab-content"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">آخرین بازخوردهای نظرسنجی پالس</h4><div class="space-y-2 text-sm text-gray-700">${state.surveyResponses.filter(r => r.surveyId === 'pulse' && team.memberIds.includes(r.employeeId)).slice(-3).map(r => `<p class="p-2 bg-blue-50 rounded-md">"${r.answers.q3}"</p>`).join('') || '<p class="text-sm text-gray-500">بازخوردی ثبت نشده است.</p>'}</div></div></div></div>
+                                <div id="tab-team-health" class="profile-tab-content">${renderTeamHealthMetrics(team)}</div>
                                 <!-- Team Talent Tab -->
                                 <div id="tab-team-talent" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4><div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div></div></div>
                             </div>
@@ -1265,6 +1271,7 @@
              tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
             if(canEdit()) {
                 document.getElementById('edit-team-okrs-btn')?.addEventListener('click', () => showEditTeamOkrsForm(team));
+                document.getElementById('edit-team-health-btn')?.addEventListener('click', () => showTeamHealthForm(team));
                 document.getElementById('change-team-avatar-btn')?.addEventListener('click', () => {
                     handleAvatarChange(async (newAvatarUrl) => {
                         try {
