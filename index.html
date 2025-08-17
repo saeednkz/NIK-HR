@@ -674,7 +674,7 @@
                     
                     <!-- Skill Gap Finder -->
                     <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="search-slashes" class="ml-2 text-blue-500"></i>تحلیل شکاف مهارتی</h3>
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="file-search" class="ml-2 text-blue-500"></i>تحلیل شکاف مهارتی</h3>
                         <div class="flex flex-col sm:flex-row gap-2 items-center">
                             <select id="skill-team-select" class="p-2 border rounded-md w-full sm:w-1/3">
                                 <option value="all">کل سازمان</option>
@@ -1500,6 +1500,76 @@
             document.getElementById('add-skill-btn').addEventListener('click', () => { const newItem = document.createElement('div'); newItem.className = 'skill-item grid grid-cols-12 gap-2 items-center'; newItem.innerHTML = `<input type="text" class="col-span-8 p-2 border rounded-md skill-name" placeholder="نام مهارت"><input type="number" class="col-span-3 p-2 border rounded-md skill-level" placeholder="سطح (۱-۵)" min="1" max="5" value="1"><button type="button" class="col-span-1 remove-skill-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`; skillsContainer.appendChild(newItem); lucide.createIcons(); });
             skillsContainer.addEventListener('click', (e) => { if(e.target.closest('.remove-skill-btn')) { e.target.closest('.skill-item').remove(); } });
             document.getElementById('edit-skills-form').addEventListener('submit', async (e) => { e.preventDefault(); const newSkills = {}; document.querySelectorAll('.skill-item').forEach(item => { const name = item.querySelector('.skill-name').value; const level = parseInt(item.querySelector('.skill-level').value) || 0; if (name) { newSkills[name] = level; } }); try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { skills: newSkills }); showToast("مهارت‌ها با موفقیت به‌روزرسانی شدند."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error updating skills:", error); showToast("خطا در به‌روزرسانی مهارت‌ها.", "error"); } });
+        };
+
+        const showEditCompetenciesForm = (emp) => {
+            modalTitle.innerText = `ویرایش شایستگی‌ها برای ${emp.name}`;
+            const empCompetencies = emp.competencies || {};
+            const competenciesHtml = state.competencies.map(comp => `
+                <div class="competency-item grid grid-cols-12 gap-2 items-center">
+                    <label class="col-span-8">${comp.name}</label>
+                    <input type="number" value="${empCompetencies[comp.name] || 0}" data-name="${comp.name}" class="col-span-3 p-2 border rounded-md competency-level" placeholder="سطح (۱-۵)" min="0" max="5">
+                </div>
+            `).join('');
+            modalContent.innerHTML = `
+                <form id="edit-competencies-form">
+                    <div id="competencies-container" class="space-y-2">${competenciesHtml || '<p>ابتدا شایستگی‌ها را در بخش تنظیمات تعریف کنید.</p>'}</div>
+                    <div class="pt-6 flex justify-end gap-4">
+                        <button type="button" id="back-to-profile-comp" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button>
+                        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('back-to-profile-comp').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+            document.getElementById('edit-competencies-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newCompetencies = {};
+                document.querySelectorAll('.competency-item').forEach(item => {
+                    const name = item.querySelector('.competency-level').dataset.name;
+                    const level = parseInt(item.querySelector('.competency-level').value) || 0;
+                    if (name && level > 0) {
+                        newCompetencies[name] = level;
+                    }
+                });
+                try {
+                    const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                    await updateDoc(docRef, { competencies: newCompetencies });
+                    showToast("شایستگی‌ها با موفقیت به‌روزرسانی شدند.");
+                    viewEmployeeProfile(emp.firestoreId);
+                } catch (error) {
+                    console.error("Error updating competencies:", error);
+                    showToast("خطا در به‌روزرسانی شایستگی‌ها.", "error");
+                }
+            });
+        };
+
+        const showEditTeamOkrsForm = (team) => {
+            modalTitle.innerText = `ویرایش OKR برای تیم ${team.name}`;
+            const okrsHtml = (team.okrs || []).map((okr) => `<div class="okr-item grid grid-cols-12 gap-2 items-center"><input type="text" value="${okr.title}" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" value="${okr.progress}" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`).join('');
+            modalContent.innerHTML = `<form id="edit-team-okrs-form"><div id="okrs-container" class="space-y-2">${okrsHtml}</div><button type="button" id="add-okr-btn" class="mt-4 text-sm bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300">افزودن هدف جدید</button><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-team-profile-okr" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            lucide.createIcons();
+            document.getElementById('back-to-team-profile-okr').addEventListener('click', () => viewTeamProfile(team.firestoreId));
+            const okrsContainer = document.getElementById('okrs-container');
+            document.getElementById('add-okr-btn').addEventListener('click', () => { const newItem = document.createElement('div'); newItem.className = 'okr-item grid grid-cols-12 gap-2 items-center'; newItem.innerHTML = `<input type="text" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100" value="0"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`; okrsContainer.appendChild(newItem); lucide.createIcons(); });
+            okrsContainer.addEventListener('click', (e) => { if (e.target.closest('.remove-okr-btn')) { e.target.closest('.okr-item').remove(); } });
+            document.getElementById('edit-team-okrs-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newOkrs = [];
+                document.querySelectorAll('.okr-item').forEach(item => {
+                    const title = item.querySelector('.okr-title').value;
+                    const progress = parseInt(item.querySelector('.okr-progress').value) || 0;
+                    if (title) { newOkrs.push({ title, progress }); }
+                });
+                try {
+                    const docRef = doc(db, `artifacts/${appId}/public/data/teams`, team.firestoreId);
+                    await updateDoc(docRef, { okrs: newOkrs });
+                    showToast("اهداف تیم با موفقیت به‌روزرسانی شدند.");
+                    viewTeamProfile(team.firestoreId);
+                } catch (error) {
+                    console.error("Error updating team OKRs:", error);
+                    showToast("خطا در به‌روزرسانی اهداف تیم.", "error");
+                }
+            });
         };
 
         const showEditPersonalInfoForm = (emp) => {
