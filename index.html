@@ -269,6 +269,9 @@
 
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
+    
+    <!-- Hidden input for image uploads -->
+    <input type="file" id="image-upload-input" class="hidden" accept="image/*">
 
 
     <!-- Firebase SDK -->
@@ -594,7 +597,7 @@
                             </div>
                             <div class="card bg-white p-6 rounded-lg shadow-md">
                                 <p class="text-gray-500 text-sm flex items-center">ریسک خروج استعدادهای کلیدی <i data-lucide="shield-alert" class="mr-2 text-red-500"></i></p>
-                                <div class="mt-3 space-y-2">${metrics.highImpactFlightRisk.length > 0 ? metrics.highImpactFlightRisk.map(id => { const emp = state.employees.find(e => e.id === id); return emp ? `<div class="flex items-center bg-red-50 p-2 rounded-md"><img src="${emp.avatar}" class="w-8 h-8 rounded-full mr-2 object-cover" alt="${emp.name}"><div><p class="text-sm font-semibold text-red-800">${emp.name}</p><p class="text-xs text-red-600">${emp.nineBox || ''}</p></div></div>` : ''; }).join('') : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>'}</div>
+                                <div class="mt-3 space-y-2">${metrics.highImpactFlightRisk.length > 0 ? metrics.highImpactFlightRisk.map(id => { const emp = state.employees.find(e => e.id === id); return emp ? `<div class="flex items-center bg-red-50 p-2 rounded-md"><div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div><div><p class="text-sm font-semibold text-red-800">${emp.name}</p><p class="text-xs text-red-600">${emp.nineBox || ''}</p></div></div>` : ''; }).join('') : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>'}</div>
                             </div>
                         </div>
                     </div>
@@ -610,7 +613,7 @@
             },
             organization: () => {
                  if(state.teams.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن تیم جدید</button>` : ''}</div>`;
-                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => { const leader = state.employees.find(e => e.id === team.leaderId); return `<div class="card bg-white p-6 rounded-lg shadow-md flex flex-col"><h3 class="text-xl font-bold text-blue-800 mb-2">${team.name}</h3><p class="text-gray-600 mb-4 text-sm"><strong>رهبر تیم:</strong> ${leader ? leader.name : 'نامشخص'}</p><p class="text-gray-700 mb-4 flex-grow"><strong>ماموریت:</strong> ${team.mission || ''}</p><div class="mb-4"><p class="font-semibold mb-2">اعضای تیم:</p><div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => { const member = state.employees.find(e => e.id === memberId); return member ? `<img class="w-10 h-10 border-2 border-white rounded-full object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : ''; }).join('')}</div></div>
+                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => { const leader = state.employees.find(e => e.id === team.leaderId); return `<div class="card bg-white p-6 rounded-lg shadow-md flex flex-col"><h3 class="text-xl font-bold text-blue-800 mb-2">${team.name}</h3><p class="text-gray-600 mb-4 text-sm"><strong>رهبر تیم:</strong> ${leader ? leader.name : 'نامشخص'}</p><p class="text-gray-700 mb-4 flex-grow"><strong>ماموریت:</strong> ${team.mission || ''}</p><div class="mb-4"><p class="font-semibold mb-2">اعضای تیم:</p><div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => { const member = state.employees.find(e => e.id === memberId); return member ? `<div class="w-10 h-10 border-2 border-white rounded-full overflow-hidden shrink-0 bg-gray-200"><img class="w-full h-full object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}"></div>` : ''; }).join('')}</div></div>
                 <div class="flex gap-2 mt-auto">
                     <button class="view-team-profile-btn w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition" data-team-id="${team.firestoreId}">مشاهده</button>
                     ${canEdit() ? `<button class="edit-team-btn w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600 transition" data-team-id="${team.firestoreId}">ویرایش</button>` : ''}
@@ -872,7 +875,7 @@
                 const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
                 state.employees.forEach(emp => { const pos = gridMap[emp.nineBox]; if (pos) { grid[pos.row - 1][pos.col - 1].push(emp); } });
                 let html = '';
-                for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { const employeesInCell = grid[i][j]; html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[80px] p-1 flex flex-wrap items-start justify-center gap-1">${employeesInCell.map(emp => `<img src="${emp.avatar}" alt="${emp.name}" title="${emp.name}" class="w-8 h-8 rounded-full border-2 border-white shadow-sm object-cover">`).join('')}</div>`; } }
+                for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { const employeesInCell = grid[i][j]; html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[80px] p-1 flex flex-wrap items-start justify-center gap-1">${employeesInCell.map(emp => `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0 bg-gray-200"><img src="${emp.avatar}" alt="${emp.name}" title="${emp.name}" class="w-full h-full object-cover"></div>`).join('')}</div>`; } }
                 container.innerHTML = html;
             };
 
@@ -914,6 +917,62 @@
         // --- MODAL & FORM LOGIC ---
         const mainModal = document.getElementById('mainModal'); const modalTitle = document.getElementById('modalTitle'); const modalContent = document.getElementById('modalContent'); const mainModalContainer = mainModal.querySelector('div');
         
+        // --- NEW: AVATAR UPLOAD & RESIZE LOGIC ---
+        const imageUploadInput = document.getElementById('image-upload-input');
+        let onImageResizedCallback = null;
+
+        if (imageUploadInput) {
+            imageUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file || !onImageResizedCallback) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_DIMENSION = 256; // Max width or height for profile pictures
+                        let { width, height } = img;
+
+                        // Calculate new dimensions while maintaining aspect ratio
+                        if (width > height) {
+                            if (width > MAX_DIMENSION) {
+                                height *= MAX_DIMENSION / width;
+                                width = MAX_DIMENSION;
+                            }
+                        } else {
+                            if (height > MAX_DIMENSION) {
+                                width *= MAX_DIMENSION / height;
+                                height = MAX_DIMENSION;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        // Use JPEG format for better compression of photos
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                        if (onImageResizedCallback) {
+                            onImageResizedCallback(dataUrl); // Execute the callback with the new data URL
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                event.target.value = ''; // Reset input to allow selecting the same file again
+            });
+        }
+
+        // A helper function to trigger the file input and set the callback
+        function handleAvatarChange(updateFunction) {
+            onImageResizedCallback = (newAvatarUrl) => {
+                updateFunction(newAvatarUrl);
+                onImageResizedCallback = null; // Clear callback after it has been used
+            };
+            imageUploadInput.click();
+        }
+        // --- END OF NEW LOGIC ---
+
         const generateSmartAnalysis = (emp) => {
             const analysis = {};
             if (emp.performanceHistory && emp.performanceHistory.length > 1) {
@@ -968,7 +1027,9 @@
                     <!-- Left Column: Basic Info -->
                     <div class="lg:col-span-1 space-y-6">
                         <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
-                            <img src="${emp.avatar}" alt="${emp.name}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md object-cover">
+                            <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
+                                <img src="${emp.avatar}" alt="${emp.name}" class="w-full h-full object-cover">
+                            </div>
                             ${canEdit() ? `<button id="change-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
                             <h2 class="text-2xl font-bold text-gray-800">${emp.name}</h2>
                             <p class="text-gray-500">${emp.jobTitle || emp.department}</p>
@@ -1013,7 +1074,9 @@
                     <!-- Left Column -->
                     <div class="lg:col-span-1 space-y-6">
                         <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
-                            <img src="${team.avatar}" alt="${team.name}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md object-cover">
+                            <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
+                                <img src="${team.avatar}" alt="${team.name}" class="w-full h-full object-cover">
+                            </div>
                             ${canEdit() ? `<button id="change-team-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
                             <h2 class="text-2xl font-bold text-gray-800">${team.name}</h2><p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p></div>
                         <div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4><div class="text-sm space-y-3">${Object.keys(analysis).length > 0 ? Object.values(analysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><p class="${item.color}">${item.text}</p></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div></div>
@@ -1024,7 +1087,7 @@
                             <div class="border-b border-gray-200"><nav class="profile-tabs flex -mb-px"><button data-tab="team-overview" class="profile-tab active">نمای کلی</button><button data-tab="team-health" class="profile-tab">سلامت و مشارکت</button><button data-tab="team-talent" class="profile-tab">ماتریس استعداد</button></nav></div>
                             <div class="p-4">
                                 <!-- Team Overview Tab -->
-                                <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><img src="${m.avatar}" class="w-12 h-12 rounded-full mx-auto object-cover"><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
+                                <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img src="${m.avatar}" class="w-full h-full object-cover"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
                                  <!-- Team Health Tab -->
                                 <div id="tab-team-health" class="profile-tab-content"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">آخرین بازخوردهای نظرسنجی پالس</h4><div class="space-y-2 text-sm text-gray-700">${state.surveyResponses.filter(r => r.surveyId === 'pulse' && team.memberIds.includes(r.employeeId)).slice(-3).map(r => `<p class="p-2 bg-blue-50 rounded-md">"${r.answers.q3}"</p>`).join('') || '<p class="text-sm text-gray-500">بازخوردی ثبت نشده است.</p>'}</div></div></div></div>
                                 <!-- Team Talent Tab -->
@@ -1043,7 +1106,7 @@
             const gridMap = {'معما': {r:0,c:0}, 'عملکرد قابل اتکا':{r:1,c:0}, 'مهره کلیدی':{r:2,c:0}, 'پتانسیل بالا':{r:1,c:2}, 'ستاره':{r:2,c:2}};
             members.forEach(emp => { const pos = gridMap[emp.nineBox]; if(pos) grid[pos.r][pos.c].push(emp); });
             let html = '';
-            for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[60px] p-1 flex flex-wrap items-center justify-center gap-1">${grid[i][j].map(e => `<img src="${e.avatar}" title="${e.name}" class="w-8 h-8 rounded-full border-2 border-white object-cover">`).join('')}</div>`; } }
+            for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[60px] p-1 flex flex-wrap items-center justify-center gap-1">${grid[i][j].map(e => `<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden shrink-0 bg-gray-200"><img src="${e.avatar}" title="${e.name}" class="w-full h-full object-cover"></div>`).join('')}</div>`; } }
             return html;
         };
 
@@ -1053,7 +1116,18 @@
              tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
             if(canEdit()) {
                 document.getElementById('edit-team-okrs-btn')?.addEventListener('click', () => showEditTeamOkrsForm(team));
-                document.getElementById('change-team-avatar-btn')?.addEventListener('click', () => { const newAvatarUrl = prompt("لطفا آدرس URL عکس جدید تیم را وارد کنید:", team.avatar); if (newAvatarUrl) { const docRef = doc(db, `artifacts/${appId}/public/data/teams`, team.firestoreId); updateDoc(docRef, { avatar: newAvatarUrl }); } });
+                document.getElementById('change-team-avatar-btn')?.addEventListener('click', () => {
+                    handleAvatarChange(async (newAvatarUrl) => {
+                        try {
+                            const docRef = doc(db, `artifacts/${appId}/public/data/teams`, team.firestoreId);
+                            await updateDoc(docRef, { avatar: newAvatarUrl });
+                            showToast("عکس تیم با موفقیت به‌روزرسانی شد.");
+                        } catch (error) {
+                            console.error("Error updating team avatar:", error);
+                            showToast("خطا در به‌روزرسانی عکس تیم.", "error");
+                        }
+                    });
+                });
             }
             setTimeout(() => { lucide.createIcons(); }, 100);
         };
@@ -1149,7 +1223,18 @@
             }, 100);
             
             if(canEdit()) {
-                document.getElementById('change-avatar-btn')?.addEventListener('click', () => { const newAvatarUrl = prompt("لطفا آدرس URL عکس جدید را وارد کنید:", emp.avatar); if (newAvatarUrl) { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); updateDoc(docRef, { avatar: newAvatarUrl }); } });
+                document.getElementById('change-avatar-btn')?.addEventListener('click', () => {
+                    handleAvatarChange(async (newAvatarUrl) => {
+                        try {
+                            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                            await updateDoc(docRef, { avatar: newAvatarUrl });
+                            showToast("عکس پروفایل با موفقیت به‌روزرسانی شد.");
+                        } catch (error) {
+                            console.error("Error updating avatar:", error);
+                            showToast("خطا در به‌روزرسانی عکس پروفایل.", "error");
+                        }
+                    });
+                });
                 document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
                 document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
                 document.getElementById('edit-personal-info-btn')?.addEventListener('click', () => showEditPersonalInfoForm(emp));
@@ -1336,76 +1421,184 @@
                 perfContainer.appendChild(newItem);
                 lucide.createIcons();
             });
-            perfContainer.addEventListener('click', (e) => { if(e.target.closest('.remove-perf-btn')) { e.target.closest('.perf-item').remove(); } });
+            perfContainer.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-perf-btn')) {
+                    e.target.closest('.perf-item').remove();
+                    perfContainer.querySelectorAll('.perf-item label').forEach((label, index) => {
+                        label.innerText = `دوره ${index + 1}`;
+                    });
+                }
+            });
             document.getElementById('edit-performance-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const newHistory = Array.from(document.querySelectorAll('.perf-score')).map(input => parseFloat(input.value) || 0);
                 try {
                     const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
                     await updateDoc(docRef, { performanceHistory: newHistory });
-                    showToast("تاریخچه عملکرد به‌روزرسانی شد.");
+                    showToast("تاریخچه عملکرد با موفقیت به‌روزرسانی شد.");
                     viewEmployeeProfile(emp.firestoreId);
                 } catch (error) {
                     console.error("Error updating performance history:", error);
-                    showToast("خطا در به‌روزرسانی تاریخچه.", "error");
+                    showToast("خطا در به‌روزرسانی تاریخچه عملکرد.", "error");
                 }
             });
         };
 
-
-        const showEditTeamOkrsForm = (team) => {
-            modalTitle.innerText = `ویرایش OKR برای تیم ${team.name}`;
-            const okrsHtml = (team.okrs || []).map((okr) => `<div class="okr-item grid grid-cols-12 gap-2 items-center"><input type="text" value="${okr.title}" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" value="${okr.progress}" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`).join('');
-            modalContent.innerHTML = `<form id="edit-team-okrs-form"><div id="okrs-container" class="space-y-2">${okrsHtml}</div><button type="button" id="add-okr-btn" class="mt-4 text-sm bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300">افزودن هدف جدید</button><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-team-profile" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
-            lucide.createIcons();
-            document.getElementById('back-to-team-profile').addEventListener('click', () => viewTeamProfile(team.firestoreId));
-            const okrsContainer = document.getElementById('okrs-container');
-            document.getElementById('add-okr-btn').addEventListener('click', () => { const newItem = document.createElement('div'); newItem.className = 'okr-item grid grid-cols-12 gap-2 items-center'; newItem.innerHTML = `<input type="text" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100" value="0"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`; okrsContainer.appendChild(newItem); lucide.createIcons(); });
-            okrsContainer.addEventListener('click', (e) => { if(e.target.closest('.remove-okr-btn')) { e.target.closest('.okr-item').remove(); } });
-            document.getElementById('edit-team-okrs-form').addEventListener('submit', async (e) => { e.preventDefault(); const newOkrs = []; document.querySelectorAll('.okr-item').forEach(item => { const title = item.querySelector('.okr-title').value; const progress = parseInt(item.querySelector('.okr-progress').value) || 0; if (title) { newOkrs.push({ title, progress }); } }); try { const docRef = doc(db, `artifacts/${appId}/public/data/teams`, team.firestoreId); await updateDoc(docRef, { okrs: newOkrs }); showToast("اهداف تیم به‌روزرسانی شدند."); viewTeamProfile(team.firestoreId); } catch (error) { console.error("Error updating team OKRs:", error); showToast("خطا در به‌روزرسانی اهداف تیم.", "error"); } });
-        };
-
-        // --- SURVEY SPECIFIC LOGIC ---
         const setupSurveysPageListeners = () => {
             document.querySelectorAll('.create-survey-link-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const surveyId = e.currentTarget.dataset.surveyId;
-                    const baseUrl = window.location.href.split('#')[0];
-                    const surveyUrl = `${baseUrl}#survey-taker?id=${surveyId}`;
-                    modalTitle.innerText = 'لینک نظرسنجی';
-                    modalContent.innerHTML = `<p class="mb-4">این لینک را برای کارمندان مورد نظر ارسال کنید:</p><div class="flex items-center bg-gray-100 p-2 rounded-md"><input type="text" id="survey-link-input" value="${surveyUrl}" class="w-full bg-transparent font-mono text-sm" readonly><button id="copy-survey-link-btn" class="bg-blue-600 text-white py-1 px-3 rounded-md mr-2 hover:bg-blue-700">کپی</button></div>`;
-                    openModal(mainModal, mainModalContainer);
-                    document.getElementById('copy-survey-link-btn').addEventListener('click', () => { const input = document.getElementById('survey-link-input'); input.select(); try { document.execCommand('copy'); showToast("لینک با موفقیت کپی شد."); } catch (err) { console.error('Fallback: Oops, unable to copy', err); showToast("خطا در کپی کردن لینک.", "error"); } });
+                    const surveyTemplate = surveyTemplates[surveyId];
+                    if (surveyTemplate.requiresTarget) {
+                        showSurveyTargetSelector(surveyId);
+                    } else {
+                        generateAndShowSurveyLink(surveyId);
+                    }
                 });
             });
         };
 
-        const renderSurveyTakerPage = (surveyId) => {
-            const survey = surveyTemplates[surveyId];
-            document.getElementById('dashboard-container').style.display = 'none';
-            const surveyContainer = document.getElementById('survey-taker-container');
-            surveyContainer.style.display = 'block';
-            if (!survey) { surveyContainer.innerHTML = `<div class="min-h-screen flex items-center justify-center"><p class="text-red-500">نظرسنجی یافت نشد.</p></div>`; return; }
-            const questionsHtml = survey.questions.map(q => { let inputHtml = ''; switch(q.type) { case 'rating_1_5': inputHtml = `<div class="flex justify-center gap-2 mt-2">${[1,2,3,4,5].map(num => `<label class="cursor-pointer"><input type="radio" name="${q.id}" value="${num}" class="sr-only peer" required><span class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 peer-checked:bg-blue-600 peer-checked:text-white">${num}</span></label>`).join('')}</div>`; break; case 'yes_no': inputHtml = `<div class="flex justify-center gap-4 mt-2"><label class="cursor-pointer"><input type="radio" name="${q.id}" value="yes" class="sr-only peer" required><span class="px-6 py-2 rounded-md border border-gray-300 peer-checked:bg-green-600 peer-checked:text-white">بله</span></label><label class="cursor-pointer"><input type="radio" name="${q.id}" value="no" class="sr-only peer" required><span class="px-6 py-2 rounded-md border border-gray-300 peer-checked:bg-red-600 peer-checked:text-white">خیر</span></label></div>`; break; case 'open_text': inputHtml = `<textarea name="${q.id}" rows="4" class="w-full mt-2 p-2 border rounded-md" required></textarea>`; break; } return `<div class="bg-white p-6 rounded-lg shadow-md mb-4"><p class="font-semibold text-center">${q.text}</p>${inputHtml}</div>`; }).join('');
+        const showSurveyTargetSelector = (surveyId) => {
+            modalTitle.innerText = 'انتخاب فرد مورد نظر برای نظرسنجی';
             const employeeOptions = state.employees.map(emp => `<option value="${emp.id}">${emp.name} (${emp.id})</option>`).join('');
-            const targetEmployeeSelect = survey.requiresTarget ? `<div class="mb-4"><label for="target-employee-id" class="block text-sm font-medium text-gray-700 mb-1">بازخورد در مورد کدام همکار است؟</label><select id="target-employee-id" name="targetEmployeeId" class="w-full p-2 border rounded-md" required><option value="">یک نفر را انتخاب کنید...</option>${employeeOptions}</select></div>` : '';
-            surveyContainer.innerHTML = `<div class="min-h-screen bg-slate-100 p-4 sm:p-8 flex items-center justify-center"><div class="w-full max-w-2xl"><div class="text-center mb-6"><i data-lucide="shield-check" class="mx-auto text-blue-800 w-16 h-16"></i><h1 class="text-3xl font-bold text-gray-800 mt-2">${survey.title}</h1><p class="text-gray-600 mt-2">${survey.description}</p></div><form id="survey-form"><div class="mb-4"><label for="employee-id" class="block text-sm font-medium text-gray-700 mb-1">کد پرسنلی شما (مثلا HN-1001)</label><input type="text" id="employee-id" name="employeeId" class="w-full p-2 border rounded-md" required></div>${targetEmployeeSelect}${questionsHtml}<button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition text-lg font-bold">ثبت پاسخ‌ها</button></form></div></div>`;
-            lucide.createIcons();
-            document.getElementById('survey-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target); const employeeId = formData.get('employeeId'); const targetEmployeeId = formData.get('targetEmployeeId'); const answers = {};
-                survey.questions.forEach(q => { answers[q.id] = formData.get(q.id); });
-                if (!state.employees.find(emp => emp.id === employeeId)) { showToast('کد پرسنلی شما معتبر نیست.', 'error'); return; }
-                if(survey.requiresTarget && !targetEmployeeId) { showToast('لطفا همکاری که در مورد او بازخورد می‌دهید را انتخاب کنید.', 'error'); return; }
-                try { const responseData = { surveyId: survey.id, employeeId: employeeId, answers: answers, submittedAt: new Date().toISOString() }; if(targetEmployeeId) { responseData.targetEmployeeId = targetEmployeeId; } await addDoc(collection(db, `artifacts/${appId}/public/data/surveyResponses`), responseData); surveyContainer.innerHTML = `<div class="min-h-screen flex items-center justify-center text-center"><div><i data-lucide="check-circle" class="mx-auto text-green-500 w-24 h-24"></i><h2 class="text-2xl font-bold mt-4">از شما متشکریم!</h2><p class="text-gray-600">پاسخ‌های شما با موفقیت ثبت شد.</p></div></div>`; lucide.createIcons(); } catch (error) { console.error("Error submitting survey:", error); showToast('خطا در ثبت اطلاعات. لطفا دوباره تلاش کنید.', 'error'); }
+            modalContent.innerHTML = `
+                <div class="p-4 space-y-4">
+                    <p>این نظرسنجی (بازخورد ۳۶۰ درجه) نیازمند انتخاب یک فرد مشخص است.</p>
+                    <div>
+                        <label for="survey-target-employee" class="block text-sm font-medium text-gray-700">کارمند مورد نظر را انتخاب کنید:</label>
+                        <select id="survey-target-employee" class="mt-1 block w-full p-2 border rounded-md">
+                            ${employeeOptions}
+                        </select>
+                    </div>
+                    <div class="flex justify-end">
+                        <button id="generate-targeted-link-btn" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ایجاد لینک</button>
+                    </div>
+                </div>
+            `;
+            openModal(mainModal, mainModalContainer);
+            document.getElementById('generate-targeted-link-btn').addEventListener('click', () => {
+                const targetEmployeeId = document.getElementById('survey-target-employee').value;
+                if (targetEmployeeId) {
+                    generateAndShowSurveyLink(surveyId, targetEmployeeId);
+                }
             });
         };
 
+        const generateAndShowSurveyLink = (surveyId, targetEmployeeId = null) => {
+            let surveyLink = `${window.location.origin}${window.location.pathname}#survey-taker?id=${surveyId}`;
+            if (targetEmployeeId) {
+                surveyLink += `&target=${targetEmployeeId}`;
+            }
+            modalTitle.innerText = 'لینک نظرسنجی ایجاد شد';
+            modalContent.innerHTML = `
+                <div class="p-4 space-y-4">
+                    <p>این لینک را برای شرکت‌کنندگان ارسال کنید:</p>
+                    <div class="flex items-center bg-gray-100 p-2 rounded-md">
+                        <input id="survey-link-input" type="text" readonly value="${surveyLink}" class="flex-grow bg-transparent outline-none font-mono text-sm">
+                        <button id="copy-survey-link-btn" class="bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 ml-2">کپی</button>
+                    </div>
+                </div>
+            `;
+            if (!mainModal.classList.contains('flex')) {
+                openModal(mainModal, mainModalContainer);
+            }
+            document.getElementById('copy-survey-link-btn').addEventListener('click', () => {
+                const linkInput = document.getElementById('survey-link-input');
+                linkInput.select();
+                document.execCommand('copy');
+                showToast("لینک با موفقیت کپی شد!");
+            });
+        };
+        
+        const renderSurveyTakerPage = (surveyId) => {
+            document.getElementById('dashboard-container').classList.add('hidden');
+            const surveyTakerContainer = document.getElementById('survey-taker-container');
+            surveyTakerContainer.classList.remove('hidden');
+            const survey = surveyTemplates[surveyId];
+            if (!survey) {
+                surveyTakerContainer.innerHTML = `<p>نظرسنجی یافت نشد.</p>`;
+                return;
+            }
+            
+            const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
+            const targetEmployeeId = urlParams.get('target');
+            const targetEmployee = targetEmployeeId ? state.employees.find(e => e.id === targetEmployeeId) : null;
+            
+            let title = survey.title;
+            if (targetEmployee) {
+                title += ` در مورد: ${targetEmployee.name}`;
+            }
+
+            const questionsHtml = survey.questions.map(q => {
+                let inputHtml = '';
+                switch (q.type) {
+                    case 'rating_1_5':
+                        inputHtml = `<div class="flex justify-center gap-2">${[1, 2, 3, 4, 5].map(n => `<label class="cursor-pointer"><input type="radio" name="${q.id}" value="${n}" class="sr-only peer"><div class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-gray-300 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600">${n}</div></label>`).join('')}</div>`;
+                        break;
+                    case 'yes_no':
+                        inputHtml = `<div class="flex justify-center gap-4"><label class="cursor-pointer"><input type="radio" name="${q.id}" value="yes" class="sr-only peer"><div class="px-6 py-2 rounded-md border-2 border-gray-300 peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-600">بله</div></label><label class="cursor-pointer"><input type="radio" name="${q.id}" value="no" class="sr-only peer"><div class="px-6 py-2 rounded-md border-2 border-gray-300 peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-600">خیر</div></label></div>`;
+                        break;
+                    case 'open_text':
+                        inputHtml = `<textarea name="${q.id}" rows="4" class="w-full p-2 border rounded-md"></textarea>`;
+                        break;
+                }
+                return `<div class="bg-white p-6 rounded-lg shadow-md"><p class="font-semibold mb-4 text-center">${q.text}</p>${inputHtml}</div>`;
+            }).join('');
+
+            surveyTakerContainer.innerHTML = `
+                <div class="min-h-screen bg-gray-100 p-4 sm:p-8 flex items-center justify-center">
+                    <div class="w-full max-w-2xl space-y-6">
+                         <div class="text-center">
+                            <i data-lucide="shield-check" class="mx-auto w-12 h-12 text-blue-800"></i>
+                            <h1 class="text-2xl font-bold mt-2">${title}</h1>
+                            <p class="text-gray-600 mt-1">${survey.description}</p>
+                        </div>
+                        <form id="survey-form" class="space-y-6">
+                            ${questionsHtml}
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <label for="employeeId" class="block text-sm font-medium text-gray-700 mb-2">کد پرسنلی شما (اختیاری، برای تحلیل‌های آینده)</label>
+                                <input type="text" name="employeeId" class="w-full p-2 border rounded-md">
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700">ارسال پاسخ‌ها</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            
+            document.getElementById('survey-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const answers = {};
+                survey.questions.forEach(q => {
+                    answers[q.id] = formData.get(q.id);
+                });
+                const employeeId = formData.get('employeeId') || 'anonymous';
+                
+                try {
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/surveyResponses`), {
+                        surveyId,
+                        employeeId,
+                        targetEmployeeId,
+                        answers,
+                        submittedAt: serverTimestamp()
+                    });
+                    surveyTakerContainer.innerHTML = `<div class="min-h-screen flex items-center justify-center text-center"><div class="bg-white p-10 rounded-lg shadow-xl"><i data-lucide="check-circle" class="mx-auto w-16 h-16 text-green-500"></i><h2 class="mt-4 text-2xl font-bold">از شما متشکریم!</h2><p class="mt-2 text-gray-600">پاسخ‌های شما با موفقیت ثبت شد.</p></div></div>`;
+                    lucide.createIcons();
+                } catch (error) {
+                    console.error("Error submitting survey:", error);
+                    showToast("خطا در ارسال نظرسنجی.", "error");
+                }
+            });
+        };
+        
+        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             initializeFirebase();
             setupEventListeners();
             lucide.createIcons();
         });
+
     </script>
 </body>
 </html>
