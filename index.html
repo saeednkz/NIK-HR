@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم مدیریت منابع انسانی HR-Nik</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- Persian Font -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .sidebar-item {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-item.active, .sidebar-item:hover {
+            background-color: #1e3a8a;
+            color: white;
+            transform: translateX(-4px);
+        }
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
+        
+        .progress-bar { background-color: #e0e0e0; border-radius: 9999px; overflow: hidden; height: 0.75rem; }
+        .progress-bar-fill { height: 100%; background-color: #3b82f6; border-radius: 9999px; transition: width 0.5s ease-in-out; }
+        
+        /* Loading Spinner */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #1d4ed8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Profile Tabs */
+        .profile-tab {
+            cursor: pointer;
+            padding: 8px 16px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .profile-tab.active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .profile-tab-content {
+            display: none;
+        }
+        .profile-tab-content.active {
+            display: block;
+        }
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: white;
+            opacity: 0;
+            transform: translateX(-100%);
+            animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
+        }
+        .toast.success { background-color: #22c55e; }
+        .toast.error { background-color: #ef4444; }
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: scale(0.9); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <!-- This container is for the main dashboard view -->
+    <div id="dashboard-container" class="flex h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-lg">
+            <a href="#dashboard" class="sidebar-logo text-white text-2xl font-extrabold px-4 flex items-center space-x-2 space-x-reverse">
+                <i data-lucide="shield-check"></i>
+                <span>HR-Nik</span>
+            </a>
+            <nav id="sidebar-nav">
+                <a href="#dashboard" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="layout-dashboard"></i><span>داشبورد</span>
+                </a>
+                <a href="#talent" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="users"></i><span>استعدادها</span>
+                </a>
+                <a href="#organization" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="building-2"></i><span>سازمان</span>
+                </a>
+                <a href="#surveys" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="clipboard-list"></i><span>نظرسنجی‌ها</span>
+                </a>
+                <a href="#analytics" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="bar-chart-3"></i><span>تحلیل هوشمند</span>
+                </a>
+                <a href="#settings" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="settings"></i><span>تنظیمات</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <div class="flex-1 flex flex-col h-screen overflow-y-hidden">
+            <!-- Mobile Header -->
+            <header class="flex justify-between items-center p-4 bg-white shadow-md md:hidden">
+                <a href="#dashboard" class="sidebar-logo text-blue-900 text-xl font-extrabold flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="shield-check"></i>
+                    <span>HR-Nik</span>
+                </a>
+                <button id="menu-btn" class="text-gray-600 z-40">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </header>
+            
+            <!-- Scrollable Main Content -->
+            <main id="main-content" class="flex-1 p-6 sm:p-10 overflow-y-auto">
+                <!-- Content will be loaded here by JavaScript -->
+            </main>
+        </div>
+    </div>
+    
+    <!-- This container is for the public survey-taking view -->
+    <div id="survey-taker-container" class="hidden">
+        <!-- Public survey content will be injected here -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+
+    <!-- Main Modal for Profiles and Forms -->
+    <div id="mainModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-40">
+        <div class="bg-white rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-4/5 max-w-6xl h-5/6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">پروفایل</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-800">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="modalContent" class="p-6 overflow-y-auto h-[calc(100%-65px)]">
+                <!-- Modal content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <h3 id="confirmTitle" class="text-lg font-bold text-gray-800 mb-4">آیا مطمئن هستید؟</h3>
+            <p id="confirmMessage" class="text-gray-600 mb-6">این عمل غیرقابل بازگشت است.</p>
+            <div class="flex justify-end gap-4">
+                <button id="confirmCancel" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300">انصراف</button>
+                <button id="confirmAccept" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">تایید و حذف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithCustomToken, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getFirestore, doc, getDoc, setDoc, onSnapshot, collection, 
+            addDoc, getDocs, writeBatch, deleteDoc, updateDoc, query, arrayUnion
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- SURVEY TEMPLATES ---
+        const surveyTemplates = {
+            'pulse': {
+                id: 'pulse',
+                title: 'نظرسنجی پالس',
+                description: 'یک نظرسنجی سریع برای سنجش نبض سازمان و حال و هوای کارکنان.',
+                questions: [
+                    { id: 'q1', text: 'در مقیاس ۱ تا ۵، چقدر از هفته کاری خود رضایت داشتید؟', type: 'rating_1_5' },
+                    { id: 'q2', text: 'آیا احساس می‌کنید در هفته گذشته به اندازه کافی از شما قدردانی شده است؟', type: 'yes_no' },
+                    { id: 'q3', text: 'چه چیزی را می‌توانیم بهبود دهیم؟', type: 'open_text' },
+                ]
+            },
+            'engagement': {
+                id: 'engagement',
+                title: 'نظرسنجی مشارکت کارکنان',
+                description: 'سنجش عمیق سطح تعهد، انگیزه و رضایت شغلی کارکنان.',
+                questions: [
+                    { id: 'q1', text: 'من اهداف شرکت را به خوبی درک می‌کنم و می‌دانم کار من چگونه به آن‌ها کمک می‌کند.', type: 'rating_1_5' },
+                    { id: 'q2', text: 'احساس می‌کنم در محیط کار به من احترام گذاشته می‌شود.', type: 'rating_1_5' },
+                    { id: 'q3', text: 'از فرصت‌های رشد و یادگیری در این شرکت راضی هستم.', type: 'rating_1_5' },
+                    { id: 'q4', text: 'این شرکت را به عنوان یک محیط کاری عالی به دیگران توصیه می‌کنم.', type: 'rating_1_5' },
+                ]
+            },
+            'onboarding': {
+                id: 'onboarding',
+                title: 'نظرسنجی تجربه جذب و آنبوردینگ',
+                description: 'جمع‌آوری بازخورد از نیروهای جدید برای بهبود فرآیند ورود به سازمان.',
+                 questions: [
+                    { id: 'q1', text: 'فرآیند مصاحبه و جذب چقدر شفاف و حرفه‌ای بود؟', type: 'rating_1_5' },
+                    { id: 'q2', text: 'آیا در هفته اول کاری، تمام ابزارها و دسترسی‌های لازم را در اختیار داشتید؟', type: 'yes_no' },
+                    { id: 'q3', text: 'آیا احساس می‌کنید به خوبی با تیم و فرهنگ شرکت آشنا شده‌اید؟', type: 'rating_1_5' },
+                    { id: 'q4', text: 'چه پیشنهادی برای بهبود تجربه آنبوردینگ نیروهای جدید دارید؟', type: 'open_text' },
+                ]
+            },
+            'feedback_360': {
+                id: 'feedback_360',
+                title: 'نظرسنجی بازخورد ۳۶۰ درجه',
+                description: 'ارائه بازخورد سازنده به همکاران برای کمک به رشد حرفه‌ای آن‌ها.',
+                requiresTarget: true, // Special flag for this survey type
+                questions: [
+                    { id: 'q1', text: 'این همکار چقدر در ارتباطات خود شفاف و موثر است؟', type: 'rating_1_5' },
+                    { id: 'q2', text: 'این همکار تا چه حد در کار تیمی مشارکت می‌کند و به دیگران کمک می‌کند؟', type: 'rating_1_5' },
+                    { id: 'q3', text: 'یکی از نقاط قوت کلیدی این همکار چیست؟', type: 'open_text' },
+                    { id: 'q4', text: 'چه پیشنهادی برای رشد و پیشرفت این همکار دارید؟', type: 'open_text' },
+                ]
+            },
+            'exit': {
+                id: 'exit',
+                title: 'نظرسنجی خروج',
+                description: 'درک دلایل ترک سازمان برای بهبود محیط کاری برای کارمندان آینده.',
+                questions: [
+                    { id: 'q1', text: 'دلیل اصلی شما برای ترک سازمان چیست؟', type: 'open_text' },
+                    { id: 'q2', text: 'در مقیاس ۱ تا ۵، از تجربه کاری خود در این شرکت چقدر رضایت داشتید؟', type: 'rating_1_5' },
+                    { id: 'q3', text: 'آیا این شرکت را به عنوان یک محیط کاری به دیگران توصیه می‌کنید؟', type: 'yes_no' },
+                    { id: 'q4', text: 'چه پیشنهادی برای بهبود شرکت دارید؟', type: 'open_text' },
+                ]
+            }
+        };
+
+        // --- GLOBAL STATE & CONFIG ---
+        const state = {
+            employees: [],
+            teams: [],
+            reminders: [],
+            surveyResponses: [],
+            dashboardMetrics: {},
+            currentPage: 'dashboard'
+        };
+        let charts = {};
+        
+        // --- FIREBASE SETUP ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'hr-nik-default-prod';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "AIzaSyCCfPmxQy1uAKu0lPGSe3bc-P15iLYLHJo",
+                authDomain: "nik-hr.firebaseapp.com",
+                projectId: "nik-hr",
+                storageBucket: "nik-hr.appspot.com",
+                messagingSenderId: "731265316127",
+                appId: "1:731265316127:web:6fda02cb2c7d4adfc92c2a"
+            };
+
+        let app, auth, db;
+
+        async function initializeFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("Firebase Authenticated:", user.uid);
+                        listenToData();
+                    }
+                });
+
+                if (!auth.currentUser) {
+                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                    if (token) {
+                        await signInWithCustomToken(auth, token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                }
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                document.getElementById('loading-overlay').innerHTML = `<p class="text-red-600 font-semibold">خطا در اتصال به پایگاه داده</p>`;
+            }
+        }
+        
+        // --- DATA SEEDING (FOR DEMO PURPOSES) ---
+        async function seedDatabaseWithDemoData() {
+            const demoData = {
+                employees: [
+                    { id: 'HN-1001', name: 'آریا ستوده', department: 'فنی', jobTitle: 'کارشناس ارشد فنی', status: 'فعال', gender: 'مرد', startDate: '2020-05-15', contractEndDate: '2025-05-14', performance: 4.5, skills: {'Python': 5, 'React': 4, 'DevOps': 3, 'SQL': 5}, avatar: 'https://placehold.co/100x100/E2E8F0/4A5568?text=آS', okrs: [{title: 'کاهش زمان پاسخ سرور به ۲۰۰ میلی‌ثانیه', progress: 80}], careerPath: [{role: 'کارشناس فنی', period: '2020-2022'}, {role: 'کارشناس ارشد فنی', period: '2022-اکنون'}], performanceHistory: [4.1, 4.3, 4.5], competencies: {'رهبری': 4, 'ارتباطات': 3, 'کار تیمی': 5}, nineBox: 'ستاره', attritionRisk: {score: 75, impact: 'بالا'}, personalInfo: {nationalId: '0012345678', birthDate: '1990-01-01', phone: '09123456789', email: 'aria.sotoodeh@example.com'} },
+                    { id: 'HN-1002', name: 'سارا حسینی', department: 'محصول', jobTitle: 'مدیر محصول', status: 'فعال', gender: 'زن', startDate: '2019-02-20', contractEndDate: '2025-08-19', performance: 4.8, skills: {'Product Mng.': 5, 'UX Research': 4, 'Agile': 5}, avatar: 'https://placehold.co/100x100/E2E8F0/4A5568?text=SH', okrs: [{title: 'افزایش نرخ فعال‌سازی کاربران جدید به ۲۰٪', progress: 90}], careerPath: [{role: 'مدیر محصول', period: '2019-اکنون'}], performanceHistory: [4.5, 4.7, 4.8], competencies: {'رهبری': 5, 'ارتباطات': 5, 'کار تیمی': 4}, nineBox: 'پتانسیل بالا', attritionRisk: {score: 60, impact: 'بسیار بالا'} },
+                ],
+                teams: [
+                    { id: 'T-01', name: 'تیم زیرساخت', leaderId: 'HN-1001', memberIds: ['HN-1001'], mission: 'توسعه و نگهداری زیرساخت‌های پایدار.', avatar: 'https://placehold.co/200x200/dbeafe/4338ca?text=Infra', okrs: [{title: 'افزایش پایداری سرویس‌ها به 99.95%', progress: 75}]},
+                    { id: 'T-02', name: 'تیم محصول آلفا', leaderId: 'HN-1002', memberIds: ['HN-1002'], mission: 'ارائه بهترین تجربه کاربری.', avatar: 'https://placehold.co/200x200/dbeafe/4338ca?text=Alpha', okrs: [{title: 'افزایش رضایت کاربران (NPS) به ۵۰', progress: 60}]},
+                ]
+            };
+            
+            console.log("Seeding database with demo data...");
+            const collectionsToDelete = ['employees', 'teams', 'reminders', 'surveyResponses'];
+            for (const colName of collectionsToDelete) {
+                const snapshot = await getDocs(collection(db, `artifacts/${appId}/public/data/${colName}`));
+                const deleteBatch = writeBatch(db);
+                snapshot.docs.forEach(doc => deleteBatch.delete(doc.ref));
+                await deleteBatch.commit();
+            }
+            const seedBatch = writeBatch(db);
+            demoData.employees.forEach(emp => seedBatch.set(doc(db, `artifacts/${appId}/public/data/employees`, emp.id), emp));
+            demoData.teams.forEach(team => seedBatch.set(doc(db, `artifacts/${appId}/public/data/teams`, team.id), team));
+            await seedBatch.commit();
+            showToast("داده‌های نمونه با موفقیت بارگذاری شدند.");
+        }
+
+
+        // --- REAL-TIME DATA LISTENERS ---
+        function listenToData() {
+            const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses'];
+            let initialLoads = collectionsToListen.length;
+
+            const onDataLoaded = () => {
+                initialLoads--;
+                if (initialLoads === 0) {
+                    console.log("All initial data loaded.");
+                    router(); 
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }
+            };
+
+            collectionsToListen.forEach(colName => {
+                const colRef = collection(db, `artifacts/${appId}/public/data/${colName}`);
+                onSnapshot(colRef, (snapshot) => {
+                    state[colName] = snapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+                    
+                    if (initialLoads > 0) {
+                        onDataLoaded();
+                    } else {
+                        if (!window.location.hash.startsWith('#survey-taker')) {
+                            renderPage(state.currentPage);
+                        }
+                    }
+                }, (error) => {
+                    console.error(`Error listening to ${colName}:`, error);
+                    document.getElementById('loading-overlay').innerHTML = `<p class="text-red-600 font-semibold">خطا در دریافت داده‌ها</p>`;
+                });
+            });
+        }
+
+        // --- UTILITY & HELPER FUNCTIONS ---
+        const showToast = (message, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="ml-3"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.remove(), 5000);
+        };
+        
+        const calculateDashboardMetrics = () => {
+            const totalEmployees = state.employees.length;
+            if (totalEmployees === 0) {
+                state.dashboardMetrics = {};
+                return;
+            }
+            const activeEmployees = state.employees.filter(e => e.status === 'فعال');
+            
+            // Retention Rate
+            const retentionRate = totalEmployees > 0 ? ((activeEmployees.length / totalEmployees) * 100).toFixed(0) : 0;
+
+            // Average Tenure
+            const totalTenureDays = activeEmployees.reduce((sum, emp) => {
+                if (!emp.startDate) return sum;
+                const start = new Date(emp.startDate);
+                const now = new Date();
+                return sum + Math.ceil(Math.abs(now - start) / (1000 * 60 * 60 * 24));
+            }, 0);
+            const averageTenureYears = activeEmployees.length > 0 ? (totalTenureDays / activeEmployees.length / 365).toFixed(1) : 0;
+            
+            // Engagement Score from Surveys
+            const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
+            let totalScore = 0;
+            let ratingCount = 0;
+            engagementResponses.forEach(res => {
+                Object.values(res.answers).forEach(ans => {
+                    const score = parseInt(ans);
+                    if (!isNaN(score)) {
+                        totalScore += score;
+                        ratingCount++;
+                    }
+                });
+            });
+            const engagementScore = ratingCount > 0 ? ((totalScore / ratingCount) / 5 * 100).toFixed(0) : 0;
+
+            // Internal Mobility
+            const mobileEmployees = state.employees.filter(e => e.careerPath && e.careerPath.length > 1).length;
+            const internalMobilityRate = totalEmployees > 0 ? ((mobileEmployees / totalEmployees) * 100).toFixed(0) : 0;
+
+            state.dashboardMetrics = {
+                totalEmployees,
+                retentionRate,
+                averageTenure: averageTenureYears,
+                engagementScore,
+                internalMobilityRate,
+                highImpactFlightRisk: activeEmployees.filter(e => e.attritionRisk?.score > 60).map(e => e.id),
+                nineBoxDistribution: activeEmployees.reduce((acc, emp) => {
+                    if (emp.nineBox) { acc[emp.nineBox] = (acc[emp.nineBox] || 0) + 1; }
+                    return acc;
+                }, {}),
+                genderComposition: state.employees.reduce((acc, emp) => {
+                    if (emp.gender) { acc[emp.gender] = (acc[emp.gender] || 0) + 1; }
+                    return acc;
+                }, {}),
+                departmentDistribution: state.employees.reduce((acc, emp) => {
+                    if (emp.department) { acc[emp.department] = (acc[emp.department] || 0) + 1; }
+                    return acc;
+                }, {}),
+            };
+        };
+
+        // --- PAGE TEMPLATES & RENDERING ---
+        const mainContent = document.getElementById('main-content');
+        
+        const pages = {
+            dashboard: () => {
+                calculateDashboardMetrics();
+                const metrics = state.dashboardMetrics;
+                if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به HR-Nik خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
+                return `
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد استراتژیک</h1>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
+                            <div><p class="text-gray-500 text-sm">تعداد کل پرسنل</p><p class="text-2xl font-bold text-gray-800">${metrics.totalEmployees}</p></div>
+                        </div>
+                        <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                            <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div>
+                            <div><p class="text-gray-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-gray-800">${metrics.retentionRate}%</p></div>
+                        </div>
+                        <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                            <div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div>
+                            <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
+                        </div>
+                         <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                            <div class="bg-purple-100 p-3 rounded-full mr-4"><i data-lucide="recycle" class="text-purple-600"></i></div>
+                            <div><p class="text-gray-500 text-sm">جابجایی داخلی</p><p class="text-2xl font-bold text-gray-800">${metrics.internalMobilityRate}%</p></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                            <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
+                            <div id="remindersList" class="space-y-4 mb-4 max-h-48 overflow-y-auto pr-2">${renderAllReminders()}</div>
+                            <div class="border-t pt-4">
+                                <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
+                                    <input type="date" id="reminderDate" class="p-2 border rounded-md text-sm">
+                                    <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="card bg-white p-6 rounded-lg shadow-md">
+                                <p class="text-gray-500 text-sm flex items-center">امتیاز مشارکت کارکنان <i data-lucide="heart-pulse" class="mr-2 text-green-500"></i></p>
+                                <div class="relative w-40 h-20 mx-auto mt-2">
+                                    <canvas id="engagementGaugeDashboard"></canvas>
+                                    <div class="absolute inset-0 flex items-center justify-center -bottom-4">
+                                        <span class="text-3xl font-bold text-green-600">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card bg-white p-6 rounded-lg shadow-md">
+                                <p class="text-gray-500 text-sm flex items-center">ریسک خروج استعدادهای کلیدی <i data-lucide="shield-alert" class="mr-2 text-red-500"></i></p>
+                                <div class="mt-3 space-y-2">${metrics.highImpactFlightRisk.length > 0 ? metrics.highImpactFlightRisk.map(id => { const emp = state.employees.find(e => e.id === id); return emp ? `<div class="flex items-center bg-red-50 p-2 rounded-md"><img src="${emp.avatar}" class="w-8 h-8 rounded-full mr-2" alt="${emp.name}"><div><p class="text-sm font-semibold text-red-800">${emp.name}</p><p class="text-xs text-red-600">${emp.nineBox || ''}</p></div></div>` : ''; }).join('') : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع استعدادها</h3><div class="relative h-64"><canvas id="nineBoxChart"></canvas></div></div>
+                        <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع دپارتمان‌ها</h3><div class="relative h-64"><canvas id="departmentDistributionChart"></canvas></div></div>
+                        <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">ترکیب جنسیتی</h3><div class="relative h-64"><canvas id="genderCompositionChart"></canvas></div></div>
+                    </div>`;
+            },
+            talent: () => {
+                if(state.employees.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p><button id="add-employee-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند جدید</button></div>`;
+                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت پرسنل</h1><button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button></div><div class="bg-white p-6 rounded-lg shadow-md"><div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"><div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو..." class="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"><i data-lucide="search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i></div><div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border rounded-md"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border rounded-md"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div></div><div class="overflow-x-auto"><table class="w-full text-sm text-right text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">نام</th><th scope="col" class="px-6 py-3">کد پرسنلی</th><th scope="col" class="px-6 py-3">دپارتمان</th><th scope="col" class="px-6 py-3">وضعیت</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div></div>`
+            },
+            organization: () => {
+                 if(state.teams.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p><button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن تیم جدید</button></div>`;
+                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت تیم‌ها</h1><button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => { const leader = state.employees.find(e => e.id === team.leaderId); return `<div class="card bg-white p-6 rounded-lg shadow-md flex flex-col"><h3 class="text-xl font-bold text-blue-800 mb-2">${team.name}</h3><p class="text-gray-600 mb-4 text-sm"><strong>رهبر تیم:</strong> ${leader ? leader.name : 'نامشخص'}</p><p class="text-gray-700 mb-4 flex-grow"><strong>ماموریت:</strong> ${team.mission || ''}</p><div class="mb-4"><p class="font-semibold mb-2">اعضای تیم:</p><div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => { const member = state.employees.find(e => e.id === memberId); return member ? `<img class="w-10 h-10 border-2 border-white rounded-full" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : ''; }).join('')}</div></div><button class="view-team-profile-btn mt-auto w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition" data-team-id="${team.firestoreId}">مشاهده پروفایل</button></div>` }).join('')}</div>`
+            },
+            surveys: () => `
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">مدیریت نظرسنجی‌ها</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${Object.values(surveyTemplates).map(survey => `
+                        <div class="card bg-white p-6 rounded-lg shadow-md flex flex-col">
+                            <h3 class="text-xl font-bold text-blue-800 mb-2">${survey.title}</h3>
+                            <p class="text-gray-600 mb-4 text-sm flex-grow">${survey.description}</p>
+                            <button class="create-survey-link-btn mt-auto w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition" data-survey-id="${survey.id}">
+                                <i data-lucide="link" class="inline-block ml-2"></i>ایجاد لینک
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `,
+            analytics: () => `
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">تحلیل هوشمند</h1>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Attrition Risk -->
+                    <div class="card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="shield-alert" class="ml-2 text-red-500"></i>نقاط داغ ریسک خروج</h3>
+                        <div id="attrition-hotspot-list" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Team Health -->
+                    <div class="card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="heart-pulse" class="ml-2 text-green-500"></i>وضعیت سلامت تیم‌ها</h3>
+                        <div id="team-health-dashboard" class="space-y-3"></div>
+                    </div>
+
+                    <!-- 9-Box Grid -->
+                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                        <h3 class="font-semibold mb-4">ماتریس استعداد ۹-جعبه‌ای</h3>
+                        <div id="nine-box-grid-container" class="grid grid-cols-3 gap-2 text-center text-xs border-t-2 border-l-2 border-gray-400 mt-4"></div>
+                    </div>
+                    
+                    <!-- Skill Gap Finder -->
+                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="search-slashes" class="ml-2 text-blue-500"></i>تحلیل شکاف مهارتی</h3>
+                        <div class="flex flex-col sm:flex-row gap-2 items-center">
+                            <select id="skill-team-select" class="p-2 border rounded-md w-full sm:w-1/3">
+                                <option value="all">کل سازمان</option>
+                                ${state.teams.map(t => `<option value="${t.firestoreId}">${t.name}</option>`).join('')}
+                            </select>
+                            <input type="text" id="skill-search-input" placeholder="مهارت مورد نظر را وارد کنید (مثلا: Python)" class="p-2 border rounded-md w-full sm:w-1/3">
+                            <button id="find-skill-gap-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md w-full sm:w-auto">جستجو</button>
+                        </div>
+                        <div id="skill-gap-results" class="mt-4 p-4 bg-gray-50 rounded-md min-h-[5rem]">
+                            <p class="text-sm text-gray-500">برای شروع، یک تیم و مهارت را انتخاب و روی دکمه جستجو کلیک کنید.</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            settings: () => `<h1 class="text-3xl font-bold text-gray-800 mb-6">تنظیمات</h1><div class="bg-white p-10 rounded-lg shadow-md text-center"><i data-lucide="database" class="mx-auto text-gray-500 w-16 h-16 mb-4"></i><h2 class="text-2xl font-semibold mb-2">مدیریت داده‌ها</h2><p class="text-gray-600 mb-4">می‌توانید تمام داده‌های موجود را پاک کرده و داده‌های نمونه را برای دمو بارگذاری کنید.</p><button id="seed-data-btn" class="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition">بارگذاری داده‌های نمونه</button></div>`
+        };
+
+        // --- NAVIGATION & ROUTING ---
+        const navigateTo = (pageName) => {
+            state.currentPage = pageName;
+            window.location.hash = pageName;
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('href') === `#${pageName}`);
+            });
+            renderPage(pageName);
+        };
+
+        const router = () => {
+            const hash = window.location.hash;
+            if (hash.startsWith('#survey-taker')) {
+                const urlParams = new URLSearchParams(hash.split('?')[1]);
+                const surveyId = urlParams.get('id');
+                renderSurveyTakerPage(surveyId);
+            } else {
+                const pageName = hash.substring(1) || 'dashboard';
+                navigateTo(pageName);
+            }
+        };
+
+        const renderPage = (pageName) => {
+            try {
+                document.getElementById('dashboard-container').style.display = 'flex';
+                document.getElementById('survey-taker-container').style.display = 'none';
+
+                if (!auth.currentUser || !pages[pageName]) {
+                    mainContent.innerHTML = `<p>در حال بارگذاری...</p>`;
+                    return;
+                }
+                mainContent.innerHTML = pages[pageName]();
+                
+                if (pageName === 'dashboard') { renderDashboardCharts(); setupDashboardListeners(); }
+                if (pageName === 'talent') { renderEmployeeTable(); setupTalentPageListeners(); }
+                if (pageName === 'organization') { setupOrganizationPageListeners(); }
+                if (pageName === 'surveys') { setupSurveysPageListeners(); }
+                if (pageName === 'analytics') { setupAnalyticsPage(); }
+                if (pageName === 'settings') {
+                    document.getElementById('seed-data-btn')?.addEventListener('click', () => {
+                        showConfirmationModal("بارگذاری داده‌های نمونه", "تمام اطلاعات فعلی حذف و داده‌های نمونه جایگزین خواهند شد. آیا مطمئن هستید؟",
+                            async () => {
+                                document.getElementById('loading-overlay').style.display = 'flex';
+                                await seedDatabaseWithDemoData();
+                                document.getElementById('loading-overlay').style.display = 'none';
+                            }, "تایید و بارگذاری");
+                    });
+                }
+                lucide.createIcons();
+            } catch (error) {
+                console.error("Failed to render page:", pageName, error);
+                mainContent.innerHTML = `<div class="text-red-600 text-center p-8"><h1>خطا در نمایش صفحه</h1><p>${error.message}</p></div>`;
+            }
+        };
+
+        // --- CHART RENDERING FUNCTIONS ---
+        const destroyCharts = () => { Object.values(charts).forEach(chart => chart?.destroy()); charts = {}; };
+        const renderDashboardCharts = () => {
+            destroyCharts();
+            const metrics = state.dashboardMetrics;
+            if (Object.keys(metrics).length === 0) return;
+            renderEngagementGauge('engagementGaugeDashboard', metrics.engagementScore);
+            const genderCtx = document.getElementById('genderCompositionChart')?.getContext('2d');
+            if (genderCtx && metrics.genderComposition) { charts.gender = new Chart(genderCtx, { type: 'doughnut', data: { labels: Object.keys(metrics.genderComposition), datasets: [{ data: Object.values(metrics.genderComposition), backgroundColor: ['rgb(59, 130, 246)', 'rgb(236, 72, 153)'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
+            const departmentCtx = document.getElementById('departmentDistributionChart')?.getContext('2d');
+            if (departmentCtx) { charts.department = new Chart(departmentCtx, { type: 'bar', data: { labels: Object.keys(metrics.departmentDistribution), datasets: [{ label: 'تعداد', data: Object.values(metrics.departmentDistribution), backgroundColor: ['#f59e0b', '#8b5cf6', '#10b981', '#f43f5e', '#3b82f6'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); }
+            const nineBoxCtx = document.getElementById('nineBoxChart')?.getContext('2d');
+            if (nineBoxCtx && metrics.nineBoxDistribution) { charts.nineBox = new Chart(nineBoxCtx, { type: 'bar', data: { labels: Object.keys(metrics.nineBoxDistribution), datasets: [{ label: 'تعداد', data: Object.values(metrics.nineBoxDistribution), backgroundColor: ['#22c55e', '#3b82f6', '#14b8a6', '#6b7280', '#facc15'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }); }
+        };
+        const renderEngagementGauge = (canvasId, score) => {
+            const gaugeCtx = document.getElementById(canvasId)?.getContext('2d');
+            if(gaugeCtx) { charts[canvasId] = new Chart(gaugeCtx, { type: 'doughnut', data: { datasets: [{ data: [score, 100 - score], backgroundColor: ['#22c55e', '#e5e7eb'], borderWidth: 0, circumference: 180, rotation: 270, }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, cutout: '70%' } }); }
+        };
+        const renderSkillRadarChart = (canvasId, skills) => {
+            const skillCtx = document.getElementById(canvasId)?.getContext('2d');
+            if (skillCtx) { if(charts[canvasId]) charts[canvasId].destroy(); charts[canvasId] = new Chart(skillCtx, { type: 'radar', data: { labels: Object.keys(skills), datasets: [{ label: 'سطح مهارت', data: Object.values(skills), fill: true, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgb(59, 130, 246)' }] }, options: { scales: { r: { suggestedMin: 0, suggestedMax: 5, ticks: { stepSize: 1 } } } } }); }
+        };
+
+        // --- PAGE-SPECIFIC LOGIC ---
+        const renderAllReminders = () => {
+            let html = '';
+            const expiring = state.employees.filter(emp => { if (!emp.contractEndDate) return false; const endDate = new Date(emp.contractEndDate); const now = new Date(); const threshold = new Date(); threshold.setDate(now.getDate() + 90); return endDate > now && endDate <= threshold; });
+            expiring.forEach(emp => { html += `<div class="flex items-center p-3 bg-yellow-50 rounded-md"><i data-lucide="file-clock" class="text-yellow-600 ml-3"></i><div><p class="font-medium">تمدید قرارداد: ${emp.name}</p><p class="text-sm text-gray-500">تاریخ اتمام: ${new Date(emp.contractEndDate).toLocaleDateString('fa-IR')}</p></div></div>`; });
+            state.reminders.forEach(reminder => { html += `<div class="flex items-center p-3 bg-indigo-50 rounded-md"><i data-lucide="calendar-plus" class="text-indigo-600 ml-3"></i><div><p class="font-medium">${reminder.text}</p><p class="text-sm text-gray-500">تاریخ: ${new Date(reminder.date).toLocaleDateString('fa-IR')}</p></div></div>`; });
+            return html || '<p class="text-sm text-gray-500 text-center">هیچ یادآوری فعالی وجود ندارد.</p>';
+        };
+        const setupDashboardListeners = () => {
+            document.getElementById('addReminderBtn')?.addEventListener('click', async () => {
+                const textInput = document.getElementById('reminderText'); const dateInput = document.getElementById('reminderDate');
+                if (textInput.value && dateInput.value) { try { await addDoc(collection(db, `artifacts/${appId}/public/data/reminders`), { text: textInput.value, date: dateInput.value }); textInput.value = ''; dateInput.value = ''; showToast("یادآور با موفقیت اضافه شد."); } catch (error) { console.error("Error adding reminder:", error); showToast("خطا در افزودن یادآور.", "error"); } }
+            });
+        };
+        const renderEmployeeTable = () => {
+            const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || ''; const departmentFilter = document.getElementById('departmentFilter')?.value || ''; const statusFilter = document.getElementById('statusFilter')?.value || '';
+            const filteredEmployees = state.employees.filter(emp => (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) && (!departmentFilter || emp.department === departmentFilter) && (!statusFilter || emp.status === statusFilter));
+            const tableBody = document.getElementById('employeeTableBody');
+            if (tableBody) { tableBody.innerHTML = filteredEmployees.map(emp => `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${emp.name}</td><td class="px-6 py-4">${emp.id}</td><td class="px-6 py-4">${emp.department}</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></td><td class="px-6 py-4 flex items-center gap-4"><button class="view-employee-profile-btn text-blue-600 hover:underline" data-employee-id="${emp.firestoreId}">پروفایل</button><button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button><button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button></td></tr>`).join(''); }
+        };
+        const setupTalentPageListeners = () => {
+            document.getElementById('searchInput')?.addEventListener('input', renderEmployeeTable); 
+            document.getElementById('departmentFilter')?.addEventListener('change', renderEmployeeTable); 
+            document.getElementById('statusFilter')?.addEventListener('change', renderEmployeeTable); 
+            document.getElementById('add-employee-btn')?.addEventListener('click', () => showEmployeeForm());
+            document.getElementById('add-employee-btn-empty')?.addEventListener('click', () => showEmployeeForm());
+        };
+        const setupOrganizationPageListeners = () => {
+            document.getElementById('add-team-btn')?.addEventListener('click', () => showTeamForm());
+            document.getElementById('add-team-btn-empty')?.addEventListener('click', () => showTeamForm());
+        };
+        const setupAnalyticsPage = () => {
+            const renderAttritionHotspots = () => {
+                const container = document.getElementById('attrition-hotspot-list');
+                if (!container) return;
+                const highRiskEmployees = state.employees.filter(emp => emp.attritionRisk && emp.attritionRisk.score > 50).sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
+                if (highRiskEmployees.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">هیچ کارمندی با ریسک خروج بالا شناسایی نشد.</p>'; return; }
+                container.innerHTML = highRiskEmployees.map(emp => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${emp.name}</span><span class="font-semibold text-red-600">${emp.attritionRisk.score}%</span></div><div class="progress-bar w-full bg-red-100"><div class="progress-bar-fill bg-red-500" style="width: ${emp.attritionRisk.score}%;"></div></div></div>`).join('');
+            };
+
+            const renderTeamHealth = () => {
+                const container = document.getElementById('team-health-dashboard');
+                if (!container) return;
+                if (state.teams.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">تیمی برای نمایش وجود ندارد.</p>'; return; }
+                container.innerHTML = state.teams.map(team => {
+                    const metrics = team.healthMetrics || {};
+                    const scores = Object.values(metrics);
+                    const avgHealth = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+                    return `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${team.name}</span><span class="font-semibold text-green-600">${Math.round(avgHealth)}%</span></div><div class="progress-bar w-full bg-green-100"><div class="progress-bar-fill bg-green-500" style="width: ${avgHealth}%;"></div></div></div>`;
+                }).join('');
+            };
+
+            const renderNineBoxGrid = () => {
+                const container = document.getElementById('nine-box-grid-container');
+                if (!container) return;
+                const gridMap = { 'معما': { row: 1, col: 1 }, 'عملکرد قابل اتکا': { row: 2, col: 1 }, 'مهره کلیدی': { row: 3, col: 1 }, 'پتانسیل بالا': { row: 2, col: 3 }, 'ستاره': { row: 3, col: 3 } };
+                const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
+                state.employees.forEach(emp => { const pos = gridMap[emp.nineBox]; if (pos) { grid[pos.row - 1][pos.col - 1].push(emp); } });
+                let html = '';
+                for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { const employeesInCell = grid[i][j]; html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[80px] p-1 flex flex-wrap items-start justify-center gap-1">${employeesInCell.map(emp => `<img src="${emp.avatar}" alt="${emp.name}" title="${emp.name}" class="w-8 h-8 rounded-full border-2 border-white shadow-sm">`).join('')}</div>`; } }
+                container.innerHTML = html;
+            };
+
+            const setupSkillGapFinder = () => {
+                const findBtn = document.getElementById('find-skill-gap-btn');
+                const teamSelect = document.getElementById('skill-team-select');
+                const skillInput = document.getElementById('skill-search-input');
+                const resultsContainer = document.getElementById('skill-gap-results');
+                if (!findBtn) return;
+                findBtn.addEventListener('click', () => {
+                    const teamId = teamSelect.value;
+                    const skillName = skillInput.value.trim().toLowerCase();
+                    if (!skillName) { resultsContainer.innerHTML = '<p class="text-sm text-red-500">لطفا نام یک مهارت را وارد کنید.</p>'; return; }
+                    let targetEmployees = state.employees;
+                    if (teamId !== 'all') { const team = state.teams.find(t => t.firestoreId === teamId); if (team) { targetEmployees = state.employees.filter(emp => team.memberIds.includes(emp.id)); } }
+                    const skillAnalysis = { expert: [], intermediate: [], beginner: [], none: [] };
+                    targetEmployees.forEach(emp => {
+                        const skills = emp.skills || {};
+                        const skillKeys = Object.keys(skills).map(k => k.toLowerCase());
+                        const skillIndex = skillKeys.findIndex(k => k.includes(skillName));
+                        if (skillIndex > -1) {
+                            const originalKey = Object.keys(skills)[skillIndex];
+                            const level = skills[originalKey];
+                            if (level >= 4) skillAnalysis.expert.push(emp);
+                            else if (level >= 2) skillAnalysis.intermediate.push(emp);
+                            else skillAnalysis.beginner.push(emp);
+                        } else { skillAnalysis.none.push(emp); }
+                    });
+                    resultsContainer.innerHTML = `<h4 class="font-bold mb-2">نتایج برای مهارت: <span class="text-blue-600">${skillInput.value}</span></h4><div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"><div><p class="font-semibold text-lg">${skillAnalysis.expert.length}</p><p class="text-xs text-gray-500">متخصص (4-5)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.intermediate.length}</p><p class="text-xs text-gray-500">متوسط (2-3)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.beginner.length}</p><p class="text-xs text-gray-500">مبتدی (1)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.none.length}</p><p class="text-xs text-gray-500">فاقد مهارت</p></div></div><p class="text-xs text-gray-600 mt-4"><strong>متخصصین:</strong> ${skillAnalysis.expert.map(e => e.name).join(', ') || 'هیچ'}</p>`;
+                });
+            };
+
+            renderAttritionHotspots();
+            renderTeamHealth();
+            renderNineBoxGrid();
+            setupSkillGapFinder();
+        };
+
+        // --- MODAL & FORM LOGIC ---
+        const mainModal = document.getElementById('mainModal'); const modalTitle = document.getElementById('modalTitle'); const modalContent = document.getElementById('modalContent'); const mainModalContainer = mainModal.querySelector('div');
+        
+        const generateSmartAnalysis = (emp) => {
+            const analysis = {};
+            if (emp.performanceHistory && emp.performanceHistory.length > 1) {
+                const last = emp.performanceHistory[emp.performanceHistory.length - 1];
+                const first = emp.performanceHistory[0];
+                if (last > first + 0.2) { analysis.performance = { text: 'روند عملکرد کاملاً صعودی است.', icon: 'trending-up', color: 'text-green-600' }; } 
+                else if (first > last + 0.2) { analysis.performance = { text: 'روند عملکرد نیاز به بررسی دارد.', icon: 'trending-down', color: 'text-yellow-600' }; } 
+                else { analysis.performance = { text: 'عملکرد پایدار و قابل اتکایی دارد.', icon: 'minus', color: 'text-gray-600' }; }
+            }
+            if (emp.attritionRisk?.score > 70) { analysis.risk = { text: 'ریسک خروج بالا. پیشنهاد می‌شود جلسه هم‌اندیشی برگزار شود.', icon: 'shield-alert', color: 'text-red-600' }; } 
+            else if (emp.attritionRisk?.score > 40) { analysis.risk = { text: 'ریسک خروج متوسط. حفظ انگیزه و شفافیت در مسیر رشد توصیه می‌شود.', icon: 'shield-check', color: 'text-yellow-600' }; }
+            if (emp.nineBox === 'ستاره' || emp.nineBox === 'پتانسیل بالا') { analysis.potential = { text: 'پتانسیل بالایی برای رشد و پذیرش مسئولیت‌های کلیدی دارد.', icon: 'sparkles', color: 'text-blue-600' }; } 
+            else if (emp.nineBox === 'مهره کلیدی') { analysis.potential = { text: 'یک مهره کلیدی با عملکرد بالا در نقش فعلی است.', icon: 'key-round', color: 'text-teal-600' }; }
+            const topSkill = Object.entries(emp.skills || {}).sort((a, b) => b[1] - a[1])[0];
+            const topCompetency = Object.entries(emp.competencies || {}).sort((a, b) => b[1] - a[1])[0];
+            if (topSkill || topCompetency) { analysis.strength = { text: `نقاط قوت کلیدی: <strong>${topSkill ? topSkill[0] : ''}</strong> و <strong>${topCompetency ? topCompetency[0] : ''}</strong>.`, icon: 'star', color: 'text-amber-500' }; }
+            return analysis;
+        };
+
+        const generateTeamSmartAnalysis = (team) => {
+            const analysis = {};
+            const members = state.employees.filter(e => team.memberIds?.includes(e.id));
+            if (members.length === 0) return analysis;
+            const avgOkrProgress = (team.okrs || []).reduce((sum, okr) => sum + okr.progress, 0) / (team.okrs?.length || 1);
+            if (avgOkrProgress > 70) { analysis.okr = { text: 'تیم در مسیر دستیابی به اهداف خود قرار دارد.', icon: 'trending-up', color: 'text-green-600' }; } 
+            else if (avgOkrProgress < 40) { analysis.okr = { text: 'پیشرفت اهداف تیم نیاز به بازبینی و حمایت دارد.', icon: 'trending-down', color: 'text-yellow-600' }; }
+            const highRiskMembers = members.filter(m => m.attritionRisk?.score > 70).length;
+            if (highRiskMembers > 0) { analysis.risk = { text: `${highRiskMembers} نفر از اعضا ریسک خروج بالا دارند.`, icon: 'shield-alert', color: 'text-red-600' }; }
+            return analysis;
+        };
+
+        const showEmployeeForm = (employeeId = null) => {
+            const isEditing = employeeId !== null; const emp = isEditing ? state.employees.find(e => e.firestoreId === employeeId) : {};
+            modalTitle.innerText = isEditing ? 'ویرایش اطلاعات کارمند' : 'افزودن کارمند جدید';
+            modalContent.innerHTML = `<form id="employee-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label for="name" class="block text-sm font-medium text-gray-700">نام کامل</label><input type="text" id="name" value="${emp.name || ''}" class="mt-1 block w-full p-2 border rounded-md" required></div><div><label for="id" class="block text-sm font-medium text-gray-700">کد پرسنلی</label><input type="text" id="id" value="${emp.id || ''}" class="mt-1 block w-full p-2 border rounded-md" ${isEditing ? 'readonly' : ''} required></div><div><label for="department" class="block text-sm font-medium text-gray-700">دپارتمان</label><input type="text" id="department" value="${emp.department || ''}" class="mt-1 block w-full p-2 border rounded-md" required></div><div><label for="status" class="block text-sm font-medium text-gray-700">وضعیت</label><select id="status" class="mt-1 block w-full p-2 border rounded-md"><option value="فعال" ${emp.status === 'فعال' ? 'selected' : ''}>فعال</option><option value="غیرفعال" ${emp.status === 'غیرفعال' ? 'selected' : ''}>غیرفعال</option></select></div></div><div class="pt-4 flex justify-end"><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            openModal(mainModal, mainModalContainer);
+            document.getElementById('employee-form').addEventListener('submit', async (e) => {
+                e.preventDefault(); const name = document.getElementById('name').value; const id = document.getElementById('id').value;
+                const formData = { name, id, department: document.getElementById('department').value, status: document.getElementById('status').value, avatar: emp.avatar || `https://placehold.co/100x100/E2E8F0/4A5568?text=${name.substring(0,2)}`, gender: emp.gender || 'نامشخص', performance: emp.performance || 3, skills: emp.skills || {}, performanceHistory: emp.performanceHistory || [3], competencies: emp.competencies || {}, nineBox: emp.nineBox || 'عملکرد قابل اتکا', attritionRisk: emp.attritionRisk || {score: 20, impact: 'پایین'} };
+                try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, isEditing ? emp.firestoreId : id); await setDoc(docRef, formData, { merge: isEditing }); closeModal(mainModal, mainModalContainer); showToast(isEditing ? "کارمند با موفقیت ویرایش شد." : "کارمند با موفقیت اضافه شد."); } catch (error) { console.error("Error saving employee:", error); showToast("خطا در ذخیره اطلاعات.", "error"); }
+            });
+        };
+        const viewEmployeeProfile = (employeeId) => {
+            const emp = state.employees.find(e => e.firestoreId === employeeId); if (!emp) return;
+            const analysis = generateSmartAnalysis(emp);
+            const team = state.teams.find(t => t.memberIds?.includes(emp.id));
+            const manager = team ? state.employees.find(e => e.id === team.leaderId) : null;
+
+            modalTitle.innerText = 'پروفایل ۳۶۰ درجه: ' + emp.name;
+            modalContent.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Column: Basic Info -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
+                            <img src="${emp.avatar}" alt="${emp.name}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md">
+                            <button id="change-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>
+                            <h2 class="text-2xl font-bold text-gray-800">${emp.name}</h2>
+                            <p class="text-gray-500">${emp.jobTitle || emp.department}</p>
+                            <span class="mt-2 inline-block px-3 py-1 text-sm font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span>
+                        </div>
+                        <div class="card p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
+                            <div class="text-sm space-y-3">${Object.values(analysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('')}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: Tabbed Content -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-lg shadow-md">
+                            <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px"><button data-tab="overview" class="profile-tab active">نمای کلی</button><button data-tab="performance" class="profile-tab">عملکرد</button><button data-tab="contracts" class="profile-tab">قراردادها</button><button data-tab="personal" class="profile-tab">اطلاعات پرسنلی</button></nav></div>
+                            <div class="p-4">
+                                <!-- Overview Tab -->
+                                <div id="tab-overview" class="profile-tab-content active"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700 flex items-center"><i data-lucide="target" class="ml-2 w-5 h-5 text-blue-500"></i>اهداف و نتایج کلیدی (OKRs)</h4><button id="edit-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button></div><div class="space-y-3">${(emp.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('')} ${!(emp.okrs && emp.okrs.length > 0) ? '<p class="text-sm text-gray-500">هدفی ثبت نشده است.</p>' : ''}</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">ماتریس مهارت‌های فنی</h4><button id="edit-skills-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button></div><canvas id="skillRadarChart"></canvas></div><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">شایستگی‌های اصلی</h4><div id="competencyBarsContainer" class="space-y-4"></div></div></div></div></div>
+                                <!-- Performance Tab -->
+                                <div id="tab-performance" class="profile-tab-content"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">تاریخچه ارزیابی عملکرد</h4><ul class="list-disc list-inside text-sm text-gray-600 space-y-1">${(emp.performanceHistory || []).map((score, i) => `<li>دوره ارزیابی ${i+1}: <span class="font-bold">${score}/5</span></li>`).join('')}</ul></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">سابقه انضباطی (تذکر/تشویق)</h4><button id="add-disciplinary-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button></div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map(item => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'}"><p class="font-semibold">${item.type} - ${new Date(item.date).toLocaleDateString('fa-IR')}</p><p class="text-sm">${item.reason}</p>${item.fileName ? `<a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${item.fileName}</a>` : ''}</div>`).join('')}</div></div></div></div>
+                                <!-- Contracts Tab -->
+                                <div id="tab-contracts" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">تاریخچه تمدید قرارداد</h4><button id="add-contract-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button></div><div id="contracts-list" class="space-y-3">${(emp.contractHistory || []).map(c => `<div class="p-3 rounded-md bg-gray-100 border"><div class="flex justify-between items-center font-semibold"><p>قرارداد ${new Date(c.startDate).toLocaleDateString('fa-IR')}</p><a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${c.fileName}</a></div><div class="grid grid-cols-2 gap-2 text-xs mt-2 border-t pt-2"><p>حقوق ناخالص: <span class="font-mono">${(c.grossSalary || 0).toLocaleString('fa-IR')}</span></p><p>حقوق خالص: <span class="font-mono">${(c.netSalary || 0).toLocaleString('fa-IR')}</span></p><p>مبلغ سفته: <span class="font-mono">${(c.promissoryNote || 0).toLocaleString('fa-IR')}</span></p><p>مدت: <span class="font-mono">${new Date(c.startDate).toLocaleDateString('fa-IR')} تا ${new Date(c.endDate).toLocaleDateString('fa-IR')}</span></p></div></div>`).join('')}</div></div></div>
+                                <!-- Personal Info Tab -->
+                                <div id="tab-personal" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اطلاعات پرسنلی</h4><button id="edit-personal-info-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">کد ملی</strong> <span>${emp.personalInfo?.nationalId || '-'}</span></div><div><strong class="text-gray-500 block">تاریخ تولد</strong> <span>${emp.personalInfo?.birthDate ? new Date(emp.personalInfo.birthDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">شماره موبایل</strong> <span class="font-mono">${emp.personalInfo?.phone || '-'}</span></div><div><strong class="text-gray-500 block">ایمیل</strong> <span>${emp.personalInfo?.email || '-'}</span></div><div class="sm:col-span-2"><strong class="text-gray-500 block">آدرس</strong> <span>${emp.personalInfo?.address || '-'}</span></div><div><strong class="text-gray-500 block">کدپستی</strong> <span class="font-mono">${emp.personalInfo?.postalCode || '-'}</span></div><div><strong class="text-gray-500 block">وضعیت نظام وظیفه</strong> <span>${emp.personalInfo?.militaryStatus || '-'}</span></div><div><strong class="text-gray-500 block">تیپ شخصیتی</strong> <span>${emp.personalInfo?.personalityType || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-gray-700 mb-3">اطلاعات سازمانی</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">تاریخ استخدام</strong> <span>${emp.startDate ? new Date(emp.startDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">تاریخ اولین قرارداد</strong> <span>${emp.personalInfo?.firstContractDate ? new Date(emp.personalInfo.firstContractDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">تیم</strong> <span>${team?.name || '-'}</span></div><div><strong class="text-gray-500 block">مدیر مستقیم</strong> <span>${manager?.name || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-gray-700 mb-3">اطلاعات تماس ضروری</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">نام</strong> <span>${emp.personalInfo?.emergencyContactName || '-'}</span></div><div><strong class="text-gray-500 block">شماره تماس</strong> <span class="font-mono">${emp.personalInfo?.emergencyContactPhone || '-'}</span></div></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            openModal(mainModal, mainModalContainer); 
+            setupProfileModalListeners(emp);
+        };
+        const viewTeamProfile = (teamId) => {
+            const team = state.teams.find(t => t.firestoreId === teamId); if (!team) return;
+            const leader = state.employees.find(e => e.id === team.leaderId);
+            const members = state.employees.filter(e => team.memberIds?.includes(e.id));
+            const analysis = generateTeamSmartAnalysis(team);
+            
+            modalTitle.innerText = 'پروفایل تیم: ' + team.name;
+            modalContent.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Column -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="card p-4 bg-gray-50 rounded-lg text-center relative group"><img src="${team.avatar}" alt="${team.name}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md"><h2 class="text-2xl font-bold text-gray-800">${team.name}</h2><p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p></div>
+                        <div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4><div class="text-sm space-y-3">${Object.keys(analysis).length > 0 ? Object.values(analysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><p class="${item.color}">${item.text}</p></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div></div>
+                    </div>
+                    <!-- Right Column -->
+                    <div class="lg:col-span-2 space-y-6">
+                         <div class="bg-white rounded-lg shadow-md">
+                            <div class="border-b border-gray-200"><nav class="profile-tabs flex -mb-px"><button data-tab="team-overview" class="profile-tab active">نمای کلی</button><button data-tab="team-health" class="profile-tab">سلامت و مشارکت</button><button data-tab="team-talent" class="profile-tab">ماتریس استعداد</button></nav></div>
+                            <div class="p-4">
+                                <!-- Team Overview Tab -->
+                                <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><img src="${m.avatar}" class="w-12 h-12 rounded-full mx-auto"><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4><button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button></div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
+                                 <!-- Team Health Tab -->
+                                <div id="tab-team-health" class="profile-tab-content"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">آخرین بازخوردهای نظرسنجی پالس</h4><div class="space-y-2 text-sm text-gray-700">${state.surveyResponses.filter(r => r.surveyId === 'pulse' && team.memberIds.includes(r.employeeId)).slice(-3).map(r => `<p class="p-2 bg-blue-50 rounded-md">"${r.answers.q3}"</p>`).join('') || '<p class="text-sm text-gray-500">بازخوردی ثبت نشده است.</p>'}</div></div></div></div>
+                                <!-- Team Talent Tab -->
+                                <div id="tab-team-talent" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4><div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            openModal(mainModal, mainModalContainer);
+            setupTeamProfileModalListeners(team);
+        };
+
+        const generateTeamNineBoxGrid = (members) => {
+            const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
+            const gridMap = {'معما': {r:0,c:0}, 'عملکرد قابل اتکا':{r:1,c:0}, 'مهره کلیدی':{r:2,c:0}, 'پتانسیل بالا':{r:1,c:2}, 'ستاره':{r:2,c:2}};
+            members.forEach(emp => { const pos = gridMap[emp.nineBox]; if(pos) grid[pos.r][pos.c].push(emp); });
+            let html = '';
+            for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[60px] p-1 flex flex-wrap items-center justify-center gap-1">${grid[i][j].map(e => `<img src="${e.avatar}" title="${e.name}" class="w-8 h-8 rounded-full border-2 border-white">`).join('')}</div>`; } }
+            return html;
+        };
+
+        const setupTeamProfileModalListeners = (team) => {
+             const tabs = document.querySelectorAll('.profile-tab');
+             const tabContents = document.querySelectorAll('.profile-tab-content');
+             tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
+            document.getElementById('edit-team-okrs-btn')?.addEventListener('click', () => showEditTeamOkrsForm(team));
+            setTimeout(() => { lucide.createIcons(); }, 100);
+        };
+
+        const openModal = (modal, container) => { modal.classList.remove('hidden'); modal.classList.add('flex'); setTimeout(() => container.classList.remove('scale-95', 'opacity-0'), 50); };
+        const closeModal = (modal, container) => { container.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); destroyCharts(); }, 300); };
+        const confirmModal = document.getElementById('confirmModal'); const confirmModalContainer = confirmModal.querySelector('div'); let confirmCallback = () => {};
+        const showConfirmationModal = (title, message, onConfirm, acceptText = "تایید") => { document.getElementById('confirmTitle').innerText = title; document.getElementById('confirmMessage').innerText = message; document.getElementById('confirmAccept').innerText = acceptText; confirmCallback = onConfirm; openModal(confirmModal, confirmModalContainer); };
+        document.getElementById('confirmCancel').addEventListener('click', () => closeModal(confirmModal, confirmModalContainer)); document.getElementById('confirmAccept').addEventListener('click', () => { confirmCallback(); closeModal(confirmModal, confirmModalContainer); });
+        
+        const showTeamForm = (teamId = null) => {
+            const isEditing = teamId !== null;
+            const team = isEditing ? state.teams.find(t => t.firestoreId === teamId) : {};
+            const employeeOptions = state.employees.map(emp => `<option value="${emp.id}" ${isEditing && team.leaderId === emp.id ? 'selected' : ''}>${emp.name}</option>`).join('');
+            const memberCheckboxes = state.employees.map(emp => `<div class="flex items-center"><input type="checkbox" id="member-${emp.id}" value="${emp.id}" class="team-member-checkbox" ${isEditing && team.memberIds?.includes(emp.id) ? 'checked' : ''}><label for="member-${emp.id}" class="mr-2">${emp.name}</label></div>`).join('');
+            modalTitle.innerText = isEditing ? 'ویرایش تیم' : 'افزودن تیم جدید';
+            modalContent.innerHTML = `<form id="team-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label for="team-name" class="block text-sm font-medium text-gray-700">نام تیم</label><input type="text" id="team-name" value="${team.name || ''}" class="mt-1 block w-full p-2 border rounded-md" required></div><div><label for="team-id" class="block text-sm font-medium text-gray-700">شناسه تیم (مثلا T-03)</label><input type="text" id="team-id" value="${team.id || ''}" class="mt-1 block w-full p-2 border rounded-md" ${isEditing ? 'readonly' : ''} required></div><div class="md:col-span-2"><label for="team-mission" class="block text-sm font-medium text-gray-700">ماموریت تیم</label><textarea id="team-mission" rows="3" class="mt-1 block w-full p-2 border rounded-md">${team.mission || ''}</textarea></div><div><label for="team-leader" class="block text-sm font-medium text-gray-700">رهبر تیم</label><select id="team-leader" class="mt-1 block w-full p-2 border rounded-md" required><option value="">انتخاب کنید...</option>${employeeOptions}</select></div><div><label class="block text-sm font-medium text-gray-700">اعضای تیم</label><div id="team-members" class="mt-1 grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border rounded-md">${memberCheckboxes}</div></div></div><div class="pt-4 flex justify-end"><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            openModal(mainModal, mainModalContainer);
+            document.getElementById('team-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const selectedMembers = Array.from(document.querySelectorAll('.team-member-checkbox:checked')).map(cb => cb.value);
+                const formData = { name: document.getElementById('team-name').value, id: document.getElementById('team-id').value, mission: document.getElementById('team-mission').value, leaderId: document.getElementById('team-leader').value, memberIds: selectedMembers, avatar: team.avatar || `https://placehold.co/200x200/dbeafe/4338ca?text=${document.getElementById('team-name').value.substring(0,2)}`, okrs: team.okrs || [], healthMetrics: team.healthMetrics || {} };
+                try { const docRef = doc(db, `artifacts/${appId}/public/data/teams`, isEditing ? team.firestoreId : formData.id); await setDoc(docRef, formData, { merge: isEditing }); closeModal(mainModal, mainModalContainer); showToast(isEditing ? "تیم با موفقیت ویرایش شد." : "تیم با موفقیت اضافه شد."); } catch (error) { console.error("Error saving team:", error); showToast("خطا در ذخیره اطلاعات تیم.", "error"); }
+            });
+        };
+
+        // --- EVENT LISTENERS & INITIALIZATION ---
+        const setupEventListeners = () => {
+            document.getElementById('closeModal').addEventListener('click', () => closeModal(mainModal, mainModalContainer)); mainModal.addEventListener('click', (e) => { if (e.target === mainModal) closeModal(mainModal, mainModalContainer); });
+            mainContent.addEventListener('click', async (e) => {
+                const viewEmpBtn = e.target.closest('.view-employee-profile-btn'); const editEmpBtn = e.target.closest('.edit-employee-btn'); const deleteEmpBtn = e.target.closest('.delete-employee-btn'); const viewTeamBtn = e.target.closest('.view-team-profile-btn');
+                if (viewEmpBtn) viewEmployeeProfile(viewEmpBtn.dataset.employeeId);
+                else if (editEmpBtn) showEmployeeForm(editEmpBtn.dataset.employeeId);
+                else if (viewTeamBtn) viewTeamProfile(viewTeamBtn.dataset.teamId);
+                else if (deleteEmpBtn) { showConfirmationModal("حذف کارمند", "آیا از حذف این کارمند مطمئن هستید؟", async () => { try { await deleteDoc(doc(db, `artifacts/${appId}/public/data/employees`, deleteEmpBtn.dataset.employeeId)); showToast("کارمند با موفقیت حذف شد."); } catch (error) { console.error("Error deleting employee:", error); showToast("خطا در حذف کارمند.", "error"); } }); }
+            });
+            const menuBtn = document.getElementById('menu-btn'); const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('sidebar-overlay'); const toggleMenu = () => { sidebar.classList.toggle('translate-x-full'); overlay.classList.toggle('hidden'); };
+            menuBtn.addEventListener('click', toggleMenu); overlay.addEventListener('click', toggleMenu);
+            const handleNavClick = (e) => { const link = e.target.closest('a'); if (link && (link.classList.contains('sidebar-item') || link.classList.contains('sidebar-logo'))) { e.preventDefault(); const pageName = link.getAttribute('href').substring(1); navigateTo(pageName); if (window.innerWidth < 768) toggleMenu(); } };
+            document.getElementById('sidebar').addEventListener('click', handleNavClick);
+            document.querySelector('header .sidebar-logo').addEventListener('click', handleNavClick);
+            window.addEventListener('hashchange', router);
+        };
+
+        const setupProfileModalListeners = (emp) => {
+            const tabs = document.querySelectorAll('.profile-tab');
+            const tabContents = document.querySelectorAll('.profile-tab-content');
+            tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
+            setTimeout(() => {
+                renderSkillRadarChart('skillRadarChart', emp.skills || {});
+                const competencyContainer = document.getElementById('competencyBarsContainer');
+                if (competencyContainer && emp.competencies) { competencyContainer.innerHTML = Object.entries(emp.competencies).map(([name, score]) => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${name}</span><span class="font-medium text-blue-600">${score}/5</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${score * 20}%;"></div></div></div>`).join(''); }
+                lucide.createIcons();
+            }, 100);
+            document.getElementById('change-avatar-btn')?.addEventListener('click', () => { const newAvatarUrl = prompt("لطفا آدرس URL عکس جدید را وارد کنید:", emp.avatar); if (newAvatarUrl) { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); updateDoc(docRef, { avatar: newAvatarUrl }); } });
+            document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
+            document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
+            document.getElementById('edit-personal-info-btn')?.addEventListener('click', () => showEditPersonalInfoForm(emp));
+            document.getElementById('add-disciplinary-btn')?.addEventListener('click', () => showDisciplinaryForm(emp));
+            document.getElementById('add-contract-btn')?.addEventListener('click', () => showContractForm(emp));
+        };
+        
+        // --- EDIT FORM FUNCTIONS ---
+        const showEditOkrsForm = (emp) => {
+            modalTitle.innerText = `ویرایش OKR برای ${emp.name}`;
+            const okrsHtml = (emp.okrs || []).map((okr) => `<div class="okr-item grid grid-cols-12 gap-2 items-center"><input type="text" value="${okr.title}" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" value="${okr.progress}" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`).join('');
+            modalContent.innerHTML = `<form id="edit-okrs-form"><div id="okrs-container" class="space-y-2">${okrsHtml}</div><button type="button" id="add-okr-btn" class="mt-4 text-sm bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300">افزودن هدف جدید</button><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-okr" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            lucide.createIcons();
+            document.getElementById('back-to-profile-okr').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+            const okrsContainer = document.getElementById('okrs-container');
+            document.getElementById('add-okr-btn').addEventListener('click', () => { const newItem = document.createElement('div'); newItem.className = 'okr-item grid grid-cols-12 gap-2 items-center'; newItem.innerHTML = `<input type="text" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100" value="0"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`; okrsContainer.appendChild(newItem); lucide.createIcons(); });
+            okrsContainer.addEventListener('click', (e) => { if(e.target.closest('.remove-okr-btn')) { e.target.closest('.okr-item').remove(); } });
+            document.getElementById('edit-okrs-form').addEventListener('submit', async (e) => { e.preventDefault(); const newOkrs = []; document.querySelectorAll('.okr-item').forEach(item => { const title = item.querySelector('.okr-title').value; const progress = parseInt(item.querySelector('.okr-progress').value) || 0; if (title) { newOkrs.push({ title, progress }); } }); try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { okrs: newOkrs }); showToast("اهداف با موفقیت به‌روزرسانی شدند."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error updating OKRs:", error); showToast("خطا در به‌روزرسانی اهداف.", "error"); } });
+        };
+
+        const showEditSkillsForm = (emp) => {
+            modalTitle.innerText = `ویرایش مهارت‌ها برای ${emp.name}`;
+            const skillsHtml = Object.entries(emp.skills || {}).map(([skill, level]) => `<div class="skill-item grid grid-cols-12 gap-2 items-center"><input type="text" value="${skill}" class="col-span-8 p-2 border rounded-md skill-name" placeholder="نام مهارت"><input type="number" value="${level}" class="col-span-3 p-2 border rounded-md skill-level" placeholder="سطح (۱-۵)" min="1" max="5"><button type="button" class="col-span-1 remove-skill-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`).join('');
+            modalContent.innerHTML = `<form id="edit-skills-form"><div id="skills-container" class="space-y-2">${skillsHtml}</div><button type="button" id="add-skill-btn" class="mt-4 text-sm bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300">افزودن مهارت جدید</button><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-skill" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            lucide.createIcons();
+            document.getElementById('back-to-profile-skill').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+            const skillsContainer = document.getElementById('skills-container');
+            document.getElementById('add-skill-btn').addEventListener('click', () => { const newItem = document.createElement('div'); newItem.className = 'skill-item grid grid-cols-12 gap-2 items-center'; newItem.innerHTML = `<input type="text" class="col-span-8 p-2 border rounded-md skill-name" placeholder="نام مهارت"><input type="number" class="col-span-3 p-2 border rounded-md skill-level" placeholder="سطح (۱-۵)" min="1" max="5" value="1"><button type="button" class="col-span-1 remove-skill-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`; skillsContainer.appendChild(newItem); lucide.createIcons(); });
+            skillsContainer.addEventListener('click', (e) => { if(e.target.closest('.remove-skill-btn')) { e.target.closest('.skill-item').remove(); } });
+            document.getElementById('edit-skills-form').addEventListener('submit', async (e) => { e.preventDefault(); const newSkills = {}; document.querySelectorAll('.skill-item').forEach(item => { const name = item.querySelector('.skill-name').value; const level = parseInt(item.querySelector('.skill-level').value) || 0; if (name) { newSkills[name] = level; } }); try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { skills: newSkills }); showToast("مهارت‌ها با موفقیت به‌روزرسانی شدند."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error updating skills:", error); showToast("خطا در به‌روزرسانی مهارت‌ها.", "error"); } });
+        };
+
+        const showEditPersonalInfoForm = (emp) => {
+            modalTitle.innerText = `ویرایش اطلاعات پرسنلی برای ${emp.name}`;
+            const info = emp.personalInfo || {};
+            modalContent.innerHTML = `<form id="edit-personal-info-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"><div><label class="block font-medium">کد ملی</label><input type="text" id="nationalId" value="${info.nationalId || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">تاریخ تولد</label><input type="date" id="birthDate" value="${info.birthDate || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">شماره موبایل</label><input type="tel" id="phone" value="${info.phone || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">ایمیل</label><input type="email" id="email" value="${info.email || ''}" class="w-full p-2 border rounded-md"></div><div class="md:col-span-2"><label class="block font-medium">آدرس</label><input type="text" id="address" value="${info.address || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">وضعیت نظام وظیفه</label><input type="text" id="militaryStatus" value="${info.militaryStatus || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">تیپ شخصیتی</label><input type="text" id="personalityType" value="${info.personalityType || ''}" class="w-full p-2 border rounded-md"></div><hr class="md:col-span-2 my-2"><div><label class="block font-medium">نام مخاطب اضطراری</label><input type="text" id="emergencyContactName" value="${info.emergencyContactName || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">شماره مخاطب اضطراری</label><input type="tel" id="emergencyContactPhone" value="${info.emergencyContactPhone || ''}" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-personal" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            document.getElementById('back-to-profile-personal').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+            document.getElementById('edit-personal-info-form').addEventListener('submit', async (e) => { e.preventDefault(); const updatedInfo = { nationalId: document.getElementById('nationalId').value, birthDate: document.getElementById('birthDate').value, phone: document.getElementById('phone').value, email: document.getElementById('email').value, address: document.getElementById('address').value, militaryStatus: document.getElementById('militaryStatus').value, personalityType: document.getElementById('personalityType').value, emergencyContactName: document.getElementById('emergencyContactName').value, emergencyContactPhone: document.getElementById('emergencyContactPhone').value, }; try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { personalInfo: updatedInfo }); showToast("اطلاعات پرسنلی به‌روزرسانی شد."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error updating personal info:", error); showToast("خطا در به‌روزرسانی اطلاعات.", "error"); } });
+        };
+        
+        const showDisciplinaryForm = (emp) => {
+            modalTitle.innerText = `ثبت مورد انضباطی برای ${emp.name}`;
+            modalContent.innerHTML = `<form id="disciplinary-form" class="space-y-4"><div><label class="block font-medium">نوع</label><select id="disciplinary-type" class="w-full p-2 border rounded-md"><option value="تشویق">تشویق</option><option value="تذکر">تذکر</option></select></div><div><label class="block font-medium">تاریخ</label><input type="date" id="disciplinary-date" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">دلیل</label><textarea id="disciplinary-reason" rows="3" class="w-full p-2 border rounded-md" required></textarea></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-disciplinary" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ثبت</button></div></form>`;
+            document.getElementById('back-to-profile-disciplinary').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+            document.getElementById('disciplinary-form').addEventListener('submit', async (e) => { e.preventDefault(); const newRecord = { type: document.getElementById('disciplinary-type').value, date: document.getElementById('disciplinary-date').value, reason: document.getElementById('disciplinary-reason').value, }; const updatedHistory = [...(emp.disciplinaryHistory || []), newRecord]; try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { disciplinaryHistory: updatedHistory }); showToast("مورد انضباطی با موفقیت ثبت شد."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error adding disciplinary record:", error); showToast("خطا در ثبت مورد انضباطی.", "error"); } });
+        };
+
+        const showContractForm = (emp) => {
+             modalTitle.innerText = `ثبت قرارداد جدید برای ${emp.name}`;
+             modalContent.innerHTML = `<form id="contract-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block font-medium">تاریخ شروع</label><input type="date" id="contract-start" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">تاریخ پایان</label><input type="date" id="contract-end" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">حقوق ناخالص (ریال)</label><input type="number" id="contract-gross" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">حقوق خالص (ریال)</label><input type="number" id="contract-net" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">مبلغ سفته (ریال)</label><input type="number" id="contract-promissory" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">فایل قرارداد (نام فایل)</label><input type="text" id="contract-file" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-contract" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ثبت</button></div></form>`;
+            document.getElementById('back-to-profile-contract').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+            document.getElementById('contract-form').addEventListener('submit', async (e) => { e.preventDefault(); const newContract = { startDate: document.getElementById('contract-start').value, endDate: document.getElementById('contract-end').value, grossSalary: Number(document.getElementById('contract-gross').value), netSalary: Number(document.getElementById('contract-net').value), promissoryNote: Number(document.getElementById('contract-promissory').value), fileName: document.getElementById('contract-file').value, }; const updatedHistory = [...(emp.contractHistory || []), newContract]; try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { contractHistory: updatedHistory }); showToast("قرارداد جدید با موفقیت ثبت شد."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error adding contract record:", error); showToast("خطا در ثبت قرارداد.", "error"); } });
+        };
+
+        const showEditTeamOkrsForm = (team) => {
+            modalTitle.innerText = `ویرایش OKR برای تیم ${team.name}`;
+            const okrsHtml = (team.okrs || []).map((okr) => `<div class="okr-item grid grid-cols-12 gap-2 items-center"><input type="text" value="${okr.title}" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" value="${okr.progress}" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div>`).join('');
+            modalContent.innerHTML = `<form id="edit-team-okrs-form"><div id="okrs-container" class="space-y-2">${okrsHtml}</div><button type="button" id="add-okr-btn" class="mt-4 text-sm bg-gray-200 py-2 px-4 rounded-md hover:bg-gray-300">افزودن هدف جدید</button><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-team-profile" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            lucide.createIcons();
+            document.getElementById('back-to-team-profile').addEventListener('click', () => viewTeamProfile(team.firestoreId));
+            const okrsContainer = document.getElementById('okrs-container');
+            document.getElementById('add-okr-btn').addEventListener('click', () => { const newItem = document.createElement('div'); newItem.className = 'okr-item grid grid-cols-12 gap-2 items-center'; newItem.innerHTML = `<input type="text" class="col-span-8 p-2 border rounded-md okr-title" placeholder="عنوان هدف"><input type="number" class="col-span-3 p-2 border rounded-md okr-progress" placeholder="پیشرفت %" min="0" max="100" value="0"><button type="button" class="col-span-1 remove-okr-btn text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`; okrsContainer.appendChild(newItem); lucide.createIcons(); });
+            okrsContainer.addEventListener('click', (e) => { if(e.target.closest('.remove-okr-btn')) { e.target.closest('.okr-item').remove(); } });
+            document.getElementById('edit-team-okrs-form').addEventListener('submit', async (e) => { e.preventDefault(); const newOkrs = []; document.querySelectorAll('.okr-item').forEach(item => { const title = item.querySelector('.okr-title').value; const progress = parseInt(item.querySelector('.okr-progress').value) || 0; if (title) { newOkrs.push({ title, progress }); } }); try { const docRef = doc(db, `artifacts/${appId}/public/data/teams`, team.firestoreId); await updateDoc(docRef, { okrs: newOkrs }); showToast("اهداف تیم به‌روزرسانی شدند."); viewTeamProfile(team.firestoreId); } catch (error) { console.error("Error updating team OKRs:", error); showToast("خطا در به‌روزرسانی اهداف تیم.", "error"); } });
+        };
+
+        // --- SURVEY SPECIFIC LOGIC ---
+        const setupSurveysPageListeners = () => {
+            document.querySelectorAll('.create-survey-link-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const surveyId = e.currentTarget.dataset.surveyId;
+                    const baseUrl = window.location.href.split('#')[0];
+                    const surveyUrl = `${baseUrl}#survey-taker?id=${surveyId}`;
+                    modalTitle.innerText = 'لینک نظرسنجی';
+                    modalContent.innerHTML = `<p class="mb-4">این لینک را برای کارمندان مورد نظر ارسال کنید:</p><div class="flex items-center bg-gray-100 p-2 rounded-md"><input type="text" id="survey-link-input" value="${surveyUrl}" class="w-full bg-transparent font-mono text-sm" readonly><button id="copy-survey-link-btn" class="bg-blue-600 text-white py-1 px-3 rounded-md mr-2 hover:bg-blue-700">کپی</button></div>`;
+                    openModal(mainModal, mainModalContainer);
+                    document.getElementById('copy-survey-link-btn').addEventListener('click', () => { const input = document.getElementById('survey-link-input'); input.select(); try { document.execCommand('copy'); showToast("لینک با موفقیت کپی شد."); } catch (err) { console.error('Fallback: Oops, unable to copy', err); showToast("خطا در کپی کردن لینک.", "error"); } });
+                });
+            });
+        };
+
+        const renderSurveyTakerPage = (surveyId) => {
+            const survey = surveyTemplates[surveyId];
+            document.getElementById('dashboard-container').style.display = 'none';
+            const surveyContainer = document.getElementById('survey-taker-container');
+            surveyContainer.style.display = 'block';
+            if (!survey) { surveyContainer.innerHTML = `<div class="min-h-screen flex items-center justify-center"><p class="text-red-500">نظرسنجی یافت نشد.</p></div>`; return; }
+            const questionsHtml = survey.questions.map(q => { let inputHtml = ''; switch(q.type) { case 'rating_1_5': inputHtml = `<div class="flex justify-center gap-2 mt-2">${[1,2,3,4,5].map(num => `<label class="cursor-pointer"><input type="radio" name="${q.id}" value="${num}" class="sr-only peer" required><span class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 peer-checked:bg-blue-600 peer-checked:text-white">${num}</span></label>`).join('')}</div>`; break; case 'yes_no': inputHtml = `<div class="flex justify-center gap-4 mt-2"><label class="cursor-pointer"><input type="radio" name="${q.id}" value="yes" class="sr-only peer" required><span class="px-6 py-2 rounded-md border border-gray-300 peer-checked:bg-green-600 peer-checked:text-white">بله</span></label><label class="cursor-pointer"><input type="radio" name="${q.id}" value="no" class="sr-only peer" required><span class="px-6 py-2 rounded-md border border-gray-300 peer-checked:bg-red-600 peer-checked:text-white">خیر</span></label></div>`; break; case 'open_text': inputHtml = `<textarea name="${q.id}" rows="4" class="w-full mt-2 p-2 border rounded-md" required></textarea>`; break; } return `<div class="bg-white p-6 rounded-lg shadow-md mb-4"><p class="font-semibold text-center">${q.text}</p>${inputHtml}</div>`; }).join('');
+            const employeeOptions = state.employees.map(emp => `<option value="${emp.id}">${emp.name} (${emp.id})</option>`).join('');
+            const targetEmployeeSelect = survey.requiresTarget ? `<div class="mb-4"><label for="target-employee-id" class="block text-sm font-medium text-gray-700 mb-1">بازخورد در مورد کدام همکار است؟</label><select id="target-employee-id" name="targetEmployeeId" class="w-full p-2 border rounded-md" required><option value="">یک نفر را انتخاب کنید...</option>${employeeOptions}</select></div>` : '';
+            surveyContainer.innerHTML = `<div class="min-h-screen bg-slate-100 p-4 sm:p-8 flex items-center justify-center"><div class="w-full max-w-2xl"><div class="text-center mb-6"><i data-lucide="shield-check" class="mx-auto text-blue-800 w-16 h-16"></i><h1 class="text-3xl font-bold text-gray-800 mt-2">${survey.title}</h1><p class="text-gray-600 mt-2">${survey.description}</p></div><form id="survey-form"><div class="mb-4"><label for="employee-id" class="block text-sm font-medium text-gray-700 mb-1">کد پرسنلی شما (مثلا HN-1001)</label><input type="text" id="employee-id" name="employeeId" class="w-full p-2 border rounded-md" required></div>${targetEmployeeSelect}${questionsHtml}<button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition text-lg font-bold">ثبت پاسخ‌ها</button></form></div></div>`;
+            lucide.createIcons();
+            document.getElementById('survey-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target); const employeeId = formData.get('employeeId'); const targetEmployeeId = formData.get('targetEmployeeId'); const answers = {};
+                survey.questions.forEach(q => { answers[q.id] = formData.get(q.id); });
+                if (!state.employees.find(emp => emp.id === employeeId)) { showToast('کد پرسنلی شما معتبر نیست.', 'error'); return; }
+                if(survey.requiresTarget && !targetEmployeeId) { showToast('لطفا همکاری که در مورد او بازخورد می‌دهید را انتخاب کنید.', 'error'); return; }
+                try { const responseData = { surveyId: survey.id, employeeId: employeeId, answers: answers, submittedAt: new Date().toISOString() }; if(targetEmployeeId) { responseData.targetEmployeeId = targetEmployeeId; } await addDoc(collection(db, `artifacts/${appId}/public/data/surveyResponses`), responseData); surveyContainer.innerHTML = `<div class="min-h-screen flex items-center justify-center text-center"><div><i data-lucide="check-circle" class="mx-auto text-green-500 w-24 h-24"></i><h2 class="text-2xl font-bold mt-4">از شما متشکریم!</h2><p class="text-gray-600">پاسخ‌های شما با موفقیت ثبت شد.</p></div></div>`; lucide.createIcons(); } catch (error) { console.error("Error submitting survey:", error); showToast('خطا در ثبت اطلاعات. لطفا دوباره تلاش کنید.', 'error'); }
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            initializeFirebase();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
