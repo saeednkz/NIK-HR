@@ -121,34 +121,90 @@
 </head>
 <body class="bg-slate-100">
 
+    <!-- Login Container -->
+    <div id="login-container" class="hidden min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <div class="text-center">
+                <i data-lucide="shield-check" class="mx-auto w-12 h-12 text-blue-800"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">ورود به سیستم HR-Nik</h2>
+            </div>
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="password" class="text-sm font-medium text-gray-700">رمز عبور</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">ورود</button>
+            </form>
+            <p class="text-sm text-center text-gray-600">
+                حساب کاربری ندارید؟ <a href="#" id="show-signup" class="font-medium text-blue-600 hover:underline">ثبت نام کنید</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Container -->
+    <div id="signup-container" class="hidden min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <div class="text-center">
+                 <i data-lucide="user-plus" class="mx-auto w-12 h-12 text-blue-800"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">ایجاد حساب کاربری جدید</h2>
+            </div>
+            <form id="signup-form" class="space-y-6">
+                 <div>
+                    <label for="signup-email" class="text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                    <input id="signup-email" name="email" type="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="signup-password" class="text-sm font-medium text-gray-700">رمز عبور</label>
+                    <input id="signup-password" name="password" type="password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">ثبت نام</button>
+            </form>
+            <p class="text-sm text-center text-gray-600">
+                قبلا ثبت نام کرده‌اید؟ <a href="#" id="show-login" class="font-medium text-blue-600 hover:underline">وارد شوید</a>
+            </p>
+        </div>
+    </div>
+
+
     <!-- This container is for the main dashboard view -->
-    <div id="dashboard-container" class="flex h-screen">
+    <div id="dashboard-container" class="hidden h-screen">
         <!-- Sidebar -->
-        <aside id="sidebar" class="bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-lg">
-            <a href="#dashboard" class="sidebar-logo text-white text-2xl font-extrabold px-4 flex items-center space-x-2 space-x-reverse">
-                <i data-lucide="shield-check"></i>
-                <span>HR-Nik</span>
-            </a>
-            <nav id="sidebar-nav">
-                <a href="#dashboard" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="layout-dashboard"></i><span>داشبورد</span>
+        <aside id="sidebar" class="bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-lg flex flex-col">
+            <div>
+                <a href="#dashboard" class="sidebar-logo text-white text-2xl font-extrabold px-4 flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="shield-check"></i>
+                    <span>HR-Nik</span>
                 </a>
-                <a href="#talent" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="users"></i><span>استعدادها</span>
+                <nav id="sidebar-nav" class="mt-6">
+                    <a href="#dashboard" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="layout-dashboard"></i><span>داشبورد</span>
+                    </a>
+                    <a href="#talent" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="users"></i><span>استعدادها</span>
+                    </a>
+                    <a href="#organization" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="building-2"></i><span>سازمان</span>
+                    </a>
+                    <a href="#surveys" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="clipboard-list"></i><span>نظرسنجی‌ها</span>
+                    </a>
+                    <a href="#analytics" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="bar-chart-3"></i><span>تحلیل هوشمند</span>
+                    </a>
+                    <a href="#settings" id="settings-nav-link" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="settings"></i><span>تنظیمات</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="mt-auto">
+                 <a href="#" id="logout-btn" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse text-red-300 hover:bg-red-700 hover:text-white">
+                    <i data-lucide="log-out"></i><span>خروج از سیستم</span>
                 </a>
-                <a href="#organization" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="building-2"></i><span>سازمان</span>
-                </a>
-                <a href="#surveys" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="clipboard-list"></i><span>نظرسنجی‌ها</span>
-                </a>
-                <a href="#analytics" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="bar-chart-3"></i><span>تحلیل هوشمند</span>
-                </a>
-                <a href="#settings" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="settings"></i><span>تنظیمات</span>
-                </a>
-            </nav>
+            </div>
         </aside>
 
         <!-- Main Content Wrapper -->
@@ -219,10 +275,10 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithCustomToken, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { 
             getFirestore, doc, getDoc, setDoc, onSnapshot, collection, 
-            addDoc, getDocs, writeBatch, deleteDoc, updateDoc, query, arrayUnion
+            addDoc, getDocs, writeBatch, deleteDoc, updateDoc, query, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- SURVEY TEMPLATES ---
@@ -290,25 +346,47 @@
             teams: [],
             reminders: [],
             surveyResponses: [],
+            users: [],
             dashboardMetrics: {},
-            currentPage: 'dashboard'
+            currentPage: 'dashboard',
+            currentUser: null,
         };
         let charts = {};
         
         // --- FIREBASE SETUP ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'hr-nik-default-prod';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "AIzaSyCCfPmxQy1uAKu0lPGSe3bc-P15iLYLHJo",
-                authDomain: "nik-hr.firebaseapp.com",
-                projectId: "nik-hr",
-                storageBucket: "nik-hr.appspot.com",
-                messagingSenderId: "731265316127",
-                appId: "1:731265316127:web:6fda02cb2c7d4adfc92c2a"
-            };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'hr-nik-prod';
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCfPmxQy1uAKu0lPGSe3bc-P15iLYLHJo",
+            authDomain: "nik-hr.firebaseapp.com",
+            projectId: "nik-hr",
+            storageBucket: "nik-hr.appspot.com",
+            messagingSenderId: "731265316127",
+            appId: "1:731265316127:web:6fda02cb2c7d4adfc92c2a"
+        };
 
         let app, auth, db;
+
+        // --- AUTH & UI TOGGLING ---
+        const showLoginPage = () => {
+            document.getElementById('login-container').classList.remove('hidden');
+            document.getElementById('signup-container').classList.add('hidden');
+            document.getElementById('dashboard-container').classList.add('hidden');
+            document.getElementById('loading-overlay').style.display = 'none';
+        };
+
+        const showSignupPage = () => {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('signup-container').classList.remove('hidden');
+            document.getElementById('dashboard-container').classList.add('hidden');
+        };
+        
+        const showDashboard = () => {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('signup-container').classList.add('hidden');
+            document.getElementById('dashboard-container').classList.remove('hidden');
+            document.getElementById('dashboard-container').classList.add('flex');
+        };
+
 
         async function initializeFirebase() {
             try {
@@ -316,25 +394,46 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                onAuthStateChanged(auth, (user) => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
-                        console.log("Firebase Authenticated:", user.uid);
+                        console.log("User is logged in:", user.uid);
+                        await fetchUserRole(user);
                         listenToData();
+                    } else {
+                        console.log("User is logged out.");
+                        state.currentUser = null;
+                        showLoginPage();
                     }
                 });
-
-                if (!auth.currentUser) {
-                    const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                    if (token) {
-                        await signInWithCustomToken(auth, token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                }
             } catch (error) {
                 console.error("Firebase Initialization Error:", error);
                 document.getElementById('loading-overlay').innerHTML = `<p class="text-red-600 font-semibold">خطا در اتصال به پایگاه داده</p>`;
             }
+        }
+
+        async function fetchUserRole(user) {
+            const userRef = doc(db, `artifacts/${appId}/public/data/users`, user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                state.currentUser = { uid: user.uid, email: user.email, ...userSnap.data() };
+            } else {
+                // This is a new user, check if they are the first user
+                const usersCol = collection(db, `artifacts/${appId}/public/data/users`);
+                const usersSnapshot = await getDocs(usersCol);
+                const isFirstUser = usersSnapshot.empty;
+                
+                const newUserRole = isFirstUser ? 'admin' : 'viewer';
+                const newUser = {
+                    email: user.email,
+                    role: newUserRole,
+                    createdAt: serverTimestamp()
+                };
+                await setDoc(userRef, newUser);
+                state.currentUser = { uid: user.uid, ...newUser };
+                showToast(isFirstUser ? "ثبت نام موفق! شما ادمین سیستم هستید." : "ثبت نام موفق! به شما دسترسی مشاهده‌گر داده شد.");
+            }
+            console.log("Current user role:", state.currentUser.role);
         }
         
         // --- DATA SEEDING (FOR DEMO PURPOSES) ---
@@ -368,13 +467,14 @@
 
         // --- REAL-TIME DATA LISTENERS ---
         function listenToData() {
-            const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses'];
+            const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses', 'users'];
             let initialLoads = collectionsToListen.length;
 
             const onDataLoaded = () => {
                 initialLoads--;
                 if (initialLoads === 0) {
                     console.log("All initial data loaded.");
+                    showDashboard();
                     router(); 
                     document.getElementById('loading-overlay').style.display = 'none';
                 }
@@ -410,6 +510,9 @@
             setTimeout(() => toast.remove(), 5000);
         };
         
+        const isAdmin = () => state.currentUser?.role === 'admin';
+        const canEdit = () => state.currentUser?.role === 'admin' || state.currentUser?.role === 'editor';
+
         const calculateDashboardMetrics = () => {
             const totalEmployees = state.employees.length;
             if (totalEmployees === 0) {
@@ -418,10 +521,8 @@
             }
             const activeEmployees = state.employees.filter(e => e.status === 'فعال');
             
-            // Retention Rate
             const retentionRate = totalEmployees > 0 ? ((activeEmployees.length / totalEmployees) * 100).toFixed(0) : 0;
 
-            // Average Tenure
             const totalTenureDays = activeEmployees.reduce((sum, emp) => {
                 if (!emp.startDate) return sum;
                 const start = new Date(emp.startDate);
@@ -430,7 +531,6 @@
             }, 0);
             const averageTenureYears = activeEmployees.length > 0 ? (totalTenureDays / activeEmployees.length / 365).toFixed(1) : 0;
             
-            // Engagement Score from Surveys
             const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
             let totalScore = 0;
             let ratingCount = 0;
@@ -445,7 +545,6 @@
             });
             const engagementScore = ratingCount > 0 ? ((totalScore / ratingCount) / 5 * 100).toFixed(0) : 0;
 
-            // Internal Mobility
             const mobileEmployees = state.employees.filter(e => e.careerPath && e.careerPath.length > 1).length;
             const internalMobilityRate = totalEmployees > 0 ? ((mobileEmployees / totalEmployees) * 100).toFixed(0) : 0;
 
@@ -503,14 +602,14 @@
                         <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
                             <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
                             <div id="remindersList" class="space-y-4 mb-4 max-h-48 overflow-y-auto pr-2">${renderAllReminders()}</div>
-                            <div class="border-t pt-4">
+                            ${canEdit() ? `<div class="border-t pt-4">
                                 <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
                                 <div class="flex flex-col sm:flex-row gap-2">
                                     <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
                                     <input type="date" id="reminderDate" class="p-2 border rounded-md text-sm">
                                     <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
                                 </div>
-                            </div>
+                            </div>` : ''}
                         </div>
                         <div class="space-y-6">
                             <div class="card bg-white p-6 rounded-lg shadow-md">
@@ -535,12 +634,12 @@
                     </div>`;
             },
             talent: () => {
-                if(state.employees.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p><button id="add-employee-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند جدید</button></div>`;
-                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت پرسنل</h1><button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button></div><div class="bg-white p-6 rounded-lg shadow-md"><div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"><div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو..." class="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"><i data-lucide="search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i></div><div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border rounded-md"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border rounded-md"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div></div><div class="overflow-x-auto"><table class="w-full text-sm text-right text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">نام</th><th scope="col" class="px-6 py-3">کد پرسنلی</th><th scope="col" class="px-6 py-3">دپارتمان</th><th scope="col" class="px-6 py-3">وضعیت</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div></div>`
+                if(state.employees.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند جدید</button>` : ''}</div>`;
+                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت پرسنل</h1>${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}</div><div class="bg-white p-6 rounded-lg shadow-md"><div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"><div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو..." class="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"><i data-lucide="search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i></div><div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border rounded-md"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border rounded-md"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div></div><div class="overflow-x-auto"><table class="w-full text-sm text-right text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">نام</th><th scope="col" class="px-6 py-3">کد پرسنلی</th><th scope="col" class="px-6 py-3">دپارتمان</th><th scope="col" class="px-6 py-3">وضعیت</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div></div>`
             },
             organization: () => {
-                 if(state.teams.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p><button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن تیم جدید</button></div>`;
-                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت تیم‌ها</h1><button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => { const leader = state.employees.find(e => e.id === team.leaderId); return `<div class="card bg-white p-6 rounded-lg shadow-md flex flex-col"><h3 class="text-xl font-bold text-blue-800 mb-2">${team.name}</h3><p class="text-gray-600 mb-4 text-sm"><strong>رهبر تیم:</strong> ${leader ? leader.name : 'نامشخص'}</p><p class="text-gray-700 mb-4 flex-grow"><strong>ماموریت:</strong> ${team.mission || ''}</p><div class="mb-4"><p class="font-semibold mb-2">اعضای تیم:</p><div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => { const member = state.employees.find(e => e.id === memberId); return member ? `<img class="w-10 h-10 border-2 border-white rounded-full" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : ''; }).join('')}</div></div><button class="view-team-profile-btn mt-auto w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition" data-team-id="${team.firestoreId}">مشاهده پروفایل</button></div>` }).join('')}</div>`
+                 if(state.teams.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن تیم جدید</button>` : ''}</div>`;
+                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => { const leader = state.employees.find(e => e.id === team.leaderId); return `<div class="card bg-white p-6 rounded-lg shadow-md flex flex-col"><h3 class="text-xl font-bold text-blue-800 mb-2">${team.name}</h3><p class="text-gray-600 mb-4 text-sm"><strong>رهبر تیم:</strong> ${leader ? leader.name : 'نامشخص'}</p><p class="text-gray-700 mb-4 flex-grow"><strong>ماموریت:</strong> ${team.mission || ''}</p><div class="mb-4"><p class="font-semibold mb-2">اعضای تیم:</p><div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => { const member = state.employees.find(e => e.id === memberId); return member ? `<img class="w-10 h-10 border-2 border-white rounded-full" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : ''; }).join('')}</div></div><button class="view-team-profile-btn mt-auto w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition" data-team-id="${team.firestoreId}">مشاهده پروفایل</button></div>` }).join('')}</div>`
             },
             surveys: () => `
                 <h1 class="text-3xl font-bold text-gray-800 mb-6">مدیریت نظرسنجی‌ها</h1>
@@ -594,7 +693,43 @@
                     </div>
                 </div>
             `,
-            settings: () => `<h1 class="text-3xl font-bold text-gray-800 mb-6">تنظیمات</h1><div class="bg-white p-10 rounded-lg shadow-md text-center"><i data-lucide="database" class="mx-auto text-gray-500 w-16 h-16 mb-4"></i><h2 class="text-2xl font-semibold mb-2">مدیریت داده‌ها</h2><p class="text-gray-600 mb-4">می‌توانید تمام داده‌های موجود را پاک کرده و داده‌های نمونه را برای دمو بارگذاری کنید.</p><button id="seed-data-btn" class="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition">بارگذاری داده‌های نمونه</button></div>`
+            settings: () => {
+                if (!isAdmin()) {
+                    return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">دسترسی غیر مجاز</h2><p class="mt-2 text-gray-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
+                }
+                const usersHtml = state.users.map(user => `
+                    <tr class="bg-white border-b">
+                        <td class="px-6 py-4">${user.email}</td>
+                        <td class="px-6 py-4">${new Date(user.createdAt?.toDate()).toLocaleDateString('fa-IR')}</td>
+                        <td class="px-6 py-4">
+                            <select data-uid="${user.firestoreId}" class="role-select p-2 border rounded-md bg-gray-50" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>Editor</option>
+                                <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>Viewer</option>
+                            </select>
+                        </td>
+                    </tr>
+                `).join('');
+
+                return `<h1 class="text-3xl font-bold text-gray-800 mb-6">تنظیمات و مدیریت کاربران</h1>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h2 class="text-xl font-semibold mb-4">لیست کاربران سیستم</h2>
+                             <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-right text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">ایمیل کاربر</th>
+                                            <th scope="col" class="px-6 py-3">تاریخ عضویت</th>
+                                            <th scope="col" class="px-6 py-3">سطح دسترسی</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${usersHtml}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="mt-8 bg-white p-10 rounded-lg shadow-md text-center"><i data-lucide="database" class="mx-auto text-gray-500 w-16 h-16 mb-4"></i><h2 class="text-2xl font-semibold mb-2">مدیریت داده‌ها</h2><p class="text-gray-600 mb-4">می‌توانید تمام داده‌های موجود را پاک کرده و داده‌های نمونه را برای دمو بارگذاری کنید.</p><button id="seed-data-btn" class="bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition">بارگذاری داده‌های نمونه</button></div>
+                        `
+            }
         };
 
         // --- NAVIGATION & ROUTING ---
@@ -621,13 +756,13 @@
 
         const renderPage = (pageName) => {
             try {
-                document.getElementById('dashboard-container').style.display = 'flex';
-                document.getElementById('survey-taker-container').style.display = 'none';
-
-                if (!auth.currentUser || !pages[pageName]) {
-                    mainContent.innerHTML = `<p>در حال بارگذاری...</p>`;
+                if (!state.currentUser) {
+                    showLoginPage();
                     return;
                 }
+                
+                document.getElementById('settings-nav-link').style.display = isAdmin() ? 'flex' : 'none';
+
                 mainContent.innerHTML = pages[pageName]();
                 
                 if (pageName === 'dashboard') { renderDashboardCharts(); setupDashboardListeners(); }
@@ -636,14 +771,9 @@
                 if (pageName === 'surveys') { setupSurveysPageListeners(); }
                 if (pageName === 'analytics') { setupAnalyticsPage(); }
                 if (pageName === 'settings') {
-                    document.getElementById('seed-data-btn')?.addEventListener('click', () => {
-                        showConfirmationModal("بارگذاری داده‌های نمونه", "تمام اطلاعات فعلی حذف و داده‌های نمونه جایگزین خواهند شد. آیا مطمئن هستید؟",
-                            async () => {
-                                document.getElementById('loading-overlay').style.display = 'flex';
-                                await seedDatabaseWithDemoData();
-                                document.getElementById('loading-overlay').style.display = 'none';
-                            }, "تایید و بارگذاری");
-                    });
+                    if(isAdmin()) {
+                        setupSettingsPageListeners();
+                    }
                 }
                 lucide.createIcons();
             } catch (error) {
@@ -693,7 +823,19 @@
             const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || ''; const departmentFilter = document.getElementById('departmentFilter')?.value || ''; const statusFilter = document.getElementById('statusFilter')?.value || '';
             const filteredEmployees = state.employees.filter(emp => (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) && (!departmentFilter || emp.department === departmentFilter) && (!statusFilter || emp.status === statusFilter));
             const tableBody = document.getElementById('employeeTableBody');
-            if (tableBody) { tableBody.innerHTML = filteredEmployees.map(emp => `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${emp.name}</td><td class="px-6 py-4">${emp.id}</td><td class="px-6 py-4">${emp.department}</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></td><td class="px-6 py-4 flex items-center gap-4"><button class="view-employee-profile-btn text-blue-600 hover:underline" data-employee-id="${emp.firestoreId}">پروفایل</button><button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button><button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button></td></tr>`).join(''); }
+            if (tableBody) { 
+                tableBody.innerHTML = filteredEmployees.map(emp => `<tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${emp.name}</td>
+                    <td class="px-6 py-4">${emp.id}</td>
+                    <td class="px-6 py-4">${emp.department}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></td>
+                    <td class="px-6 py-4 flex items-center gap-4">
+                        <button class="view-employee-profile-btn text-blue-600 hover:underline" data-employee-id="${emp.firestoreId}">پروفایل</button>
+                        ${canEdit() ? `<button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button>` : ''}
+                        ${isAdmin() ? `<button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button>` : ''}
+                    </td>
+                </tr>`).join(''); 
+            }
         };
         const setupTalentPageListeners = () => {
             document.getElementById('searchInput')?.addEventListener('input', renderEmployeeTable); 
@@ -705,6 +847,30 @@
         const setupOrganizationPageListeners = () => {
             document.getElementById('add-team-btn')?.addEventListener('click', () => showTeamForm());
             document.getElementById('add-team-btn-empty')?.addEventListener('click', () => showTeamForm());
+        };
+        const setupSettingsPageListeners = () => {
+            document.getElementById('seed-data-btn')?.addEventListener('click', () => {
+                showConfirmationModal("بارگذاری داده‌های نمونه", "تمام اطلاعات فعلی حذف و داده‌های نمونه جایگزین خواهند شد. آیا مطمئن هستید؟",
+                    async () => {
+                        document.getElementById('loading-overlay').style.display = 'flex';
+                        await seedDatabaseWithDemoData();
+                        document.getElementById('loading-overlay').style.display = 'none';
+                    }, "تایید و بارگذاری");
+            });
+            document.querySelectorAll('.role-select').forEach(select => {
+                select.addEventListener('change', async (e) => {
+                    const uid = e.target.dataset.uid;
+                    const newRole = e.target.value;
+                    const userRef = doc(db, `artifacts/${appId}/public/data/users`, uid);
+                    try {
+                        await updateDoc(userRef, { role: newRole });
+                        showToast("نقش کاربر با موفقیت تغییر کرد.");
+                    } catch (error) {
+                        console.error("Error updating role:", error);
+                        showToast("خطا در تغییر نقش کاربر.", "error");
+                    }
+                });
+            });
         };
         const setupAnalyticsPage = () => {
             const renderAttritionHotspots = () => {
@@ -831,7 +997,7 @@
                     <div class="lg:col-span-1 space-y-6">
                         <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
                             <img src="${emp.avatar}" alt="${emp.name}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md">
-                            <button id="change-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>
+                            ${canEdit() ? `<button id="change-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
                             <h2 class="text-2xl font-bold text-gray-800">${emp.name}</h2>
                             <p class="text-gray-500">${emp.jobTitle || emp.department}</p>
                             <span class="mt-2 inline-block px-3 py-1 text-sm font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span>
@@ -848,13 +1014,13 @@
                             <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px"><button data-tab="overview" class="profile-tab active">نمای کلی</button><button data-tab="performance" class="profile-tab">عملکرد</button><button data-tab="contracts" class="profile-tab">قراردادها</button><button data-tab="personal" class="profile-tab">اطلاعات پرسنلی</button></nav></div>
                             <div class="p-4">
                                 <!-- Overview Tab -->
-                                <div id="tab-overview" class="profile-tab-content active"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700 flex items-center"><i data-lucide="target" class="ml-2 w-5 h-5 text-blue-500"></i>اهداف و نتایج کلیدی (OKRs)</h4><button id="edit-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button></div><div class="space-y-3">${(emp.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('')} ${!(emp.okrs && emp.okrs.length > 0) ? '<p class="text-sm text-gray-500">هدفی ثبت نشده است.</p>' : ''}</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">ماتریس مهارت‌های فنی</h4><button id="edit-skills-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button></div><canvas id="skillRadarChart"></canvas></div><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">شایستگی‌های اصلی</h4><div id="competencyBarsContainer" class="space-y-4"></div></div></div></div></div>
+                                <div id="tab-overview" class="profile-tab-content active"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700 flex items-center"><i data-lucide="target" class="ml-2 w-5 h-5 text-blue-500"></i>اهداف و نتایج کلیدی (OKRs)</h4>${canEdit() ? `<button id="edit-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(emp.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('')} ${!(emp.okrs && emp.okrs.length > 0) ? '<p class="text-sm text-gray-500">هدفی ثبت نشده است.</p>' : ''}</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">ماتریس مهارت‌های فنی</h4>${canEdit() ? `<button id="edit-skills-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>`:''}</div><canvas id="skillRadarChart"></canvas></div><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">شایستگی‌های اصلی</h4><div id="competencyBarsContainer" class="space-y-4"></div></div></div></div></div>
                                 <!-- Performance Tab -->
-                                <div id="tab-performance" class="profile-tab-content"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">تاریخچه ارزیابی عملکرد</h4><ul class="list-disc list-inside text-sm text-gray-600 space-y-1">${(emp.performanceHistory || []).map((score, i) => `<li>دوره ارزیابی ${i+1}: <span class="font-bold">${score}/5</span></li>`).join('')}</ul></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">سابقه انضباطی (تذکر/تشویق)</h4><button id="add-disciplinary-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button></div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map(item => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'}"><p class="font-semibold">${item.type} - ${new Date(item.date).toLocaleDateString('fa-IR')}</p><p class="text-sm">${item.reason}</p>${item.fileName ? `<a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${item.fileName}</a>` : ''}</div>`).join('')}</div></div></div></div>
+                                <div id="tab-performance" class="profile-tab-content"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">تاریخچه ارزیابی عملکرد</h4><ul class="list-disc list-inside text-sm text-gray-600 space-y-1">${(emp.performanceHistory || []).map((score, i) => `<li>دوره ارزیابی ${i+1}: <span class="font-bold">${score}/5</span></li>`).join('')}</ul></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">سابقه انضباطی (تذکر/تشویق)</h4>${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button>`:''}</div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map(item => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'}"><p class="font-semibold">${item.type} - ${new Date(item.date).toLocaleDateString('fa-IR')}</p><p class="text-sm">${item.reason}</p>${item.fileName ? `<a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${item.fileName}</a>` : ''}</div>`).join('')}</div></div></div></div>
                                 <!-- Contracts Tab -->
-                                <div id="tab-contracts" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">تاریخچه تمدید قرارداد</h4><button id="add-contract-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button></div><div id="contracts-list" class="space-y-3">${(emp.contractHistory || []).map(c => `<div class="p-3 rounded-md bg-gray-100 border"><div class="flex justify-between items-center font-semibold"><p>قرارداد ${new Date(c.startDate).toLocaleDateString('fa-IR')}</p><a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${c.fileName}</a></div><div class="grid grid-cols-2 gap-2 text-xs mt-2 border-t pt-2"><p>حقوق ناخالص: <span class="font-mono">${(c.grossSalary || 0).toLocaleString('fa-IR')}</span></p><p>حقوق خالص: <span class="font-mono">${(c.netSalary || 0).toLocaleString('fa-IR')}</span></p><p>مبلغ سفته: <span class="font-mono">${(c.promissoryNote || 0).toLocaleString('fa-IR')}</span></p><p>مدت: <span class="font-mono">${new Date(c.startDate).toLocaleDateString('fa-IR')} تا ${new Date(c.endDate).toLocaleDateString('fa-IR')}</span></p></div></div>`).join('')}</div></div></div>
+                                <div id="tab-contracts" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">تاریخچه تمدید قرارداد</h4>${canEdit() ? `<button id="add-contract-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button>`:''}</div><div id="contracts-list" class="space-y-3">${(emp.contractHistory || []).map(c => `<div class="p-3 rounded-md bg-gray-100 border"><div class="flex justify-between items-center font-semibold"><p>قرارداد ${new Date(c.startDate).toLocaleDateString('fa-IR')}</p><a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${c.fileName}</a></div><div class="grid grid-cols-2 gap-2 text-xs mt-2 border-t pt-2"><p>حقوق ناخالص: <span class="font-mono">${(c.grossSalary || 0).toLocaleString('fa-IR')}</span></p><p>حقوق خالص: <span class="font-mono">${(c.netSalary || 0).toLocaleString('fa-IR')}</span></p><p>مبلغ سفته: <span class="font-mono">${(c.promissoryNote || 0).toLocaleString('fa-IR')}</span></p><p>مدت: <span class="font-mono">${new Date(c.startDate).toLocaleDateString('fa-IR')} تا ${new Date(c.endDate).toLocaleDateString('fa-IR')}</span></p></div></div>`).join('')}</div></div></div>
                                 <!-- Personal Info Tab -->
-                                <div id="tab-personal" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اطلاعات پرسنلی</h4><button id="edit-personal-info-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">کد ملی</strong> <span>${emp.personalInfo?.nationalId || '-'}</span></div><div><strong class="text-gray-500 block">تاریخ تولد</strong> <span>${emp.personalInfo?.birthDate ? new Date(emp.personalInfo.birthDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">شماره موبایل</strong> <span class="font-mono">${emp.personalInfo?.phone || '-'}</span></div><div><strong class="text-gray-500 block">ایمیل</strong> <span>${emp.personalInfo?.email || '-'}</span></div><div class="sm:col-span-2"><strong class="text-gray-500 block">آدرس</strong> <span>${emp.personalInfo?.address || '-'}</span></div><div><strong class="text-gray-500 block">کدپستی</strong> <span class="font-mono">${emp.personalInfo?.postalCode || '-'}</span></div><div><strong class="text-gray-500 block">وضعیت نظام وظیفه</strong> <span>${emp.personalInfo?.militaryStatus || '-'}</span></div><div><strong class="text-gray-500 block">تیپ شخصیتی</strong> <span>${emp.personalInfo?.personalityType || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-gray-700 mb-3">اطلاعات سازمانی</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">تاریخ استخدام</strong> <span>${emp.startDate ? new Date(emp.startDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">تاریخ اولین قرارداد</strong> <span>${emp.personalInfo?.firstContractDate ? new Date(emp.personalInfo.firstContractDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">تیم</strong> <span>${team?.name || '-'}</span></div><div><strong class="text-gray-500 block">مدیر مستقیم</strong> <span>${manager?.name || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-gray-700 mb-3">اطلاعات تماس ضروری</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">نام</strong> <span>${emp.personalInfo?.emergencyContactName || '-'}</span></div><div><strong class="text-gray-500 block">شماره تماس</strong> <span class="font-mono">${emp.personalInfo?.emergencyContactPhone || '-'}</span></div></div></div></div>
+                                <div id="tab-personal" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اطلاعات پرسنلی</h4>${canEdit() ? `<button id="edit-personal-info-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>`:''}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">کد ملی</strong> <span>${emp.personalInfo?.nationalId || '-'}</span></div><div><strong class="text-gray-500 block">تاریخ تولد</strong> <span>${emp.personalInfo?.birthDate ? new Date(emp.personalInfo.birthDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">شماره موبایل</strong> <span class="font-mono">${emp.personalInfo?.phone || '-'}</span></div><div><strong class="text-gray-500 block">ایمیل</strong> <span>${emp.personalInfo?.email || '-'}</span></div><div class="sm:col-span-2"><strong class="text-gray-500 block">آدرس</strong> <span>${emp.personalInfo?.address || '-'}</span></div><div><strong class="text-gray-500 block">کدپستی</strong> <span class="font-mono">${emp.personalInfo?.postalCode || '-'}</span></div><div><strong class="text-gray-500 block">وضعیت نظام وظیفه</strong> <span>${emp.personalInfo?.militaryStatus || '-'}</span></div><div><strong class="text-gray-500 block">تیپ شخصیتی</strong> <span>${emp.personalInfo?.personalityType || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-gray-700 mb-3">اطلاعات سازمانی</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">تاریخ استخدام</strong> <span>${emp.startDate ? new Date(emp.startDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">تاریخ اولین قرارداد</strong> <span>${emp.personalInfo?.firstContractDate ? new Date(emp.personalInfo.firstContractDate).toLocaleDateString('fa-IR') : '-'}</span></div><div><strong class="text-gray-500 block">تیم</strong> <span>${team?.name || '-'}</span></div><div><strong class="text-gray-500 block">مدیر مستقیم</strong> <span>${manager?.name || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-gray-700 mb-3">اطلاعات تماس ضروری</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">نام</strong> <span>${emp.personalInfo?.emergencyContactName || '-'}</span></div><div><strong class="text-gray-500 block">شماره تماس</strong> <span class="font-mono">${emp.personalInfo?.emergencyContactPhone || '-'}</span></div></div></div></div>
                             </div>
                         </div>
                     </div>
@@ -883,7 +1049,7 @@
                             <div class="border-b border-gray-200"><nav class="profile-tabs flex -mb-px"><button data-tab="team-overview" class="profile-tab active">نمای کلی</button><button data-tab="team-health" class="profile-tab">سلامت و مشارکت</button><button data-tab="team-talent" class="profile-tab">ماتریس استعداد</button></nav></div>
                             <div class="p-4">
                                 <!-- Team Overview Tab -->
-                                <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><img src="${m.avatar}" class="w-12 h-12 rounded-full mx-auto"><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4><button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button></div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
+                                <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><img src="${m.avatar}" class="w-12 h-12 rounded-full mx-auto"><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
                                  <!-- Team Health Tab -->
                                 <div id="tab-team-health" class="profile-tab-content"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">آخرین بازخوردهای نظرسنجی پالس</h4><div class="space-y-2 text-sm text-gray-700">${state.surveyResponses.filter(r => r.surveyId === 'pulse' && team.memberIds.includes(r.employeeId)).slice(-3).map(r => `<p class="p-2 bg-blue-50 rounded-md">"${r.answers.q3}"</p>`).join('') || '<p class="text-sm text-gray-500">بازخوردی ثبت نشده است.</p>'}</div></div></div></div>
                                 <!-- Team Talent Tab -->
@@ -910,7 +1076,9 @@
              const tabs = document.querySelectorAll('.profile-tab');
              const tabContents = document.querySelectorAll('.profile-tab-content');
              tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
-            document.getElementById('edit-team-okrs-btn')?.addEventListener('click', () => showEditTeamOkrsForm(team));
+            if(canEdit()) {
+                document.getElementById('edit-team-okrs-btn')?.addEventListener('click', () => showEditTeamOkrsForm(team));
+            }
             setTimeout(() => { lucide.createIcons(); }, 100);
         };
 
@@ -938,6 +1106,37 @@
 
         // --- EVENT LISTENERS & INITIALIZATION ---
         const setupEventListeners = () => {
+            // Auth Listeners
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = e.target.email.value;
+                const password = e.target.password.value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    showToast("ایمیل یا رمز عبور اشتباه است.", "error");
+                    console.error("Login failed:", error);
+                }
+            });
+
+            document.getElementById('signup-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = e.target.email.value;
+                const password = e.target.password.value;
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    showToast("خطا در ثبت نام. ممکن است این ایمیل قبلا استفاده شده باشد.", "error");
+                    console.error("Signup failed:", error);
+                }
+            });
+
+            document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+            document.getElementById('show-signup').addEventListener('click', (e) => { e.preventDefault(); showSignupPage(); });
+            document.getElementById('show-login').addEventListener('click', (e) => { e.preventDefault(); showLoginPage(); });
+
+
+            // General App Listeners
             document.getElementById('closeModal').addEventListener('click', () => closeModal(mainModal, mainModalContainer)); mainModal.addEventListener('click', (e) => { if (e.target === mainModal) closeModal(mainModal, mainModalContainer); });
             mainContent.addEventListener('click', async (e) => {
                 const viewEmpBtn = e.target.closest('.view-employee-profile-btn'); const editEmpBtn = e.target.closest('.edit-employee-btn'); const deleteEmpBtn = e.target.closest('.delete-employee-btn'); const viewTeamBtn = e.target.closest('.view-team-profile-btn');
@@ -950,7 +1149,7 @@
             menuBtn.addEventListener('click', toggleMenu); overlay.addEventListener('click', toggleMenu);
             const handleNavClick = (e) => { const link = e.target.closest('a'); if (link && (link.classList.contains('sidebar-item') || link.classList.contains('sidebar-logo'))) { e.preventDefault(); const pageName = link.getAttribute('href').substring(1); navigateTo(pageName); if (window.innerWidth < 768) toggleMenu(); } };
             document.getElementById('sidebar').addEventListener('click', handleNavClick);
-            document.querySelector('header .sidebar-logo').addEventListener('click', handleNavClick);
+            document.querySelector('header .sidebar-logo')?.addEventListener('click', handleNavClick);
             window.addEventListener('hashchange', router);
         };
 
@@ -964,12 +1163,15 @@
                 if (competencyContainer && emp.competencies) { competencyContainer.innerHTML = Object.entries(emp.competencies).map(([name, score]) => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${name}</span><span class="font-medium text-blue-600">${score}/5</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${score * 20}%;"></div></div></div>`).join(''); }
                 lucide.createIcons();
             }, 100);
-            document.getElementById('change-avatar-btn')?.addEventListener('click', () => { const newAvatarUrl = prompt("لطفا آدرس URL عکس جدید را وارد کنید:", emp.avatar); if (newAvatarUrl) { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); updateDoc(docRef, { avatar: newAvatarUrl }); } });
-            document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
-            document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
-            document.getElementById('edit-personal-info-btn')?.addEventListener('click', () => showEditPersonalInfoForm(emp));
-            document.getElementById('add-disciplinary-btn')?.addEventListener('click', () => showDisciplinaryForm(emp));
-            document.getElementById('add-contract-btn')?.addEventListener('click', () => showContractForm(emp));
+            
+            if(canEdit()) {
+                document.getElementById('change-avatar-btn')?.addEventListener('click', () => { const newAvatarUrl = prompt("لطفا آدرس URL عکس جدید را وارد کنید:", emp.avatar); if (newAvatarUrl) { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); updateDoc(docRef, { avatar: newAvatarUrl }); } });
+                document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
+                document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
+                document.getElementById('edit-personal-info-btn')?.addEventListener('click', () => showEditPersonalInfoForm(emp));
+                document.getElementById('add-disciplinary-btn')?.addEventListener('click', () => showDisciplinaryForm(emp));
+                document.getElementById('add-contract-btn')?.addEventListener('click', () => showContractForm(emp));
+            }
         };
         
         // --- EDIT FORM FUNCTIONS ---
@@ -1068,8 +1270,8 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            setupEventListeners();
             initializeFirebase();
+            setupEventListeners();
             lucide.createIcons();
         });
     </script>
