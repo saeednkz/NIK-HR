@@ -15,6 +15,8 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 
@@ -531,6 +533,60 @@ const toPersianDate = (dateInput) => {
         return 'نامشخص';
     }
 };
+// --- تابع جدید برای تبدیل تاریخ شمسی ورودی به فرمت میلادی برای ذخیره ---
+const persianToEnglishDate = (persianDateStr) => {
+    if (!persianDateStr || !/^\d{4}\/\d{2}\/\d{2}$/.test(persianDateStr)) {
+        console.error("Invalid Persian date format. Expected YYYY/MM/DD");
+        return null; // Return null for invalid format
+    }
+    try {
+        const [jy, jm, jd] = persianDateStr.split('/').map(Number);
+        const gregorian = jalaali.toGregorian(jy, jm, jd);
+        // Return date in 'YYYY-MM-DD' format, which is universally accepted
+        return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
+    } catch (error) {
+        console.error("Error converting Persian to Gregorian:", error);
+        return null;
+    }
+};
+
+// --- تابع جدید برای فعال‌سازی تقویم شمسی روی یک فیلد ---
+const activatePersianDatePicker = (elementId, initialValue = null) => {
+    const input = document.getElementById(elementId);
+    if (!input) return;
+
+    // Change input type to text to allow custom format
+    input.setAttribute('type', 'text');
+    input.setAttribute('placeholder', 'مثال: 1403/05/28');
+    input.setAttribute('autocomplete', 'off');
+
+    if (initialValue) {
+        input.value = toPersianDate(initialValue);
+    }
+
+    $(input).pDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: !!initialValue, // Set to true only if there is an initial value
+        observer: true,
+        calendar: {
+            persian: {
+                locale: 'fa'
+            }
+        },
+        navigator: {
+            enabled: true,
+            scroll: {
+                enabled: false
+            }
+        },
+        timePicker: {
+            enabled: false
+        }
+    });
+};
+        
+    
         const showToast = (message, type = 'success') => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -957,11 +1013,31 @@ const toPersianDate = (dateInput) => {
         return html || '<p class="text-sm text-gray-500 text-center">هیچ یادآوری فعالی وجود ندارد.</p>';
     };
         const setupDashboardListeners = () => {
-            document.getElementById('addReminderBtn')?.addEventListener('click', async () => {
-                const textInput = document.getElementById('reminderText'); const dateInput = document.getElementById('reminderDate');
-                if (textInput.value && dateInput.value) { try { await addDoc(collection(db, `artifacts/${appId}/public/data/reminders`), { text: textInput.value, date: dateInput.value }); textInput.value = ''; dateInput.value = ''; showToast("یادآور با موفقیت اضافه شد."); } catch (error) { console.error("Error adding reminder:", error); showToast("خطا در افزودن یادآور.", "error"); } }
-            });
-        };
+    // فعال کردن تقویم شمسی برای فیلد یادآور در داشبورد
+    activatePersianDatePicker('reminderDate');
+
+    document.getElementById('addReminderBtn')?.addEventListener('click', async () => {
+        const textInput = document.getElementById('reminderText'); 
+        const dateInput = document.getElementById('reminderDate');
+        if (textInput.value && dateInput.value) { 
+            try { 
+                // تبدیل تاریخ شمسی به میلادی قبل از ذخیره
+                const gregorianDate = persianToEnglishDate(dateInput.value);
+                if (!gregorianDate) {
+                    showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+                    return;
+                }
+                await addDoc(collection(db, `artifacts/${appId}/public/data/reminders`), { text: textInput.value, date: gregorianDate }); 
+                textInput.value = ''; 
+                dateInput.value = ''; 
+                showToast("یادآور با موفقیت اضافه شد."); 
+            } catch (error) { 
+                console.error("Error adding reminder:", error); 
+                showToast("خطا در افزودن یادآور.", "error"); 
+            } 
+        }
+    });
+};
         const renderEmployeeTable = () => {
             const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || ''; const departmentFilter = document.getElementById('departmentFilter')?.value || ''; const statusFilter = document.getElementById('statusFilter')?.value || '';
             const filteredEmployees = state.employees.filter(emp => (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) && (!departmentFilter || emp.department === departmentFilter) && (!statusFilter || emp.status === statusFilter));
@@ -1237,59 +1313,69 @@ const toPersianDate = (dateInput) => {
             });
         };
 
-        const showExpenseForm = () => {
-            modalTitle.innerText = 'افزودن هزینه جدید';
-            const cardOptions = state.pettyCashCards.map(c => `<option value="${c.firestoreId}">${c.name}</option>`).join('');
-            modalContent.innerHTML = `
-                <form id="expense-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block font-medium">تاریخ</label><input type="date" id="expense-date" value="${new Date().toISOString().split('T')[0]}" class="w-full p-2 border rounded-md" required></div>
-                        <div><label class="block font-medium">مبلغ (تومان)</label><input type="number" id="expense-amount" class="w-full p-2 border rounded-md" required></div>
-                        <div class="md:col-span-2"><label class="block font-medium">شرح هزینه</label><input type="text" id="expense-item" class="w-full p-2 border rounded-md" required></div>
-                        <div><label class="block font-medium">کارت تنخواه</label><select id="expense-card" class="w-full p-2 border rounded-md" required>${cardOptions}</select></div>
-                        <div><label class="block font-medium">لینک فاکتور (اختیاری)</label><input type="url" id="expense-invoice" class="w-full p-2 border rounded-md"></div>
-                    </div>
-                    <div class="pt-6 flex justify-end"><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div>
-                </form>
-            `;
-            openModal(mainModal, mainModalContainer);
-            document.getElementById('expense-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const amount = Number(document.getElementById('expense-amount').value);
-                const cardId = document.getElementById('expense-card').value;
-                const formData = {
-                    date: document.getElementById('expense-date').value,
-                    amount: amount,
-                    item: document.getElementById('expense-item').value,
-                    cardId: cardId,
-                    invoiceUrl: document.getElementById('expense-invoice').value,
-                    createdAt: serverTimestamp()
-                };
-                try {
-                    const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId);
-                    const cardSnap = await getDoc(cardRef);
-                    if (cardSnap.exists()) {
-                        const currentBalance = cardSnap.data().balance || 0;
-                        if (currentBalance < amount) {
-                            showToast('موجودی کارت کافی نیست.', 'error');
-                            return;
-                        }
-                        const expenseCollectionRef = collection(db, `artifacts/${appId}/public/data/expenses`);
-                        const batch = writeBatch(db);
-                        batch.set(doc(expenseCollectionRef), formData);
-                        batch.update(cardRef, { balance: currentBalance - amount });
-                        await batch.commit();
-                        closeModal(mainModal, mainModalContainer);
-                        showToast('هزینه با موفقیت ثبت شد.');
-                    } else {
-                        showToast('کارت تنخواه انتخاب شده معتبر نیست.', 'error');
-                    }
-                } catch (error) {
-                    console.error("Error saving expense:", error);
-                    showToast('خطا در ذخیره هزینه.', 'error');
-                }
-            });
+       const showExpenseForm = () => {
+    modalTitle.innerText = 'افزودن هزینه جدید';
+    const cardOptions = state.pettyCashCards.map(c => `<option value="${c.firestoreId}">${c.name}</option>`).join('');
+    modalContent.innerHTML = `
+        <form id="expense-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label class="block font-medium">تاریخ</label><input type="text" id="expense-date" class="w-full p-2 border rounded-md" required></div>
+                <div><label class="block font-medium">مبلغ (تومان)</label><input type="number" id="expense-amount" class="w-full p-2 border rounded-md" required></div>
+                <div class="md:col-span-2"><label class="block font-medium">شرح هزینه</label><input type="text" id="expense-item" class="w-full p-2 border rounded-md" required></div>
+                <div><label class="block font-medium">کارت تنخواه</label><select id="expense-card" class="w-full p-2 border rounded-md" required>${cardOptions}</select></div>
+                <div><label class="block font-medium">لینک فاکتور (اختیاری)</label><input type="url" id="expense-invoice" class="w-full p-2 border rounded-md"></div>
+            </div>
+            <div class="pt-6 flex justify-end"><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div>
+        </form>
+    `;
+    openModal(mainModal, mainModalContainer);
+    activatePersianDatePicker('expense-date', new Date()); // فعال‌سازی تقویم شمسی با تاریخ امروز
+
+    document.getElementById('expense-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const amount = Number(document.getElementById('expense-amount').value);
+        const cardId = document.getElementById('expense-card').value;
+        const persianDate = document.getElementById('expense-date').value;
+        const gregorianDate = persianToEnglishDate(persianDate);
+
+        if (!gregorianDate) {
+            showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+            return;
+        }
+
+        const formData = {
+            date: gregorianDate,
+            amount: amount,
+            item: document.getElementById('expense-item').value,
+            cardId: cardId,
+            invoiceUrl: document.getElementById('expense-invoice').value,
+            createdAt: serverTimestamp()
         };
+        try {
+            const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId);
+            const cardSnap = await getDoc(cardRef);
+            if (cardSnap.exists()) {
+                const currentBalance = cardSnap.data().balance || 0;
+                if (currentBalance < amount) {
+                    showToast('موجودی کارت کافی نیست.', 'error');
+                    return;
+                }
+                const expenseCollectionRef = collection(db, `artifacts/${appId}/public/data/expenses`);
+                const batch = writeBatch(db);
+                batch.set(doc(expenseCollectionRef), formData);
+                batch.update(cardRef, { balance: currentBalance - amount });
+                await batch.commit();
+                closeModal(mainModal, mainModalContainer);
+                showToast('هزینه با موفقیت ثبت شد.');
+            } else {
+                showToast('کارت تنخواه انتخاب شده معتبر نیست.', 'error');
+            }
+        } catch (error) {
+            console.error("Error saving expense:", error);
+            showToast('خطا در ذخیره هزینه.', 'error');
+        }
+    });
+};
         // --- [FIX END] ---
 
         // --- MODAL & FORM LOGIC ---
@@ -1911,60 +1997,121 @@ const toPersianDate = (dateInput) => {
         // --- [FIX END] ---
 
         const showEditPersonalInfoForm = (emp) => {
-            modalTitle.innerText = `ویرایش اطلاعات پرسنلی برای ${emp.name}`;
-            const info = emp.personalInfo || {};
-            modalContent.innerHTML = `<form id="edit-personal-info-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"><div><label class="block font-medium">کد ملی</label><input type="text" id="nationalId" value="${info.nationalId || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">تاریخ تولد</label><input type="date" id="birthDate" value="${info.birthDate || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">جنسیت</label><select id="gender" class="w-full p-2 border rounded-md"><option value="نامشخص" ${emp.gender === 'نامشخص' ? 'selected' : ''}>نامشخص</option><option value="مرد" ${emp.gender === 'مرد' ? 'selected' : ''}>مرد</option><option value="زن" ${emp.gender === 'زن' ? 'selected' : ''}>زن</option></select></div><div><label class="block font-medium">شماره موبایل</label><input type="tel" id="phone" value="${info.phone || ''}" class="w-full p-2 border rounded-md"></div><div class="md:col-span-2"><label class="block font-medium">آدرس</label><input type="text" id="address" value="${info.address || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">وضعیت نظام وظیفه</label><input type="text" id="militaryStatus" value="${info.militaryStatus || ''}" class="w-full p-2 border rounded-md"></div><hr class="md:col-span-2 my-2"><div><label class="block font-medium">نام مخاطب اضطراری</label><input type="text" id="emergencyContactName" value="${info.emergencyContactName || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">شماره مخاطب اضطراری</label><input type="tel" id="emergencyContactPhone" value="${info.emergencyContactPhone || ''}" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-personal" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
-            document.getElementById('back-to-profile-personal').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-            document.getElementById('edit-personal-info-form').addEventListener('submit', async (e) => { e.preventDefault(); const updatedInfo = { nationalId: document.getElementById('nationalId').value, birthDate: document.getElementById('birthDate').value, phone: document.getElementById('phone').value, address: document.getElementById('address').value, militaryStatus: document.getElementById('militaryStatus').value, emergencyContactName: document.getElementById('emergencyContactName').value, emergencyContactPhone: document.getElementById('emergencyContactPhone').value, }; const gender = document.getElementById('gender').value; try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { personalInfo: updatedInfo, gender: gender }); showToast("اطلاعات پرسنلی به‌روزرسانی شد."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error updating personal info:", error); showToast("خطا در به‌روزرسانی اطلاعات.", "error"); } });
-        };
+    modalTitle.innerText = `ویرایش اطلاعات پرسنلی برای ${emp.name}`;
+    const info = emp.personalInfo || {};
+    modalContent.innerHTML = `<form id="edit-personal-info-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"><div><label class="block font-medium">کد ملی</label><input type="text" id="nationalId" value="${info.nationalId || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">تاریخ تولد</label><input type="text" id="birthDate" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">جنسیت</label><select id="gender" class="w-full p-2 border rounded-md"><option value="نامشخص" ${emp.gender === 'نامشخص' ? 'selected' : ''}>نامشخص</option><option value="مرد" ${emp.gender === 'مرد' ? 'selected' : ''}>مرد</option><option value="زن" ${emp.gender === 'زن' ? 'selected' : ''}>زن</option></select></div><div><label class="block font-medium">شماره موبایل</label><input type="tel" id="phone" value="${info.phone || ''}" class="w-full p-2 border rounded-md"></div><div class="md:col-span-2"><label class="block font-medium">آدرس</label><input type="text" id="address" value="${info.address || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">وضعیت نظام وظیفه</label><input type="text" id="militaryStatus" value="${info.militaryStatus || ''}" class="w-full p-2 border rounded-md"></div><hr class="md:col-span-2 my-2"><div><label class="block font-medium">نام مخاطب اضطراری</label><input type="text" id="emergencyContactName" value="${info.emergencyContactName || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">شماره مخاطب اضطراری</label><input type="tel" id="emergencyContactPhone" value="${info.emergencyContactPhone || ''}" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-personal" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+
+    activatePersianDatePicker('birthDate', info.birthDate); // فعال‌سازی تقویم شمسی
+
+    document.getElementById('back-to-profile-personal').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+    document.getElementById('edit-personal-info-form').addEventListener('submit', async (e) => { 
+        e.preventDefault(); 
+        const gregorianBirthDate = persianToEnglishDate(document.getElementById('birthDate').value);
+        const updatedInfo = { 
+            nationalId: document.getElementById('nationalId').value, 
+            birthDate: gregorianBirthDate, 
+            phone: document.getElementById('phone').value, 
+            address: document.getElementById('address').value, 
+            militaryStatus: document.getElementById('militaryStatus').value, 
+            emergencyContactName: document.getElementById('emergencyContactName').value, 
+            emergencyContactPhone: document.getElementById('emergencyContactPhone').value, 
+        }; 
+        const gender = document.getElementById('gender').value; 
+        try { 
+            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
+            await updateDoc(docRef, { personalInfo: updatedInfo, gender: gender }); 
+            showToast("اطلاعات پرسنلی به‌روزرسانی شد."); 
+            viewEmployeeProfile(emp.firestoreId); 
+        } catch (error) { 
+            console.error("Error updating personal info:", error); 
+            showToast("خطا در به‌روزرسانی اطلاعات.", "error"); 
+        } 
+    });
+};
         
         const showDisciplinaryForm = (emp) => {
-            modalTitle.innerText = `ثبت مورد انضباطی برای ${emp.name}`;
-            modalContent.innerHTML = `<form id="disciplinary-form" class="space-y-4"><div><label class="block font-medium">نوع</label><select id="disciplinary-type" class="w-full p-2 border rounded-md"><option value="تشویق">تشویق</option><option value="تذکر">تذکر</option></select></div><div><label class="block font-medium">تاریخ</label><input type="date" id="disciplinary-date" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">دلیل</label><textarea id="disciplinary-reason" rows="3" class="w-full p-2 border rounded-md" required></textarea></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-disciplinary" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ثبت</button></div></form>`;
-            document.getElementById('back-to-profile-disciplinary').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-            document.getElementById('disciplinary-form').addEventListener('submit', async (e) => { e.preventDefault(); const newRecord = { type: document.getElementById('disciplinary-type').value, date: document.getElementById('disciplinary-date').value, reason: document.getElementById('disciplinary-reason').value, }; const updatedHistory = [...(emp.disciplinaryHistory || []), newRecord]; try { const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); await updateDoc(docRef, { disciplinaryHistory: updatedHistory }); showToast("مورد انضباطی با موفقیت ثبت شد."); viewEmployeeProfile(emp.firestoreId); } catch (error) { console.error("Error adding disciplinary record:", error); showToast("خطا در ثبت مورد انضباطی.", "error"); } });
-        };
+    modalTitle.innerText = `ثبت مورد انضباطی برای ${emp.name}`;
+    modalContent.innerHTML = `<form id="disciplinary-form" class="space-y-4"><div><label class="block font-medium">نوع</label><select id="disciplinary-type" class="w-full p-2 border rounded-md"><option value="تشویق">تشویق</option><option value="تذکر">تذکر</option></select></div><div><label class="block font-medium">تاریخ</label><input type="text" id="disciplinary-date" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">دلیل</label><textarea id="disciplinary-reason" rows="3" class="w-full p-2 border rounded-md" required></textarea></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-disciplinary" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ثبت</button></div></form>`;
 
-        const showContractForm = (emp, contractIndex = null) => {
-             const isEditing = contractIndex !== null;
-             const contract = isEditing ? emp.contractHistory[contractIndex] : {};
-             modalTitle.innerText = isEditing ? `ویرایش قرارداد برای ${emp.name}` : `ثبت قرارداد جدید برای ${emp.name}`;
-             modalContent.innerHTML = `<form id="contract-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block font-medium">تاریخ شروع</label><input type="date" id="contract-start" value="${contract.startDate || ''}" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">تاریخ پایان</label><input type="date" id="contract-end" value="${contract.endDate || ''}" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">حقوق ناخالص (ریال)</label><input type="number" id="contract-gross" value="${contract.grossSalary || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">حقوق خالص (ریال)</label><input type="number" id="contract-net" value="${contract.netSalary || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">مبلغ سفته (ریال)</label><input type="number" id="contract-promissory" value="${contract.promissoryNote || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">فایل قرارداد (نام فایل)</label><input type="text" id="contract-file" value="${contract.fileName || ''}" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-contract" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
-            document.getElementById('back-to-profile-contract').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-            document.getElementById('contract-form').addEventListener('submit', async (e) => { 
-                e.preventDefault(); 
-                const newContract = { 
-                    startDate: document.getElementById('contract-start').value, 
-                    endDate: document.getElementById('contract-end').value, 
-                    grossSalary: Number(document.getElementById('contract-gross').value), 
-                    netSalary: Number(document.getElementById('contract-net').value), 
-                    promissoryNote: Number(document.getElementById('contract-promissory').value), 
-                    fileName: document.getElementById('contract-file').value, 
-                }; 
-                let updatedHistory = [...(emp.contractHistory || [])]; 
-                if(isEditing) { 
-                    updatedHistory[contractIndex] = newContract; 
-                } else { 
-                    updatedHistory.push(newContract); 
-                } 
-                // Sort contracts by start date to easily find the latest one
-                updatedHistory.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-                const latestContractEndDate = updatedHistory[0]?.endDate || null;
+    activatePersianDatePicker('disciplinary-date', new Date()); // فعال‌سازی تقویم شمسی
 
-                try { 
-                    const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
-                    await updateDoc(docRef, { 
-                        contractHistory: updatedHistory,
-                        contractEndDate: latestContractEndDate // Update top-level field for reminders
-                    }); 
-                    showToast("قرارداد با موفقیت ذخیره شد."); 
-                    viewEmployeeProfile(emp.firestoreId); 
-                } catch (error) { 
-                    console.error("Error saving contract record:", error); 
-                    showToast("خطا در ثبت قرارداد.", "error"); 
-                } 
-            });
-        };
+    document.getElementById('back-to-profile-disciplinary').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+    document.getElementById('disciplinary-form').addEventListener('submit', async (e) => { 
+        e.preventDefault(); 
+        const gregorianDate = persianToEnglishDate(document.getElementById('disciplinary-date').value);
+        if (!gregorianDate) {
+            showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+            return;
+        }
+        const newRecord = { 
+            type: document.getElementById('disciplinary-type').value, 
+            date: gregorianDate, 
+            reason: document.getElementById('disciplinary-reason').value, 
+        }; 
+        const updatedHistory = [...(emp.disciplinaryHistory || []), newRecord]; 
+        try { 
+            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
+            await updateDoc(docRef, { disciplinaryHistory: updatedHistory }); 
+            showToast("مورد انضباطی با موفقیت ثبت شد."); 
+            viewEmployeeProfile(emp.firestoreId); 
+        } catch (error) { 
+            console.error("Error adding disciplinary record:", error); 
+            showToast("خطا در ثبت مورد انضباطی.", "error"); 
+        } 
+    });
+};
+
+       const showContractForm = (emp, contractIndex = null) => {
+    const isEditing = contractIndex !== null;
+    const contract = isEditing ? emp.contractHistory[contractIndex] : {};
+    modalTitle.innerText = isEditing ? `ویرایش قرارداد برای ${emp.name}` : `ثبت قرارداد جدید برای ${emp.name}`;
+    modalContent.innerHTML = `<form id="contract-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block font-medium">تاریخ شروع</label><input type="text" id="contract-start" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">تاریخ پایان</label><input type="text" id="contract-end" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">حقوق ناخالص (ریال)</label><input type="number" id="contract-gross" value="${contract.grossSalary || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">حقوق خالص (ریال)</label><input type="number" id="contract-net" value="${contract.netSalary || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">مبلغ سفته (ریال)</label><input type="number" id="contract-promissory" value="${contract.promissoryNote || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">فایل قرارداد (نام فایل)</label><input type="text" id="contract-file" value="${contract.fileName || ''}" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-contract" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+
+    activatePersianDatePicker('contract-start', contract.startDate);
+    activatePersianDatePicker('contract-end', contract.endDate);
+
+    document.getElementById('back-to-profile-contract').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+    document.getElementById('contract-form').addEventListener('submit', async (e) => { 
+        e.preventDefault(); 
+        const gregorianStart = persianToEnglishDate(document.getElementById('contract-start').value);
+        const gregorianEnd = persianToEnglishDate(document.getElementById('contract-end').value);
+
+        if (!gregorianStart || !gregorianEnd) {
+            showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+            return;
+        }
+
+        const newContract = { 
+            startDate: gregorianStart, 
+            endDate: gregorianEnd, 
+            grossSalary: Number(document.getElementById('contract-gross').value), 
+            netSalary: Number(document.getElementById('contract-net').value), 
+            promissoryNote: Number(document.getElementById('contract-promissory').value), 
+            fileName: document.getElementById('contract-file').value, 
+        }; 
+        let updatedHistory = [...(emp.contractHistory || [])]; 
+        if(isEditing) { 
+            updatedHistory[contractIndex] = newContract; 
+        } else { 
+            updatedHistory.push(newContract); 
+        } 
+        updatedHistory.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+        const latestContractEndDate = updatedHistory[0]?.endDate || null;
+
+        try { 
+            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
+            await updateDoc(docRef, { 
+                contractHistory: updatedHistory,
+                contractEndDate: latestContractEndDate
+            }); 
+            showToast("قرارداد با موفقیت ذخیره شد."); 
+            viewEmployeeProfile(emp.firestoreId); 
+        } catch (error) { 
+            console.error("Error saving contract record:", error); 
+            showToast("خطا در ثبت قرارداد.", "error"); 
+        } 
+    });
+};
         
         const deleteContract = async (emp, index) => {
             showConfirmationModal("حذف قرارداد", "آیا از حذف این سابقه قرارداد مطمئن هستید؟", async () => {
@@ -2011,90 +2158,106 @@ const toPersianDate = (dateInput) => {
             });
         };
 
-        const showPerformanceForm = (emp, reviewIndex = null) => {
-            const isEditing = reviewIndex !== null;
-            const review = isEditing ? emp.performanceHistory[reviewIndex] : {};
-            modalTitle.innerText = isEditing ? `ویرایش ارزیابی عملکرد برای ${emp.name}` : `ثبت ارزیابی عملکرد جدید`;
-            modalContent.innerHTML = `
-                <form id="performance-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block font-medium">تاریخ ارزیابی</label><input type="date" id="perf-date" value="${review.reviewDate || new Date().toISOString().split('T')[0]}" class="w-full p-2 border rounded-md" required></div>
-                        <div><label class="block font-medium">نام ارزیاب</label><input type="text" id="perf-reviewer" value="${review.reviewer || ''}" class="w-full p-2 border rounded-md" required></div>
-                        <div class="md:col-span-2"><label class="block font-medium">امتیاز کلی (۱ تا ۵)</label><input type="number" step="0.1" min="0" max="5" id="perf-score" value="${review.overallScore || ''}" class="w-full p-2 border rounded-md" required></div>
-                        <div class="md:col-span-2"><label class="block font-medium">نقاط قوت</label><textarea id="perf-strengths" rows="3" class="w-full p-2 border rounded-md">${review.strengths || ''}</textarea></div>
-                        <div class="md:col-span-2"><label class="block font-medium">زمینه‌های قابل بهبود</label><textarea id="perf-improvements" rows="3" class="w-full p-2 border rounded-md">${review.areasForImprovement || ''}</textarea></div>
-                    </div>
-                    <div class="pt-6 flex justify-end gap-4">
-                        <button type="button" id="back-to-profile-perf" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button>
-                        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button>
-                    </div>
-                </form>
-            `;
-            document.getElementById('back-to-profile-perf').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-            document.getElementById('performance-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const newReview = {
-                    reviewDate: document.getElementById('perf-date').value,
-                    reviewer: document.getElementById('perf-reviewer').value,
-                    overallScore: parseFloat(document.getElementById('perf-score').value),
-                    strengths: document.getElementById('perf-strengths').value,
-                    areasForImprovement: document.getElementById('perf-improvements').value,
-                };
-                let updatedHistory = [...(emp.performanceHistory || [])];
-                if (isEditing) {
-                    updatedHistory[reviewIndex] = newReview;
-                } else {
-                    updatedHistory.push(newReview);
-                }
-                try {
-                    const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
-                    await updateDoc(docRef, { performanceHistory: updatedHistory });
-                    showToast("ارزیابی عملکرد با موفقیت ذخیره شد.");
-                    viewEmployeeProfile(emp.firestoreId);
-                } catch (error) {
-                    console.error("Error saving performance review:", error);
-                    showToast("خطا در ذخیره ارزیابی.", "error");
-                }
-            });
-        };
+       const showPerformanceForm = (emp, reviewIndex = null) => {
+    const isEditing = reviewIndex !== null;
+    const review = isEditing ? emp.performanceHistory[reviewIndex] : {};
+    modalTitle.innerText = isEditing ? `ویرایش ارزیابی عملکرد برای ${emp.name}` : `ثبت ارزیابی عملکرد جدید`;
+    modalContent.innerHTML = `
+        <form id="performance-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label class="block font-medium">تاریخ ارزیابی</label><input type="text" id="perf-date" class="w-full p-2 border rounded-md" required></div>
+                <div><label class="block font-medium">نام ارزیاب</label><input type="text" id="perf-reviewer" value="${review.reviewer || ''}" class="w-full p-2 border rounded-md" required></div>
+                <div class="md:col-span-2"><label class="block font-medium">امتیاز کلی (۱ تا ۵)</label><input type="number" step="0.1" min="0" max="5" id="perf-score" value="${review.overallScore || ''}" class="w-full p-2 border rounded-md" required></div>
+                <div class="md:col-span-2"><label class="block font-medium">نقاط قوت</label><textarea id="perf-strengths" rows="3" class="w-full p-2 border rounded-md">${review.strengths || ''}</textarea></div>
+                <div class="md:col-span-2"><label class="block font-medium">زمینه‌های قابل بهبود</label><textarea id="perf-improvements" rows="3" class="w-full p-2 border rounded-md">${review.areasForImprovement || ''}</textarea></div>
+            </div>
+            <div class="pt-6 flex justify-end gap-4">
+                <button type="button" id="back-to-profile-perf" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button>
+                <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button>
+            </div>
+        </form>
+    `;
 
-        const showCareerPathForm = (emp) => {
-            modalTitle.innerText = `ثبت رویداد شغلی برای ${emp.name}`;
-            modalContent.innerHTML = `
-                <form id="career-path-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block font-medium">تاریخ</label><input type="date" id="career-date" value="${new Date().toISOString().split('T')[0]}" class="w-full p-2 border rounded-md" required></div>
-                        <div><label class="block font-medium">نوع رویداد</label><select id="career-type" class="w-full p-2 border rounded-md"><option value="ترفیع">ترفیع</option><option value="جابجایی افقی">جابجایی افقی</option><option value="تغییر سمت">تغییر سمت</option></select></div>
-                        <div><label class="block font-medium">سمت جدید</label><input type="text" id="career-title" class="w-full p-2 border rounded-md" required></div>
-                        <div><label class="block font-medium">دپارتمان جدید</label><input type="text" id="career-department" value="${emp.department}" class="w-full p-2 border rounded-md" required></div>
-                    </div>
-                    <div class="pt-6 flex justify-end gap-4">
-                        <button type="button" id="back-to-profile-career" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button>
-                        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ثبت</button>
-                    </div>
-                </form>
-            `;
-            document.getElementById('back-to-profile-career').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-            document.getElementById('career-path-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const newEntry = {
-                    date: document.getElementById('career-date').value,
-                    type: document.getElementById('career-type').value,
-                    title: document.getElementById('career-title').value,
-                    department: document.getElementById('career-department').value,
-                };
-                const updatedPath = [...(emp.careerPath || []), newEntry];
-                try {
-                    const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
-                    await updateDoc(docRef, { careerPath: updatedPath });
-                    showToast("رویداد شغلی با موفقیت ثبت شد.");
-                    viewEmployeeProfile(emp.firestoreId);
-                } catch (error) {
-                    console.error("Error saving career path:", error);
-                    showToast("خطا در ثبت رویداد شغلی.", "error");
-                }
-            });
+    activatePersianDatePicker('perf-date', review.reviewDate || new Date());
+
+    document.getElementById('back-to-profile-perf').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+    document.getElementById('performance-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const gregorianDate = persianToEnglishDate(document.getElementById('perf-date').value);
+        if (!gregorianDate) {
+            showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+            return;
+        }
+        const newReview = {
+            reviewDate: gregorianDate,
+            reviewer: document.getElementById('perf-reviewer').value,
+            overallScore: parseFloat(document.getElementById('perf-score').value),
+            strengths: document.getElementById('perf-strengths').value,
+            areasForImprovement: document.getElementById('perf-improvements').value,
         };
+        let updatedHistory = [...(emp.performanceHistory || [])];
+        if (isEditing) {
+            updatedHistory[reviewIndex] = newReview;
+        } else {
+            updatedHistory.push(newReview);
+        }
+        try {
+            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+            await updateDoc(docRef, { performanceHistory: updatedHistory });
+            showToast("ارزیابی عملکرد با موفقیت ذخیره شد.");
+            viewEmployeeProfile(emp.firestoreId);
+        } catch (error) {
+            console.error("Error saving performance review:", error);
+            showToast("خطا در ذخیره ارزیابی.", "error");
+        }
+    });
+};
+
+      const showCareerPathForm = (emp) => {
+    modalTitle.innerText = `ثبت رویداد شغلی برای ${emp.name}`;
+    modalContent.innerHTML = `
+        <form id="career-path-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label class="block font-medium">تاریخ</label><input type="text" id="career-date" class="w-full p-2 border rounded-md" required></div>
+                <div><label class="block font-medium">نوع رویداد</label><select id="career-type" class="w-full p-2 border rounded-md"><option value="ترفیع">ترفیع</option><option value="جابجایی افقی">جابجایی افقی</option><option value="تغییر سمت">تغییر سمت</option></select></div>
+                <div><label class="block font-medium">سمت جدید</label><input type="text" id="career-title" class="w-full p-2 border rounded-md" required></div>
+                <div><label class="block font-medium">دپارتمان جدید</label><input type="text" id="career-department" value="${emp.department}" class="w-full p-2 border rounded-md" required></div>
+            </div>
+            <div class="pt-6 flex justify-end gap-4">
+                <button type="button" id="back-to-profile-career" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button>
+                <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ثبت</button>
+            </div>
+        </form>
+    `;
+
+    activatePersianDatePicker('career-date', new Date());
+
+    document.getElementById('back-to-profile-career').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+    document.getElementById('career-path-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const gregorianDate = persianToEnglishDate(document.getElementById('career-date').value);
+         if (!gregorianDate) {
+            showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+            return;
+        }
+        const newEntry = {
+            date: gregorianDate,
+            type: document.getElementById('career-type').value,
+            title: document.getElementById('career-title').value,
+            department: document.getElementById('career-department').value,
+        };
+        const updatedPath = [...(emp.careerPath || []), newEntry];
+        try {
+            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+            await updateDoc(docRef, { careerPath: updatedPath });
+            showToast("رویداد شغلی با موفقیت ثبت شد.");
+            viewEmployeeProfile(emp.firestoreId);
+        } catch (error) {
+            console.error("Error saving career path:", error);
+            showToast("خطا در ثبت رویداد شغلی.", "error");
+        }
+    });
+};
 
         const setupSurveysPageListeners = () => {
             document.querySelectorAll('.create-survey-link-btn').forEach(button => {
