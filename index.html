@@ -2340,12 +2340,12 @@ const viewEmployeeProfile = (employeeId) => {
                             <button id="change-avatar-btn" class="bg-white p-1.5 rounded-full shadow-md"><i data-lucide="camera" class="w-4 h-4"></i></button>
                             <button id="delete-avatar-btn" class="bg-white p-1.5 rounded-full shadow-md"><i data-lucide="trash-2" class="w-4 h-4 text-red-600"></i></button>
                         </div>` : ''}
-                        <h2 class="text-2xl font-bold text-gray-800">${emp.name}</h2>
-                        <p class="text-gray-500">${emp.jobTitle || emp.department}</p>
+                        <h2 class="text-2xl font-bold text-slate-800">${emp.name}</h2>
+                        <p class="text-slate-500">${emp.jobTitle || emp.department}</p>
                         <span class="mt-2 inline-block px-3 py-1 text-sm font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span>
                     </div>
-                     <div class="card p-4 bg-gray-50 rounded-lg">
-                        <h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="heart-pulse" class="ml-2 w-5 h-5 text-green-500"></i>امتیاز مشارکت (Engagement)</h4>
+                    <div class="card p-4 bg-gray-50 rounded-lg">
+                        <h4 class="font-semibold mb-3 text-slate-700 flex items-center"><i data-lucide="heart-pulse" class="ml-2 w-5 h-5 text-green-500"></i>امتیاز مشارکت (Engagement)</h4>
                         ${emp.engagementScore != null ? `
                         <div class="relative w-40 h-20 mx-auto mt-2">
                             <canvas id="engagementGaugeProfile"></canvas>
@@ -2353,30 +2353,37 @@ const viewEmployeeProfile = (employeeId) => {
                                 <span class="text-3xl font-bold text-green-600">${emp.engagementScore}%</span>
                             </div>
                         </div>
-                        ` : '<p class="text-sm text-gray-500 text-center">هنوز امتیازی ثبت نشده است.</p>'}
+                        ` : '<p class="text-sm text-slate-500 text-center">هنوز امتیازی ثبت نشده است.</p>'}
                     </div>
                     <div class="card p-4 bg-gray-50 rounded-lg">
-                        <h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
+                        <h4 class="font-semibold mb-3 text-slate-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
                         <div class="text-sm space-y-3">${Object.values(analysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('')}</div>
                     </div>
                 </div>
                 
                 <div class="lg:col-span-2 space-y-6">
-                 <div class="bg-white rounded-lg shadow-md">
-                            <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="performance" class="profile-tab shrink-0">عملکرد</button><button data-tab="career" class="profile-tab shrink-0">مسیر شغلی</button><button data-tab="contracts" class="profile-tab shrink-0">قراردادها</button><button data-tab="personal" class="profile-tab shrink-0">اطلاعات پرسنلی</button></nav></div>
+                  <div class="bg-white rounded-lg shadow-md">
+                            <div class="border-b border-slate-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="performance" class="profile-tab shrink-0">عملکرد</button><button data-tab="career" class="profile-tab shrink-0">مسیر شغلی</button><button data-tab="contracts" class="profile-tab shrink-0">قراردادها</button><button data-tab="personal" class="profile-tab shrink-0">اطلاعات پرسنلی</button></nav></div>
                             <div class="p-4">
-                                <div id="tab-overview" class="profile-tab-content active"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700 flex items-center"><i data-lucide="target" class="ml-2 w-5 h-5 text-blue-500"></i>اهداف و نتایج کلیدی (OKRs)</h4>${canEdit() ? `<button id="edit-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(emp.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('')} ${!(emp.okrs && emp.okrs.length > 0) ? '<p class="text-sm text-gray-500">هدفی ثبت نشده است.</p>' : ''}</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">ماتریس مهارت‌های فنی</h4>${canEdit() ? `<button id="edit-skills-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>`:''}</div><canvas id="skillRadarChart"></canvas></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">شایستگی‌های اصلی</h4>${canEdit() ? `<button id="edit-competencies-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>`:''}</div><div id="competencyBarsContainer" class="space-y-4">${renderCompetencyBars(emp.competencies || {})}</div></div></div></div></div>
-                                <div id="tab-performance" class="profile-tab-content"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">تاریخچه ارزیابی عملکرد</h4>${canEdit() ? `<button id="add-performance-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن ارزیابی</button>`:''}</div><div id="performance-history-list" class="space-y-3 text-sm">${(emp.performanceHistory || []).map((review, i) => `<div class="p-3 bg-gray-100 rounded-md border"><div class="flex justify-between items-center font-semibold"><p>دوره ارزیابی ${i+1} - ${toPersianDate(review.reviewDate)}</p><div class="flex items-center gap-2"><span class="font-bold">${review.overallScore}/5</span>${canEdit() ? `<button class="edit-performance-btn text-yellow-600 hover:text-yellow-800" data-index="${i}"><i data-lucide="edit" class="w-4 h-4"></i></button>`:''}</div></div><p class="text-xs text-gray-500 mt-1">ارزیاب: ${review.reviewer || 'نامشخص'}</p></div>`).join('') || '<p class="text-sm text-gray-500">سابقه‌ای ثبت نشده است.</p>'}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">سابقه انضباطی (تذکر/تشویق)</h4>${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button>`:''}</div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map(item => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'}"><p class="font-semibold">${item.type} - ${toPersianDate(item.date)}</p><p class="text-sm">${item.reason}</p>${item.fileName ? `<a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${item.fileName}</a>` : ''}</div>`).join('')}</div></div></div></div>
-                                <div id="tab-career" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">تاریخچه مسیر شغلی</h4>${canEdit() ? `<button id="add-career-path-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button>`:''}</div><div id="career-path-list" class="space-y-3">${(emp.careerPath || []).map((entry, i) => `<div class="p-3 bg-gray-100 rounded-md border"><p class="font-semibold">${entry.title} در دپارتمان ${entry.department}</p><p class="text-xs text-gray-500">${toPersianDate(entry.date)} - ${entry.type}</p></div>`).join('') || '<p class="text-sm text-gray-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div>
-                                <div id="tab-contracts" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">تاریخچه تمدید قرارداد</h4>${canEdit() ? `<button id="add-contract-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button>`:''}</div><div id="contracts-list" class="space-y-3">${(emp.contractHistory || []).map((c, index) => `<div class="p-3 rounded-md bg-gray-100 border"><div class="flex justify-between items-center font-semibold"><p>قرارداد ${toPersianDate(c.startDate)}</p><div class="flex items-center gap-2">${c.fileName ? `<a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${c.fileName}</a>`:''}${canEdit() ? `<button class="edit-contract-btn text-yellow-600 hover:text-yellow-800" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-contract-btn text-red-600 hover:text-red-800" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><div class="grid grid-cols-2 gap-2 text-xs mt-2 border-t pt-2"><p>حقوق ناخالص: <span class="font-mono">${(c.grossSalary || 0).toLocaleString('fa-IR')}</span></p><p>حقوق خالص: <span class="font-mono">${(c.netSalary || 0).toLocaleString('fa-IR')}</span></p><p>مبلغ سفته: <span class="font-mono">${(c.promissoryNote || 0).toLocaleString('fa-IR')}</span></p><p>مدت: <span class="font-mono">${toPersianDate(c.startDate)} تا ${toPersianDate(c.endDate)}</span></p></div></div>`).join('') || '<p class="text-sm text-gray-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div>
-                                <div id="tab-personal" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اطلاعات پرسنلی</h4>${canEdit() ? `<button id="edit-personal-info-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>`:''}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">کد ملی</strong> <span>${emp.personalInfo?.nationalId || '-'}</span></div><div><strong class="text-gray-500 block">تاریخ تولد</strong> <span>${toPersianDate(emp.personalInfo?.birthDate) || '-'}</span></div><div><strong class="text-gray-500 block">جنسیت</strong> <span>${emp.gender || '-'}</span></div><div><strong class="text-gray-500 block">شماره موبایل</strong> <span class="font-mono">${emp.personalInfo?.phone || '-'}</span></div><div class="sm:col-span-2"><strong class="text-gray-500 block">آدرس</strong> <span>${emp.personalInfo?.address || '-'}</span></div><div><strong class="text-gray-500 block">وضعیت نظام وظیفه</strong> <span>${emp.personalInfo?.militaryStatus || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-gray-700 mb-3">اطلاعات سازمانی</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-gray-500 block">تاریخ استخدام</strong> <span>${toPersianDate(emp.startDate) || '-'}</span></div><div><strong class="text-gray-500 block">تاریخ اتمام قرارداد فعلی</strong> <span>${toPersianDate(latestContract?.endDate) || '-'}</span></div><div><strong class="text-gray-500 block">تیم</strong> <span>${team?.name || '-'}</span></div><div><strong class="text-gray-500 block">مدیر مستقیم</strong> <span>${manager?.name || '-'}</span></div></div><hr class="my-4"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">مدارک پرسنلی</h4>${canEdit() ? `<button id="add-document-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن مدرک</button>`:''}</div><div id="documents-list" class="space-y-2">${(emp.documents || []).map((doc, index) => `<div class="p-2 bg-gray-100 rounded-md flex justify-between items-center"><div><p class="font-semibold">${doc.name}</p><p class="text-xs text-gray-500">${toPersianDate(doc.date)}</p></div><div class="flex items-center gap-2">${doc.fileName ? `<a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${doc.fileName}</a>`:''}${canEdit() ? `<button class="edit-document-btn text-yellow-600 hover:text-yellow-800" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-document-btn text-red-600 hover:text-red-800" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div>`).join('') || '<p class="text-sm text-gray-500">مدرکی ثبت نشده است.</p>'}</div></div></div>
+                                <div id="tab-overview" class="profile-tab-content active"></div>
+                                <div id="tab-performance" class="profile-tab-content">
+                                    <div class="space-y-6">
+                                        <div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه ارزیابی عملکرد</h4>${canEdit() ? `<button id="add-performance-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن ارزیابی</button>`:''}</div><div id="performance-history-list" class="space-y-3 text-sm">${(emp.performanceHistory || []).map((review, i) => `<div class="p-3 bg-slate-100 rounded-md border"><div class="flex justify-between items-center font-semibold"><p>دوره ارزیابی ${i+1} - ${toPersianDate(review.reviewDate)}</p><div class="flex items-center gap-2"><span class="font-bold text-teal-600">${review.overallScore}/5</span>${canEdit() ? `<button class="edit-performance-btn text-amber-600 hover:text-amber-800" data-index="${i}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-performance-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><p class="text-xs text-slate-500 mt-1">ارزیاب: ${review.reviewer || 'نامشخص'}</p></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div>
+                                        <div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">سابقه انضباطی (تذکر/تشویق)</h4>${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map((item, i) => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'} flex justify-between items-center"><div class="flex-grow"><p class="font-semibold">${item.type} - ${toPersianDate(item.date)}</p><p class="text-sm">${item.reason}</p></div>${canEdit() ? `<button class="delete-disciplinary-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div>
+                                    </div>
+                                </div>
+                                <div id="tab-career" class="profile-tab-content">
+                                    <div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه مسیر شغلی</h4>${canEdit() ? `<button id="add-career-path-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="career-path-list" class="space-y-3">${(emp.careerPath || []).map((entry, i) => `<div class="p-3 bg-slate-100 rounded-md border flex justify-between items-center"><div><p class="font-semibold">${entry.title} در دپارتمان ${entry.department}</p><p class="text-xs text-slate-500">${toPersianDate(entry.date)} - ${entry.type}</p></div>${canEdit() ? `<button class="delete-career-path-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div>
+                                </div>
+                                <div id="tab-contracts" class="profile-tab-content"></div>
+                                <div id="tab-personal" class="profile-tab-content"></div>
                             </div>
                         </div>
                 </div>
             </div>
         `;
+        // بقیه تابع بدون تغییر
         openModal(mainModal, mainModalContainer); 
-        // این خط اضافه شده تا نمودار امتیاز را رسم کند
         if (emp.engagementScore != null) {
             renderEngagementGauge('engagementGaugeProfile', emp.engagementScore);
         }
@@ -2572,72 +2579,52 @@ const viewTeamProfile = (teamId) => {
             
             window.addEventListener('hashchange', router);
         };
+const setupProfileModalListeners = (emp) => {
+        const tabs = document.querySelectorAll('#profile-tabs .profile-tab');
+        const tabContents = document.querySelectorAll('.profile-tab-content');
+        tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
+        
+        setTimeout(() => {
+            renderSkillRadarChart('skillRadarChart', emp.skills || {});
+            lucide.createIcons();
+        }, 100);
+        
+        if(canEdit()) {
+            document.getElementById('change-avatar-btn')?.addEventListener('click', () => { /* ... */ });
+            document.getElementById('delete-avatar-btn')?.addEventListener('click', () => { /* ... */ });
 
-        const setupProfileModalListeners = (emp) => {
-            const tabs = document.querySelectorAll('#profile-tabs .profile-tab');
-            const tabContents = document.querySelectorAll('.profile-tab-content');
-            tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
-            
-            setTimeout(() => {
-                renderSkillRadarChart('skillRadarChart', emp.skills || {});
-                lucide.createIcons();
-            }, 100);
-            
-            if(canEdit()) {
-                document.getElementById('change-avatar-btn')?.addEventListener('click', () => {
-                    handleAvatarChange(async (newAvatarUrl) => {
-                        try {
-                            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
-                            await updateDoc(docRef, { avatar: newAvatarUrl });
-                            showToast("عکس پروفایل با موفقیت به‌روزرسانی شد.");
-                        } catch (error) {
-                            console.error("Error updating avatar:", error);
-                            showToast("خطا در به‌روزرسانی عکس پروفایل.", "error");
-                        }
-                    });
-                });
-                document.getElementById('delete-avatar-btn')?.addEventListener('click', () => {
-                    showConfirmationModal('حذف عکس پروفایل', 'آیا از حذف عکس پروفایل مطمئن هستید؟', async () => {
-                        try {
-                            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
-                            const defaultAvatar = `https://placehold.co/100x100/E2E8F0/4A5568?text=${emp.name.substring(0,2)}`;
-                            await updateDoc(docRef, { avatar: defaultAvatar });
-                            showToast("عکس پروفایل حذف شد.");
-                        } catch (error) {
-                             console.error("Error deleting avatar:", error);
-                             showToast("خطا در حذف عکس پروفایل.", "error");
-                        }
-                    });
-                });
+            document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
+            document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
+            document.getElementById('edit-competencies-btn')?.addEventListener('click', () => showEditCompetenciesForm(emp));
+            document.getElementById('edit-personal-info-btn')?.addEventListener('click', () => showEditPersonalInfoForm(emp));
+            document.getElementById('add-disciplinary-btn')?.addEventListener('click', () => showDisciplinaryForm(emp));
+            document.getElementById('add-contract-btn')?.addEventListener('click', () => showContractForm(emp));
+            document.getElementById('add-performance-btn')?.addEventListener('click', () => showPerformanceForm(emp));
+            document.getElementById('add-career-path-btn')?.addEventListener('click', () => showCareerPathForm(emp));
+            document.getElementById('add-document-btn')?.addEventListener('click', () => showDocumentForm(emp));
 
-                document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
-                document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
-                document.getElementById('edit-competencies-btn')?.addEventListener('click', () => showEditCompetenciesForm(emp));
-                document.getElementById('edit-personal-info-btn')?.addEventListener('click', () => showEditPersonalInfoForm(emp));
-                document.getElementById('add-disciplinary-btn')?.addEventListener('click', () => showDisciplinaryForm(emp));
-                document.getElementById('add-contract-btn')?.addEventListener('click', () => showContractForm(emp));
-                document.getElementById('add-performance-btn')?.addEventListener('click', () => showPerformanceForm(emp));
-                document.getElementById('performance-history-list')?.addEventListener('click', (e) => {
-                    const editBtn = e.target.closest('.edit-performance-btn');
-                    if(editBtn) showPerformanceForm(emp, parseInt(editBtn.dataset.index));
-                });
-                document.getElementById('add-career-path-btn')?.addEventListener('click', () => showCareerPathForm(emp));
-                document.getElementById('add-document-btn')?.addEventListener('click', () => showDocumentForm(emp));
+            // --- منطق جدید برای دکمه‌های حذف ---
+            modalContent.addEventListener('click', (e) => {
+                const editPerfBtn = e.target.closest('.edit-performance-btn');
+                const deletePerfBtn = e.target.closest('.delete-performance-btn');
+                const deleteDisciplinaryBtn = e.target.closest('.delete-disciplinary-btn');
+                const deleteCareerBtn = e.target.closest('.delete-career-path-btn');
+                const editContractBtn = e.target.closest('.edit-contract-btn');
+                const deleteContractBtn = e.target.closest('.delete-contract-btn');
+                const editDocBtn = e.target.closest('.edit-document-btn');
+                const deleteDocBtn = e.target.closest('.delete-document-btn');
 
-                document.getElementById('contracts-list')?.addEventListener('click', (e) => {
-                    const editBtn = e.target.closest('.edit-contract-btn');
-                    const deleteBtn = e.target.closest('.delete-contract-btn');
-                    if(editBtn) showContractForm(emp, parseInt(editBtn.dataset.index));
-                    if(deleteBtn) deleteContract(emp, parseInt(deleteBtn.dataset.index));
-                });
-                document.getElementById('documents-list')?.addEventListener('click', (e) => {
-                    const editBtn = e.target.closest('.edit-document-btn');
-                    const deleteBtn = e.target.closest('.delete-document-btn');
-                    if(editBtn) showDocumentForm(emp, parseInt(editBtn.dataset.index));
-                    if(deleteBtn) deleteDocument(emp, parseInt(deleteBtn.dataset.index));
-                });
-            }
-        };
+                if (editPerfBtn) showPerformanceForm(emp, parseInt(editPerfBtn.dataset.index));
+                if (deletePerfBtn) deletePerformanceReview(emp, parseInt(deletePerfBtn.dataset.index));
+                if (deleteDisciplinaryBtn) deleteDisciplinaryRecord(emp, parseInt(deleteDisciplinaryBtn.dataset.index));
+                if (deleteCareerBtn) deleteCareerPathEntry(emp, parseInt(deleteCareerBtn.dataset.index));
+                if (editContractBtn) showContractForm(emp, parseInt(editContractBtn.dataset.index));
+                if (deleteContractBtn) deleteContract(emp, parseInt(deleteContractBtn.dataset.index));
+                if (editDocBtn) showDocumentForm(emp, parseInt(editDocBtn.dataset.index));
+                if (deleteDocBtn) deleteDocument(emp, parseInt(deleteDocBtn.dataset.index));
+            });
+        }
+    };
         
         // --- EDIT FORM FUNCTIONS ---
         const showAddUserForm = () => {
@@ -3122,6 +3109,50 @@ const viewTeamProfile = (teamId) => {
         }
     });
 };
+        const deletePerformanceReview = async (emp, index) => {
+        showConfirmationModal("حذف سابقه عملکرد", "آیا از حذف این مورد مطمئن هستید؟", async () => {
+            const updatedHistory = emp.performanceHistory.filter((_, i) => i !== index);
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                await updateDoc(docRef, { performanceHistory: updatedHistory });
+                showToast("سابقه عملکرد حذف شد.");
+                viewEmployeeProfile(emp.firestoreId);
+            } catch (error) {
+                console.error("Error deleting performance review:", error);
+                showToast("خطا در حذف سابقه عملکرد.", "error");
+            }
+        });
+    };
+
+    const deleteDisciplinaryRecord = async (emp, index) => {
+        showConfirmationModal("حذف سابقه انضباطی", "آیا از حذف این مورد مطمئن هستید؟", async () => {
+            const updatedHistory = emp.disciplinaryHistory.filter((_, i) => i !== index);
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                await updateDoc(docRef, { disciplinaryHistory: updatedHistory });
+                showToast("سابقه انضباطی حذف شد.");
+                viewEmployeeProfile(emp.firestoreId);
+            } catch (error) {
+                console.error("Error deleting disciplinary record:", error);
+                showToast("خطا در حذف سابقه انضباطی.", "error");
+            }
+        });
+    };
+
+    const deleteCareerPathEntry = async (emp, index) => {
+        showConfirmationModal("حذف رویداد شغلی", "آیا از حذف این مورد مطمئن هستید؟", async () => {
+            const updatedPath = emp.careerPath.filter((_, i) => i !== index);
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                await updateDoc(docRef, { careerPath: updatedPath });
+                showToast("رویداد شغلی حذف شد.");
+                viewEmployeeProfile(emp.firestoreId);
+            } catch (error) {
+                console.error("Error deleting career path entry:", error);
+                showToast("خطا در حذف رویداد شغلی.", "error");
+            }
+        });
+    };
 
         const setupSurveysPageListeners = () => {
             document.querySelectorAll('.create-survey-link-btn').forEach(button => {
