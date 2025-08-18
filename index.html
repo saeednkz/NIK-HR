@@ -774,6 +774,60 @@ const calculateAndApplyAnalytics = () => {
         
         return 'عملکرد قابل اتکا (Solid Performer)'; // مقدار پیش‌فرض
     };
+        // --- تابع جدید برای تحلیل عمیق داده‌های یک تیم ---
+    const analyzeTeamData = (team, members) => {
+        const analysis = {};
+
+        // ۱. تحلیل عمیق امتیاز مشارکت بر اساس دسته‌بندی
+        const engagementByCategory = {};
+        const engagementTemplate = surveyTemplates['engagement'];
+        let memberResponseCount = 0;
+
+        members.forEach(member => {
+            const responses = state.surveyResponses.filter(r => r.employeeId === member.id && r.surveyId === 'engagement');
+            if (responses.length > 0) {
+                memberResponseCount++;
+                responses.forEach(res => {
+                    engagementTemplate.questions.forEach(q => {
+                        if (q.type === 'rating_1_5' && res.answers[q.id]) {
+                            const score = parseInt(res.answers[q.id]);
+                            if (!engagementByCategory[q.category]) {
+                                engagementByCategory[q.category] = { totalScore: 0, count: 0 };
+                            }
+                            engagementByCategory[q.category].totalScore += score;
+                            engagementByCategory[q.category].count++;
+                        }
+                    });
+                });
+            }
+        });
+
+        analysis.engagementBreakdown = Object.entries(engagementByCategory).map(([category, data]) => ({
+            name: engagementTemplate.categories[category] || category,
+            score: Math.round(((data.totalScore / data.count) / 5) * 100)
+        }));
+
+        // ۲. شناسایی نقاط قوت کلیدی (Top Skills)
+        const skillMap = new Map();
+        members.forEach(member => {
+            if (member.skills) {
+                Object.entries(member.skills).forEach(([skill, level]) => {
+                    if (level >= 4) { // فقط مهارت‌های سطح بالا را در نظر بگیر
+                        skillMap.set(skill, (skillMap.get(skill) || 0) + 1);
+                    }
+                });
+            }
+        });
+        analysis.topSkills = [...skillMap.entries()]
+            .sort((a, b) => b[1] - a[1]) // مرتب‌سازی بر اساس تعداد تکرار
+            .slice(0, 5) // ۵ مهارت برتر
+            .map(item => item[0]);
+
+        // ۳. شناسایی اعضای پرریسک
+        analysis.highRiskMembers = members.filter(m => m.attritionRisk && m.attritionRisk.score > 70);
+
+        return analysis;
+    };
         
     
         const showToast = (message, type = 'success') => {
@@ -2178,45 +2232,58 @@ const viewEmployeeProfile = (employeeId) => {
         `;
     };
         // --- [FIX END] ---
+const viewTeamProfile = (teamId) => {
+        const team = state.teams.find(t => t.firestoreId === teamId); if (!team) return;
+        const leader = state.employees.find(e => e.id === team.leaderId);
+        const members = state.employees.filter(e => team.memberIds?.includes(e.id));
+        const basicAnalysis = generateTeamSmartAnalysis(team);
+        const advancedAnalysis = analyzeTeamData(team, members); // اجرای تحلیلگر پیشرفته
 
-        const viewTeamProfile = (teamId) => {
-            const team = state.teams.find(t => t.firestoreId === teamId); if (!team) return;
-            const leader = state.employees.find(e => e.id === team.leaderId);
-            const members = state.employees.filter(e => team.memberIds?.includes(e.id));
-            const analysis = generateTeamSmartAnalysis(team);
-            
-            modalTitle.innerText = 'پروفایل تیم: ' + team.name;
-            modalContent.innerHTML = `
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Left Column -->
-                    <div class="lg:col-span-1 space-y-6">
-                        <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
-                            <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
-                                <img src="${team.avatar}" alt="${team.name}" class="w-full h-full object-cover">
-                            </div>
-                            ${canEdit() ? `<button id="change-team-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
-                            <h2 class="text-2xl font-bold text-gray-800">${team.name}</h2><p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p></div>
-                        <div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4><div class="text-sm space-y-3">${Object.keys(analysis).length > 0 ? Object.values(analysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><p class="${item.color}">${item.text}</p></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div></div>
-                    </div>
-                    <!-- Right Column -->
-                    <div class="lg:col-span-2 space-y-6">
-                         <div class="bg-white rounded-lg shadow-md">
-                            <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px"><button data-tab="team-overview" class="profile-tab active">نمای کلی</button><button data-tab="team-health" class="profile-tab">سلامت و مشارکت</button><button data-tab="team-talent" class="profile-tab">ماتریس استعداد</button></nav></div>
-                            <div class="p-4">
-                                <!-- Team Overview Tab -->
-                                <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img src="${m.avatar}" class="w-full h-full object-cover"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
-                                 <!-- Team Health Tab -->
-                                <div id="tab-team-health" class="profile-tab-content">${renderTeamHealthMetrics(team)}</div>
-                                <!-- Team Talent Tab -->
-                                <div id="tab-team-talent" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4><div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div></div></div>
-                            </div>
+        modalTitle.innerText = 'پروفایل تیم: ' + team.name;
+        
+        // نمایش نام افراد پرریسک در تحلیل هوشمند
+        const highRiskNames = advancedAnalysis.highRiskMembers.map(e => e.name).join('، ');
+        if(highRiskNames) {
+            basicAnalysis.risk = { text: `اعضای پرریسک: <strong>${highRiskNames}</strong>`, icon: 'shield-alert', color: 'text-red-600' };
+        }
+
+        modalContent.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
+                        <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
+                            <img src="${team.avatar}" alt="${team.name}" class="w-full h-full object-cover">
+                        </div>
+                        ${canEdit() ? `<button id="change-team-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
+                        <h2 class="text-2xl font-bold text-gray-800">${team.name}</h2><p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p></div>
+                    <div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4><div class="text-sm space-y-3">${Object.keys(basicAnalysis).length > 0 ? Object.values(basicAnalysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div></div>
+                </div>
+                <div class="lg:col-span-2 space-y-6">
+                     <div class="bg-white rounded-lg shadow-md">
+                        <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="team-overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="team-skills" class="profile-tab shrink-0">مهارت و مشارکت</button><button data-tab="team-talent" class="profile-tab shrink-0">ماتریس استعداد</button></nav></div>
+                        <div class="p-4">
+                            <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img src="${m.avatar}" class="w-full h-full object-cover"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
+                            <div id="tab-team-skills" class="profile-tab-content">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="card p-4 bg-gray-50 rounded-lg">
+                                        <h4 class="font-semibold mb-3 text-gray-700">نقاط قوت کلیدی تیم</h4>
+                                        ${advancedAnalysis.topSkills.length > 0 ? advancedAnalysis.topSkills.map(skill => `<span class="inline-block bg-blue-100 text-blue-800 text-sm font-medium m-1 px-3 py-1 rounded-full">${skill}</span>`).join('') : '<p class="text-sm text-gray-500">مهارت کلیدی (سطح ۴ به بالا) یافت نشد.</p>'}
+                                    </div>
+                                    <div class="card p-4 bg-gray-50 rounded-lg">
+                                        <h4 class="font-semibold mb-3 text-gray-700">تحلیل عمیق مشارکت</h4>
+                                        <div class="space-y-3">${advancedAnalysis.engagementBreakdown.length > 0 ? advancedAnalysis.engagementBreakdown.map(cat => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${cat.name}</span><span class="font-medium text-blue-600">${cat.score}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${cat.score}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">داده‌ای برای تحلیل مشارکت وجود ندارد.</p>'}</div>
+                                    </div>
+                                </div>
+                             </div>
+                            <div id="tab-team-talent" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4><div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div></div></div>
                         </div>
                     </div>
                 </div>
-            `;
-            openModal(mainModal, mainModalContainer);
-            setupTeamProfileModalListeners(team);
-        };
+            </div>
+        `;
+        openModal(mainModal, mainModalContainer);
+        setupTeamProfileModalListeners(team);
+    };
 
         const generateTeamNineBoxGrid = (members) => {
             const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
