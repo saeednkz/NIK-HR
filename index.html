@@ -681,11 +681,14 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     };
         // --- تابع جدید برای تحلیل داده‌های نظرسنجی و اعمال نتایج ---
 const calculateAndApplyAnalytics = () => {
+        if (!state.surveyResponses) return;
         console.log("Running survey and risk analytics...");
-        const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
         
-        // محاسبه امتیاز مشارکت برای هر کارمند
+        // --- تحلیل نظرسنجی مشارکت کارکنان ---
+        const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
         const employeeScores = {};
+        
+        // محاسبه امتیاز برای هر کارمند
         engagementResponses.forEach(res => {
             if (res.employeeId && res.employeeId !== 'anonymous') {
                 if (!employeeScores[res.employeeId]) {
@@ -710,7 +713,7 @@ const calculateAndApplyAnalytics = () => {
             }
         });
 
-        // محاسبه امتیاز مشارکت برای هر تیم
+        // محاسبه امتیاز برای هر تیم
         state.teams.forEach(team => {
             let teamTotalScore = 0;
             let teamQuestionCount = 0;
@@ -724,10 +727,32 @@ const calculateAndApplyAnalytics = () => {
             team.engagementScore = teamQuestionCount > 0 ? Math.round(((teamTotalScore / teamQuestionCount) / 5) * 100) : null;
         });
 
-        // محاسبه هوشمند ریسک خروج و ماتریس ۹ جعبه‌ای برای همه
+        // --- بخش جدید: تحلیل دسته‌بندی‌های نظرسنجی برای کل سازمان ---
+        const orgEngagementByCategory = {};
+        const engagementTemplate = surveyTemplates['engagement'];
+        engagementResponses.forEach(res => {
+            engagementTemplate.questions.forEach(q => {
+                if (q.type === 'rating_1_5' && res.answers[q.id]) {
+                    const score = parseInt(res.answers[q.id]);
+                    if (!orgEngagementByCategory[q.category]) {
+                        orgEngagementByCategory[q.category] = { totalScore: 0, count: 0 };
+                    }
+                    orgEngagementByCategory[q.category].totalScore += score;
+                    orgEngagementByCategory[q.category].count++;
+                }
+            });
+        });
+        state.orgAnalytics = {
+            engagementBreakdown: Object.entries(orgEngagementByCategory).map(([category, data]) => ({
+                name: engagementTemplate.categories[category] || category,
+                score: Math.round(((data.totalScore / data.count) / 5) * 100)
+            }))
+        };
+
+        // --- محاسبه هوشمند ریسک خروج و ماتریس ۹ جعبه‌ای ---
         state.employees.forEach(emp => {
             emp.attritionRisk = calculateAttritionRisk(emp, state.teams);
-            emp.nineBox = determineNineBoxCategory(emp); // <<-- این خط جدید است
+            emp.nineBox = determineNineBoxCategory(emp);
         });
 
         console.log("Analytics applied to state.");
@@ -1757,72 +1782,60 @@ expenses: () => {
                 }
             });
         };
-        const setupAnalyticsPage = () => {
-            const renderAttritionHotspots = () => {
-                const container = document.getElementById('attrition-hotspot-list');
-                if (!container) return;
-                const highRiskEmployees = state.employees.filter(emp => emp.attritionRisk && emp.attritionRisk.score > 50).sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
-                if (highRiskEmployees.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">هیچ کارمندی با ریسک خروج بالا شناسایی نشد.</p>'; return; }
-                container.innerHTML = highRiskEmployees.map(emp => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${emp.name}</span><span class="font-semibold text-red-600">${emp.attritionRisk.score}%</span></div><div class="progress-bar w-full bg-red-100"><div class="progress-bar-fill bg-red-500" style="width: ${emp.attritionRisk.score}%;"></div></div></div>`).join('');
-            };
+     analytics: () => {
+            const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
+                ?.sort((a, b) => b.score - a.score)
+                .map(cat => `
+                    <div>
+                        <div class="flex justify-between items-center mb-1 text-sm">
+                            <span class="text-slate-600">${cat.name}</span>
+                            <span class="font-medium text-teal-600">${cat.score}%</span>
+                        </div>
+                        <div class="progress-bar w-full">
+                            <div class="progress-bar-fill" style="width: ${cat.score}%;"></div>
+                        </div>
+                    </div>
+                `).join('') || '<p class="text-sm text-slate-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد.</p>';
 
-            const renderTeamHealth = () => {
-                const container = document.getElementById('team-health-dashboard');
-                if (!container) return;
-                if (state.teams.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">تیمی برای نمایش وجود ندارد.</p>'; return; }
-                container.innerHTML = state.teams.map(team => {
-                    const metrics = team.healthMetrics || {};
-                    const scores = Object.values(metrics);
-                    const avgHealth = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
-                    return `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${team.name}</span><span class="font-semibold text-green-600">${Math.round(avgHealth)}%</span></div><div class="progress-bar w-full bg-green-100"><div class="progress-bar-fill bg-green-500" style="width: ${avgHealth}%;"></div></div></div>`;
-                }).join('');
-            };
+            return `
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-slate-800">تحلیل هوشمند</h1>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card p-6">
+                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="pie-chart" class="ml-2 text-teal-500"></i>تحلیل مشارکت سازمانی</h3>
+                        <div class="space-y-4">
+                            ${engagementBreakdownHtml}
+                        </div>
+                    </div>
 
-            const renderNineBoxGrid = () => {
-                const container = document.getElementById('nine-box-grid-container');
-                if (!container) return;
-                const gridMap = { 'معما': { row: 1, col: 1 }, 'عملکرد قابل اتکا': { row: 2, col: 1 }, 'مهره کلیدی': { row: 3, col: 1 }, 'پتانسیل بالا': { row: 2, col: 3 }, 'ستاره': { row: 3, col: 3 } };
-                const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
-                state.employees.forEach(emp => { const pos = gridMap[emp.nineBox]; if (pos) { grid[pos.row - 1][pos.col - 1].push(emp); } });
-                let html = '';
-                for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { const employeesInCell = grid[i][j]; html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[80px] p-1 flex flex-wrap items-start justify-center gap-1">${employeesInCell.map(emp => `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0 bg-gray-200"><img src="${emp.avatar}" alt="${emp.name}" title="${emp.name}" class="w-full h-full object-cover"></div>`).join('')}</div>`; } }
-                container.innerHTML = html;
-            };
+                    <div class="card p-6">
+                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="shield-alert" class="ml-2 text-rose-500"></i>نقاط داغ ریسک خروج</h3>
+                        <div id="attrition-hotspot-list" class="space-y-3 max-h-80 overflow-y-auto"></div>
+                    </div>
 
-            const setupSkillGapFinder = () => {
-                const findBtn = document.getElementById('find-skill-gap-btn');
-                const teamSelect = document.getElementById('skill-team-select');
-                const skillInput = document.getElementById('skill-search-input');
-                const resultsContainer = document.getElementById('skill-gap-results');
-                if (!findBtn) return;
-                findBtn.addEventListener('click', () => {
-                    const teamId = teamSelect.value;
-                    const skillName = skillInput.value.trim().toLowerCase();
-                    if (!skillName) { resultsContainer.innerHTML = '<p class="text-sm text-red-500">لطفا نام یک مهارت را وارد کنید.</p>'; return; }
-                    let targetEmployees = state.employees;
-                    if (teamId !== 'all') { const team = state.teams.find(t => t.firestoreId === teamId); if (team) { targetEmployees = state.employees.filter(emp => team.memberIds.includes(emp.id)); } }
-                    const skillAnalysis = { expert: [], intermediate: [], beginner: [], none: [] };
-                    targetEmployees.forEach(emp => {
-                        const skills = emp.skills || {};
-                        const skillKeys = Object.keys(skills).map(k => k.toLowerCase());
-                        const skillIndex = skillKeys.findIndex(k => k.includes(skillName));
-                        if (skillIndex > -1) {
-                            const originalKey = Object.keys(skills)[skillIndex];
-                            const level = skills[originalKey];
-                            if (level >= 4) skillAnalysis.expert.push(emp);
-                            else if (level >= 2) skillAnalysis.intermediate.push(emp);
-                            else skillAnalysis.beginner.push(emp);
-                        } else { skillAnalysis.none.push(emp); }
-                    });
-                    resultsContainer.innerHTML = `<h4 class="font-bold mb-2">نتایج برای مهارت: <span class="text-blue-600">${skillInput.value}</span></h4><div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"><div><p class="font-semibold text-lg">${skillAnalysis.expert.length}</p><p class="text-xs text-gray-500">متخصص (4-5)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.intermediate.length}</p><p class="text-xs text-gray-500">متوسط (2-3)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.beginner.length}</p><p class="text-xs text-gray-500">مبتدی (1)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.none.length}</p><p class="text-xs text-gray-500">فاقد مهارت</p></div></div><p class="text-xs text-gray-600 mt-4"><strong>متخصصین:</strong> ${skillAnalysis.expert.map(e => e.name).join(', ') || 'هیچ'}</p>`;
-                });
-            };
-
-            renderAttritionHotspots();
-            renderTeamHealth();
-            renderNineBoxGrid();
-            setupSkillGapFinder();
-        };
+                    <div class="card p-6 lg:col-span-2">
+                        <h3 class="font-semibold mb-4 text-slate-700">ماتریس استعداد ۹-جعبه‌ای</h3>
+                        <div id="nine-box-grid-container" class="grid grid-cols-3 gap-2 text-center text-xs border-t-2 border-l-2 border-gray-400 mt-4"></div>
+                    </div>
+                    
+                    <div class="card p-6 lg:col-span-2">
+                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="file-search" class="ml-2 text-indigo-500"></i>تحلیل شکاف مهارتی</h3>
+                        <div class="flex flex-col sm:flex-row gap-2 items-center">
+                            <select id="skill-team-select" class="w-full p-2 border border-slate-300 rounded-lg">
+                                <option value="all">کل سازمان</option>
+                                ${state.teams.map(t => `<option value="${t.firestoreId}">${t.name}</option>`).join('')}
+                            </select>
+                            <input type="text" id="skill-search-input" placeholder="مهارت مورد نظر را وارد کنید (مثلا: Python)" class="w-full p-2 border border-slate-300 rounded-lg">
+                            <button id="find-skill-gap-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 w-full sm:w-auto">جستجو</button>
+                        </div>
+                        <div id="skill-gap-results" class="mt-4 p-4 bg-slate-50 rounded-md min-h-[5rem]">
+                            <p class="text-sm text-slate-500">برای شروع، یک تیم و مهارت را انتخاب و روی دکمه جستجو کلیک کنید.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        },
         
         // --- [FIX START] ADDED EXPENSES PAGE LISTENERS AND HELPERS ---
   const setupExpensesPageListeners = () => {
