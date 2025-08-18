@@ -2615,12 +2615,38 @@ const setupProfileModalListeners = (emp) => {
         }, 100);
         
         if(canEdit()) {
-            document.getElementById('change-avatar-btn')?.addEventListener('click', () => { /* ... */ });
-            document.getElementById('delete-avatar-btn')?.addEventListener('click', () => { /* ... */ });
+            // منطق کامل دکمه آپلود عکس
+            document.getElementById('change-avatar-btn')?.addEventListener('click', () => {
+                handleAvatarChange(async (newAvatarUrl) => {
+                    try {
+                        const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                        await updateDoc(docRef, { avatar: newAvatarUrl });
+                        showToast("عکس پروفایل با موفقیت به‌روزرسانی شد.");
+                        viewEmployeeProfile(emp.firestoreId); // رفرش کردن پروفایل برای نمایش عکس جدید
+                    } catch (error) {
+                        console.error("Error updating avatar:", error);
+                        showToast("خطا در به‌روزرسانی عکس پروفایل.", "error");
+                    }
+                });
+            });
 
-            // --- منطق جدید برای دکمه ویرایش اصلی ---
+            // منطق کامل دکمه حذف عکس
+            document.getElementById('delete-avatar-btn')?.addEventListener('click', () => {
+                showConfirmationModal('حذف عکس پروفایل', 'آیا از حذف عکس پروفایل مطمئن هستید؟', async () => {
+                    try {
+                        const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                        const defaultAvatar = `https://placehold.co/100x100/E2E8F0/4A5568?text=${emp.name.substring(0,2)}`;
+                        await updateDoc(docRef, { avatar: defaultAvatar });
+                        showToast("عکس پروفایل حذف شد.");
+                        viewEmployeeProfile(emp.firestoreId); // رفرش کردن پروفایل
+                    } catch (error) {
+                         console.error("Error deleting avatar:", error);
+                         showToast("خطا در حذف عکس پروفایل.", "error");
+                    }
+                });
+            });
+
             document.getElementById('main-edit-employee-btn')?.addEventListener('click', () => showEmployeeForm(emp.firestoreId));
-
             document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
             document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
             document.getElementById('edit-competencies-btn')?.addEventListener('click', () => showEditCompetenciesForm(emp));
