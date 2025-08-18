@@ -3,171 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستم مدیریت منابع انسانی HR-Nik</title>
+    <title>سیستم مدیریت منابع انسانی NikHR</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+
     <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
     <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+
+    <!-- Persian Font -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
     <style>
-        :root {
-            --color-primary: #14b8a6; /* Teal 500 */
-            --color-primary-light: #f0fdfa; /* Teal 50 */
-            --color-accent: #6366f1; /* Indigo 500 */
-            --color-text-primary: #1e293b; /* Slate 800 */
-            --color-text-secondary: #64748b; /* Slate 500 */
-            --color-bg: #f8fafc; /* Slate 50 */
-            --color-surface: #ffffff;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-        }
-        .sidebar {
-            background-color: var(--color-surface);
-            border-left: 1px solid #e2e8f0;
-            box-shadow: var(--shadow-md);
+            background-color: #f1f5f9;
         }
         .sidebar-item {
-            color: var(--color-text-secondary);
             transition: all 0.2s ease-in-out;
-            border-right: 3px solid transparent;
-            margin-right: -8px;
-            padding-right: 11px;
         }
         .sidebar-item.active, .sidebar-item:hover {
-            color: var(--color-primary);
-            background-color: var(--color-primary-light);
-            border-right-color: var(--color-primary);
+            background-color: #1e3a8a;
+            color: white;
+            transform: translateX(-4px);
         }
         .card {
-            background-color: var(--color-surface);
-            border-radius: 0.75rem;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid #e2e8f0;
-            transition: box-shadow 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         .card:hover {
-            box-shadow: var(--shadow-md);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .progress-bar { background-color: #e2e8f0; border-radius: 9999px; overflow: hidden; height: 0.5rem; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(to right, #14b8a6, #6366f1); border-radius: 9999px; transition: width 0.5s ease-in-out; }
-        #loading-overlay { position: fixed; inset: 0; background-color: rgba(248, 250, 252, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .spinner { width: 56px; height: 56px; border: 6px solid #f0fdfa; border-top: 6px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .profile-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; color: var(--color-text-secondary); }
-        .profile-tab.active, .profile-tab:hover { border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
-        .profile-tab-content { display: none; }
-        .profile-tab-content.active { display: block; }
-        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { display: flex; align-items: center; padding: 12px 20px; border-radius: 8px; box-shadow: var(--shadow-lg); color: white; opacity: 0; transform: translateY(20px); animation: slideUp 0.5s forwards, fadeOutToast 0.5s 4.5s forwards; }
-        .toast.success { background: linear-gradient(to right, #10b981, #14b8a6); }
-        .toast.error { background: linear-gradient(to right, #f43f5e, #e11d48); }
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOutToast { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
+        
+        .progress-bar { background-color: #e0e0e0; border-radius: 9999px; overflow: hidden; height: 0.75rem; }
+        .progress-bar-fill { height: 100%; background-color: #3b82f6; border-radius: 9999px; transition: width 0.5s ease-in-out; }
+        
+        /* Loading Spinner */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #1d4ed8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Profile Tabs */
+        .profile-tab {
+            cursor: pointer;
+            padding: 8px 16px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .profile-tab.active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .profile-tab-content {
+            display: none;
+        }
+        .profile-tab-content.active {
+            display: block;
+        }
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: white;
+            opacity: 0;
+            transform: translateX(-100%);
+            animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
+        }
+        .toast.success { background-color: #22c55e; }
+        .toast.error { background-color: #ef4444; }
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: scale(0.9); }
+        }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-100">
 
-    <div id="login-container" class="hidden min-h-screen flex items-center justify-center bg-slate-100">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md">
+    <!-- Login Container -->
+    <div id="login-container" class="hidden min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
             <div class="text-center">
-                <i data-lucide="shield-check" class="mx-auto w-12 h-12 text-teal-500"></i>
-                <h2 class="mt-4 text-2xl font-bold text-slate-800">ورود به سیستم HR-Nik</h2>
+                <i data-lucide="shield-check" class="mx-auto w-12 h-12 text-blue-800"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">ورود به سیستم NikHR</h2>
             </div>
             <form id="login-form" class="space-y-6">
                 <div>
-                    <label for="email" class="text-sm font-medium text-slate-700">آدرس ایمیل</label>
-                    <input id="email" name="email" type="email" autocomplete="email" required class="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <label for="email" class="text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="password" class="text-sm font-medium text-slate-700">رمز عبور</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <label for="password" class="text-sm font-medium text-gray-700">رمز عبور</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-md transition-all">ورود</button>
+                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">ورود</button>
             </form>
-            <p class="text-sm text-center text-slate-600">حساب کاربری ندارید؟ <a href="#" id="show-signup" class="font-medium text-teal-600 hover:underline">ثبت نام کنید</a></p>
+            <p class="text-sm text-center text-gray-600">
+                حساب کاربری ندارید؟ <a href="#" id="show-signup" class="font-medium text-blue-600 hover:underline">ثبت نام کنید</a>
+            </p>
         </div>
     </div>
-    <div id="signup-container" class="hidden min-h-screen flex items-center justify-center bg-slate-100">
-        </div>
 
+    <!-- Signup Container -->
+    <div id="signup-container" class="hidden min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <div class="text-center">
+                 <i data-lucide="user-plus" class="mx-auto w-12 h-12 text-blue-800"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">ایجاد حساب کاربری جدید</h2>
+            </div>
+            <form id="signup-form" class="space-y-6">
+                 <div>
+                    <label for="signup-email" class="text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                    <input id="signup-email" name="email" type="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="signup-password" class="text-sm font-medium text-gray-700">رمز عبور</label>
+                    <input id="signup-password" name="password" type="password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">ثبت نام</button>
+            </form>
+            <p class="text-sm text-center text-gray-600">
+                قبلا ثبت نام کرده‌اید؟ <a href="#" id="show-login" class="font-medium text-blue-600 hover:underline">وارد شوید</a>
+            </p>
+        </div>
+    </div>
+
+
+    <!-- This container is for the main dashboard view -->
     <div id="dashboard-container" class="hidden h-screen">
-        <aside id="sidebar" class="sidebar w-64 space-y-6 py-7 px-2 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0 transition duration-300 ease-in-out z-30 flex flex-col">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-lg flex flex-col">
             <div>
-                <a href="#dashboard" class="sidebar-logo text-slate-800 text-2xl font-bold px-4 flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="shield-check" class="text-teal-500"></i>
-                    <span>HR-Nik</span>
+                <a href="#dashboard" class="sidebar-logo text-white text-2xl font-extrabold px-4 flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="shield-check"></i>
+                    <span>NikHR</span>
                 </a>
-                <nav id="sidebar-nav" class="mt-10">
-                    <a href="#dashboard" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse"><i data-lucide="layout-dashboard"></i><span>داشبورد</span></a>
-                    <a href="#talent" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse"><i data-lucide="users"></i><span>استعدادها</span></a>
-                    <a href="#organization" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse"><i data-lucide="building-2"></i><span>سازمان</span></a>
-                    <a href="#surveys" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse"><i data-lucide="clipboard-list"></i><span>نظرسنجی‌ها</span></a>
-                    <a href="#expenses" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse"><i data-lucide="wallet"></i><span>ثبت هزینه‌ها</span></a>
-                    <a href="#analytics" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse"><i data-lucide="bar-chart-3"></i><span>تحلیل هوشمند</span></a>
-                    <a href="#settings" id="settings-nav-link" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse"><i data-lucide="settings"></i><span>تنظیمات</span></a>
+                <nav id="sidebar-nav" class="mt-6">
+                    <a href="#dashboard" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="layout-dashboard"></i><span>داشبورد</span>
+                    </a>
+                    <a href="#talent" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="users"></i><span>استعدادها</span>
+                    </a>
+                    <a href="#organization" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="building-2"></i><span>سازمان</span>
+                    </a>
+                    <a href="#surveys" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="clipboard-list"></i><span>نظرسنجی‌ها</span>
+                    </a>
+                     <a href="#expenses" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="wallet"></i><span>ثبت هزینه‌ها</span>
+                    </a>
+                    <a href="#analytics" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="bar-chart-3"></i><span>تحلیل هوشمند</span>
+                    </a>
+                    <a href="#settings" id="settings-nav-link" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="settings"></i><span>تنظیمات</span>
+                    </a>
                 </nav>
             </div>
             <div class="mt-auto">
-                 <a href="#" id="logout-btn" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse !text-red-500 hover:!bg-red-50 hover:!border-red-500"><i data-lucide="log-out"></i><span>خروج از سیستم</span></a>
+                 <a href="#" id="logout-btn" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse text-red-300 hover:bg-red-700 hover:text-white">
+                    <i data-lucide="log-out"></i><span>خروج از سیستم</span>
+                </a>
             </div>
         </aside>
 
+        <!-- Main Content Wrapper -->
         <div class="flex-1 flex flex-col h-screen overflow-y-hidden">
-            <header class="flex justify-between items-center p-4 bg-white border-b border-slate-200 md:hidden">
-                <a href="#dashboard" class="sidebar-logo text-slate-800 text-xl font-bold flex items-center space-x-2 space-x-reverse"><i data-lucide="shield-check" class="text-teal-500"></i><span>HR-Nik</span></a>
-                <button id="menu-btn" class="text-slate-600 z-40"><i data-lucide="menu" class="w-6 h-6"></i></button>
+            <!-- Mobile Header -->
+            <header class="flex justify-between items-center p-4 bg-white shadow-md md:hidden">
+                <a href="#dashboard" class="sidebar-logo text-blue-900 text-xl font-extrabold flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="shield-check"></i>
+                    <span>HR-Nik</span>
+                </a>
+                <button id="menu-btn" class="text-gray-600 z-40">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
             </header>
-            <main id="main-content" class="flex-1 p-6 sm:p-10 overflow-y-auto"></main>
+            
+            <!-- Scrollable Main Content -->
+            <main id="main-content" class="flex-1 p-6 sm:p-10 overflow-y-auto">
+                <!-- Content will be loaded here by JavaScript -->
+            </main>
         </div>
     </div>
     
-    <div id="survey-taker-container" class="hidden"></div>
-    <div id="loading-overlay"><div class="spinner"></div></div>
+    <!-- This container is for the public survey-taking view -->
+    <div id="survey-taker-container" class="hidden">
+        <!-- Public survey content will be injected here -->
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Sidebar Overlay -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
 
+    <!-- Main Modal for Profiles and Forms -->
     <div id="mainModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-40">
         <div class="bg-white rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-4/5 max-w-6xl h-5/6 transform transition-all duration-300 scale-95 opacity-0">
-            <div class="flex justify-between items-center p-4 border-b border-slate-200">
-                <h3 id="modalTitle" class="text-xl font-semibold text-slate-800"></h3>
-                <button id="closeModal" class="text-slate-500 hover:text-slate-800"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">پروفایل</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-800">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
             </div>
-            <div id="modalContent" class="p-6 overflow-y-auto h-[calc(100%-65px)]"></div>
+            <div id="modalContent" class="p-6 overflow-y-auto h-[calc(100%-65px)]">
+                <!-- Modal content will be loaded here -->
+            </div>
         </div>
     </div>
+    
+    <!-- Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
-            <h3 id="confirmTitle" class="text-lg font-bold text-slate-800 mb-4">آیا مطمئن هستید؟</h3>
-            <p id="confirmMessage" class="text-slate-600 mb-6">این عمل غیرقابل بازگشت است.</p>
+            <h3 id="confirmTitle" class="text-lg font-bold text-gray-800 mb-4">آیا مطمئن هستید؟</h3>
+            <p id="confirmMessage" class="text-gray-600 mb-6">این عمل غیرقابل بازگشت است.</p>
             <div class="flex justify-end gap-4">
-                <button id="confirmCancel" class="bg-slate-200 text-slate-800 py-2 px-4 rounded-md hover:bg-slate-300">انصراف</button>
+                <button id="confirmCancel" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300">انصراف</button>
                 <button id="confirmAccept" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">تایید و حذف</button>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification Container -->
     <div id="toast-container"></div>
+    
+    <!-- Hidden input for image uploads -->
     <input type="file" id="image-upload-input" class="hidden" accept="image/*">
 
+
+    <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -177,100 +297,109 @@
             addDoc, getDocs, writeBatch, deleteDoc, updateDoc, query, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-        
-        // --- ALL JAVASCRIPT CODE STARTS HERE ---
-        
-        const surveyTemplates = {
-            'engagement': {
-                id: 'engagement',
-                title: 'نظرسنجی جامع مشارکت کارکنان (Engagement)',
-                description: 'سنجش عمیق سطح تعهد، انگیزه و رضایت شغلی بر اساس استانداردهای جهانی.',
-                categories: {
-                    alignment: 'هم‌راستایی و اهداف',
-                    growth: 'رشد و توسعه',
-                    management: 'مدیریت و راهبری',
-                    recognition: 'قدردانی و ارزش‌گذاری',
-                    wellbeing: 'سلامت و تعادل کار و زندگی',
-                    culture: 'فرهنگ و تعلق سازمانی'
-                },
-                questions: [
-                    { id: 'eng_q1', category: 'alignment', text: 'من به وضوح می‌دانم که کار من چگونه به اهداف کلی شرکت کمک می‌کند.', type: 'rating_1_5' },
-                    { id: 'eng_q2', category: 'alignment', text: 'من به ماموریت و چشم‌انداز شرکت باور دارم.', type: 'rating_1_5' },
-                    { id: 'eng_q3', category: 'growth', text: 'در شغل فعلی‌ام فرصت‌های کافی برای یادگیری و رشد حرفه‌ای دارم.', type: 'rating_1_5' },
-                    { id: 'eng_q4', category: 'growth', text: 'شرکت در توسعه مهارت‌های من سرمایه‌گذاری می‌کند.', type: 'rating_1_5' },
-                    { id: 'eng_q5', category: 'management', text: 'مدیر مستقیم من به طور منظم بازخوردهای سازنده و مفیدی به من ارائه می‌دهد.', type: 'rating_1_5' },
-                    { id: 'eng_q6', category: 'management', text: 'من برای انجام کارم از استقلال و اختیار کافی برخوردارم.', type: 'rating_1_5' },
-                    { id: 'eng_q7', category: 'management', text: 'مدیر من به من به عنوان یک فرد اهمیت می‌دهد و حامی من است.', type: 'rating_1_5' },
-                    { id: 'eng_q8', category: 'recognition', text: 'وقتی کارم را به خوبی انجام می‌دهم، احساس می‌کنم از من قدردانی می‌شود.', type: 'rating_1_5' },
-                    { id: 'eng_q9', category: 'recognition', text: 'فرآیندهای ارزیابی و ترفیع در شرکت منصفانه هستند.', type: 'rating_1_5' },
-                    { id: 'eng_q10', category: 'culture', text: 'من احساس تعلق به تیم و سازمان خود دارم.', type: 'rating_1_5' },
-                    { id: 'eng_q11', category: 'culture', text: 'در محیط کار، نظرات و ایده‌های من شنیده و مورد احترام قرار می‌گیرند.', type: 'rating_1_5' },
-                    { id: 'eng_q12', category: 'wellbeing', text: 'حجم کاری من قابل مدیریت است و باعث فرسودگی شغلی‌ام نمی‌شود.', type: 'rating_1_5' },
-                    { id: 'eng_q13', category: 'wellbeing', text: 'من می‌توانم تعادل مناسبی بین کار و زندگی شخصی‌ام برقرار کنم.', type: 'rating_1_5' },
-                    { id: 'eng_q14', category: 'overall', text: 'با توجه به همه جوانب، این شرکت را به عنوان یک محیط کاری عالی به دیگران توصیه می‌کنم (eNPS).', type: 'rating_1_10' },
-                    { id: 'eng_q15', category: 'overall', text: 'چه چیزی را در فرهنگ شرکت بیشتر از همه دوست دارید؟', type: 'open_text' },
-                    { id: 'eng_q16', category: 'overall', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
-                ]
-            },
-            'pulse': {
-                id: 'pulse',
-                title: 'نظرسنجی پالس هفتگی',
-                description: 'یک نظرسنجی سریع برای سنجش نبض سازمان و حال و هوای کارکنان در هفته گذشته.',
-                questions: [
-                    { id: 'pls_q1', text: 'در مقیاس ۱ تا ۵، از هفته کاری خود چقدر رضایت داشتید؟', type: 'rating_1_5' },
-                    { id: 'pls_q2', text: 'حجم کاری خود را در این هفته چگونه ارزیابی می‌کنید؟', type: 'choice', options: ['بسیار کم', 'کم', 'مناسب', 'زیاد', 'بسیار زیاد'] },
-                    { id: 'pls_q3', text: 'آیا در هفته گذشته بازخورد مفیدی دریافت کردید که به شما در کارتان کمک کند؟', type: 'yes_no' },
-                    { id: 'pls_q4', text: 'بزرگترین مانع یا چالشی که این هفته با آن روبرو بودید چه بود؟', type: 'open_text' },
-                    { id: 'pls_q5', text: 'یک اتفاق مثبت یا موفقیت از این هفته را نام ببرید.', type: 'open_text' },
-                ]
-            },
-            'onboarding': {
-                id: 'onboarding',
-                title: 'نظرسنجی تجربه جذب و آنبوردینگ',
-                description: 'جمع‌آوری بازخورد از نیروهای جدید برای بهبود فرآیند ورود به سازمان.',
-                questions: [
-                    { id: 'onb_q1', text: 'فرآیند مصاحبه و جذب چقدر شفاف، حرفه‌ای و محترمانه بود؟', type: 'rating_1_5' },
-                    { id: 'onb_q2', text: 'آیا شرح شغلی که مطالعه کردید، با وظایف واقعی شما مطابقت دارد؟', type: 'yes_no_somewhat' },
-                    { id: 'onb_q3', text: 'آیا قبل از روز اول، اطلاعات کافی در مورد شروع به کارتان دریافت کردید؟', type: 'yes_no' },
-                    { id: 'onb_q4', text: 'در هفته اول کاری، تمام ابزارها، نرم‌افزارها و دسترسی‌های لازم را در اختیار داشتید؟', type: 'yes_no' },
-                    { id: 'onb_q5', text: 'معرفی شما به تیم و همکاران چگونه بود و چقدر احساس راحتی کردید؟', type: 'rating_1_5' },
-                    { id: 'onb_q6', text: 'آیا شرح وظایف و انتظارات از شما در ماه اول کاری کاملاً روشن و شفاف بود؟', type: 'rating_1_5' },
-                    { id: 'onb_q7', text: 'آیا مدیرتان در هفته‌های اول به اندازه کافی برای شما وقت گذاشت؟', type: 'yes_no' },
-                    { id: 'onb_q8', text: 'چه پیشنهادی برای بهبود تجربه آنبوردینگ نیروهای جدید دارید؟', type: 'open_text' },
-                ]
-            },
-            'feedback_360': {
-                id: 'feedback_360',
-                title: 'نظرسنجی بازخورد ۳۶۰ درجه',
-                description: 'ارائه بازخورد سازنده به همکاران برای کمک به رشد حرفه‌ای آن‌ها.',
-                requiresTarget: true,
-                questions: [
-                    { id: '360_q1', text: 'این همکار چقدر در ارتباطات خود (گفتاری و نوشتاری) شفاف، محترمانه و موثر است؟', type: 'rating_1_5' },
-                    { id: '360_q2', text: 'این همکار تا چه حد در کار تیمی مشارکت می‌کند، به دیگران کمک می‌کند و دانش خود را به اشتراک می‌گذارد؟', type: 'rating_1_5' },
-                    { id: '360_q3', text: 'این همکار در حل مسائل و رویارویی با چالش‌ها چقدر خلاق، کارآمد و مسئولیت‌پذیر است؟', type: 'rating_1_5' },
-                    { id: '360_q4', text: 'این همکار تا چه حد به اهداف و نتایج متعهد است و کارها را با کیفیت بالا به اتمام می‌رساند؟', type: 'rating_1_5' },
-                    { id: '360_q5', text: 'بزرگترین نقطه قوت این همکار که باید به آن ادامه دهد چیست؟', type: 'open_text' },
-                    { id: '360_q6', text: 'چه پیشنهاد مشخصی برای رشد و پیشرفت این همکار دارید؟ (چه کاری را باید شروع کند، متوقف کند یا ادامه دهد؟)', type: 'open_text' },
-                ]
-            },
-            'exit': {
-                id: 'exit',
-                title: 'نظرسنجی خروج از سازمان',
-                description: 'درک دلایل ترک سازمان برای بهبود محیط کاری برای کارمندان آینده.',
-                questions: [
-                    { id: 'ext_q1', text: 'لطفاً دلیل یا دلایل اصلی خود برای ترک سازمان را بیان کنید.', type: 'open_text' },
-                    { id: 'ext_q2', text: 'از تجربه کاری خود در این شرکت به طور کلی چقدر رضایت داشتید؟', type: 'rating_1_5' },
-                    { id: 'ext_q3', text: 'آیا احساس می‌کردید شغل شما از مهارت‌هایتان به خوبی استفاده می‌کند؟', type: 'rating_1_5' },
-                    { id: 'ext_q4', text: 'رابطه و کیفیت مدیریت مدیر مستقیم خود را چگونه ارزیابی می‌کنید؟', type: 'rating_1_5' },
-                    { id: 'ext_q5', text: 'آیا فرصت‌های کافی برای رشد و پیشرفت شغلی در اختیار شما قرار گرفت؟', type: 'rating_1_5' },
-                    { id: 'ext_q6', text: 'فرهنگ سازمانی شرکت را چگونه توصیف می‌کنید؟', type: 'open_text' },
-                    { id: 'ext_q7', text: 'آیا بسته حقوق و مزایای خود را منصفانه و رقابتی می‌دانستید؟', type: 'yes_no' },
-                    { id: 'ext_q8', text: 'آیا این شرکت را به عنوان یک محیط کاری به دیگران توصیه می‌کنید؟', type: 'yes_no' },
-                    { id: 'ext_q9', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
-                ]
-            }
-        };
 
+        // --- SURVEY TEMPLATES (EXPANDED) ---
+   // --- SURVEY TEMPLATES (EXPANDED) ---
+  // --- SURVEY TEMPLATES (EXPANDED & COMPLETE) ---
+ 	// --- SURVEY TEMPLATES (COMPREHENSIVE & STANDARD) ---
+    const surveyTemplates = {
+        // --- نظرسنجی مشارکت کارکنان (جامع) ---
+        'engagement': {
+            id: 'engagement',
+            title: 'نظرسنجی جامع مشارکت کارکنان (Engagement)',
+            description: 'سنجش عمیق سطح تعهد، انگیزه و رضایت شغلی بر اساس استانداردهای جهانی.',
+            categories: {
+                alignment: 'هم‌راستایی و اهداف',
+                growth: 'رشد و توسعه',
+                management: 'مدیریت و راهبری',
+                recognition: 'قدردانی و ارزش‌گذاری',
+                wellbeing: 'سلامت و تعادل کار و زندگی',
+                culture: 'فرهنگ و تعلق سازمانی'
+            },
+            questions: [
+                { id: 'eng_q1', category: 'alignment', text: 'من به وضوح می‌دانم که کار من چگونه به اهداف کلی شرکت کمک می‌کند.', type: 'rating_1_5' },
+                { id: 'eng_q2', category: 'alignment', text: 'من به ماموریت و چشم‌انداز شرکت باور دارم.', type: 'rating_1_5' },
+                { id: 'eng_q3', category: 'growth', text: 'در شغل فعلی‌ام فرصت‌های کافی برای یادگیری و رشد حرفه‌ای دارم.', type: 'rating_1_5' },
+                { id: 'eng_q4', category: 'growth', text: 'شرکت در توسعه مهارت‌های من سرمایه‌گذاری می‌کند.', type: 'rating_1_5' },
+                { id: 'eng_q5', category: 'management', text: 'مدیر مستقیم من به طور منظم بازخوردهای سازنده و مفیدی به من ارائه می‌دهد.', type: 'rating_1_5' },
+                { id: 'eng_q6', category: 'management', text: 'من برای انجام کارم از استقلال و اختیار کافی برخوردارم.', type: 'rating_1_5' },
+                { id: 'eng_q7', category: 'management', text: 'مدیر من به من به عنوان یک فرد اهمیت می‌دهد و حامی من است.', type: 'rating_1_5' },
+                { id: 'eng_q8', category: 'recognition', text: 'وقتی کارم را به خوبی انجام می‌دهم، احساس می‌کنم از من قدردانی می‌شود.', type: 'rating_1_5' },
+                { id: 'eng_q9', category: 'recognition', text: 'فرآیندهای ارزیابی و ترفیع در شرکت منصفانه هستند.', type: 'rating_1_5' },
+                { id: 'eng_q10', category: 'culture', text: 'من احساس تعلق به تیم و سازمان خود دارم.', type: 'rating_1_5' },
+                { id: 'eng_q11', category: 'culture', text: 'در محیط کار، نظرات و ایده‌های من شنیده و مورد احترام قرار می‌گیرند.', type: 'rating_1_5' },
+                { id: 'eng_q12', category: 'wellbeing', text: 'حجم کاری من قابل مدیریت است و باعث فرسودگی شغلی‌ام نمی‌شود.', type: 'rating_1_5' },
+                { id: 'eng_q13', category: 'wellbeing', text: 'من می‌توانم تعادل مناسبی بین کار و زندگی شخصی‌ام برقرار کنم.', type: 'rating_1_5' },
+                { id: 'eng_q14', category: 'overall', text: 'با توجه به همه جوانب، این شرکت را به عنوان یک محیط کاری عالی به دیگران توصیه می‌کنم (eNPS).', type: 'rating_1_10' }, // eNPS standard is 1-10
+                { id: 'eng_q15', category: 'overall', text: 'چه چیزی را در فرهنگ شرکت بیشتر از همه دوست دارید؟', type: 'open_text' },
+                { id: 'eng_q16', category: 'overall', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی پالس هفتگی (بهبود یافته) ---
+        'pulse': {
+            id: 'pulse',
+            title: 'نظرسنجی پالس هفتگی',
+            description: 'یک نظرسنجی سریع برای سنجش نبض سازمان و حال و هوای کارکنان در هفته گذشته.',
+            questions: [
+                { id: 'pls_q1', text: 'در مقیاس ۱ تا ۵، از هفته کاری خود چقدر رضایت داشتید؟', type: 'rating_1_5' },
+                { id: 'pls_q2', text: 'حجم کاری خود را در این هفته چگونه ارزیابی می‌کنید؟', type: 'choice', options: ['بسیار کم', 'کم', 'مناسب', 'زیاد', 'بسیار زیاد'] },
+                { id: 'pls_q3', text: 'آیا در هفته گذشته بازخورد مفیدی دریافت کردید که به شما در کارتان کمک کند؟', type: 'yes_no' },
+                { id: 'pls_q4', text: 'بزرگترین مانع یا چالشی که این هفته با آن روبرو بودید چه بود؟', type: 'open_text' },
+                { id: 'pls_q5', text: 'یک اتفاق مثبت یا موفقیت از این هفته را نام ببرید.', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی تجربه جذب و آنبوردینگ (کامل) ---
+        'onboarding': {
+            id: 'onboarding',
+            title: 'نظرسنجی تجربه جذب و آنبوردینگ',
+            description: 'جمع‌آوری بازخورد از نیروهای جدید برای بهبود فرآیند ورود به سازمان.',
+            questions: [
+                { id: 'onb_q1', text: 'فرآیند مصاحبه و جذب چقدر شفاف، حرفه‌ای و محترمانه بود؟', type: 'rating_1_5' },
+                { id: 'onb_q2', text: 'آیا شرح شغلی که مطالعه کردید، با وظایف واقعی شما مطابقت دارد؟', type: 'yes_no_somewhat' }, // A more nuanced choice
+                { id: 'onb_q3', text: 'آیا قبل از روز اول، اطلاعات کافی در مورد شروع به کارتان دریافت کردید؟', type: 'yes_no' },
+                { id: 'onb_q4', text: 'در هفته اول کاری، تمام ابزارها، نرم‌افزارها و دسترسی‌های لازم را در اختیار داشتید؟', type: 'yes_no' },
+                { id: 'onb_q5', text: 'معرفی شما به تیم و همکاران چگونه بود و چقدر احساس راحتی کردید؟', type: 'rating_1_5' },
+                { id: 'onb_q6', text: 'آیا شرح وظایف و انتظارات از شما در ماه اول کاری کاملاً روشن و شفاف بود؟', type: 'rating_1_5' },
+                { id: 'onb_q7', text: 'آیا مدیرتان در هفته‌های اول به اندازه کافی برای شما وقت گذاشت؟', type: 'yes_no' },
+                { id: 'onb_q8', text: 'چه پیشنهادی برای بهبود تجربه آنبوردینگ نیروهای جدید دارید؟', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی بازخورد ۳۶۰ درجه (استاندارد) ---
+        'feedback_360': {
+            id: 'feedback_360',
+            title: 'نظرسنجی بازخورد ۳۶۰ درجه',
+            description: 'ارائه بازخورد سازنده به همکاران برای کمک به رشد حرفه‌ای آن‌ها.',
+            requiresTarget: true,
+            questions: [
+                { id: '360_q1', text: 'این همکار چقدر در ارتباطات خود (گفتاری و نوشتاری) شفاف، محترمانه و موثر است؟', type: 'rating_1_5' },
+                { id: '360_q2', text: 'این همکار تا چه حد در کار تیمی مشارکت می‌کند، به دیگران کمک می‌کند و دانش خود را به اشتراک می‌گذارد؟', type: 'rating_1_5' },
+                { id: '360_q3', text: 'این همکار در حل مسائل و رویارویی با چالش‌ها چقدر خلاق، کارآمد و مسئولیت‌پذیر است؟', type: 'rating_1_5' },
+                { id: '360_q4', text: 'این همکار تا چه حد به اهداف و نتایج متعهد است و کارها را با کیفیت بالا به اتمام می‌رساند؟', type: 'rating_1_5' },
+                { id: '360_q5', text: 'بزرگترین نقطه قوت این همکار که باید به آن ادامه دهد چیست؟', type: 'open_text' },
+                { id: '360_q6', text: 'چه پیشنهاد مشخصی برای رشد و پیشرفت این همکار دارید؟ (چه کاری را باید شروع کند، متوقف کند یا ادامه دهد؟)', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی خروج از سازمان (کامل) ---
+        'exit': {
+            id: 'exit',
+            title: 'نظرسنجی خروج از سازمان',
+            description: 'درک دلایل ترک سازمان برای بهبود محیط کاری برای کارمندان آینده.',
+            questions: [
+                { id: 'ext_q1', text: 'لطفاً دلیل یا دلایل اصلی خود برای ترک سازمان را بیان کنید.', type: 'open_text' },
+                { id: 'ext_q2', text: 'از تجربه کاری خود در این شرکت به طور کلی چقدر رضایت داشتید؟', type: 'rating_1_5' },
+                { id: 'ext_q3', text: 'آیا احساس می‌کردید شغل شما از مهارت‌هایتان به خوبی استفاده می‌کند؟', type: 'rating_1_5' },
+                { id: 'ext_q4', text: 'رابطه و کیفیت مدیریت مدیر مستقیم خود را چگونه ارزیابی می‌کنید؟', type: 'rating_1_5' },
+                { id: 'ext_q5', text: 'آیا فرصت‌های کافی برای رشد و پیشرفت شغلی در اختیار شما قرار گرفت؟', type: 'rating_1_5' },
+                { id: 'ext_q6', text: 'فرهنگ سازمانی شرکت را چگونه توصیف می‌کنید؟', type: 'open_text' },
+                { id: 'ext_q7', text: 'آیا بسته حقوق و مزایای خود را منصفانه و رقابتی می‌دانستید؟', type: 'yes_no' },
+                { id: 'ext_q8', text: 'آیا این شرکت را به عنوان یک محیط کاری به دیگران توصیه می‌کنید؟', type: 'yes_no' },
+                { id: 'ext_q9', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
+            ]
+        }
+    };
+
+
+        // --- GLOBAL STATE & CONFIG ---
         const state = {
             employees: [],
             teams: [],
@@ -280,96 +409,135 @@
             competencies: [],
             expenses: [],
             pettyCashCards: [],
-            chargeHistory: [],
+             chargeHistory: [],
             dashboardMetrics: {},
-            orgAnalytics: {},
             currentPage: 'dashboard',
-            currentPageTalent: 1,
+             currentPageTalent: 1,
             currentUser: null,
         };
         let charts = {};
         
+        // --- FIREBASE SETUP ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'hr-nik-prod';
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyCCfPmxQy1uAKu0lPGSe3bc-P15iLYLHJo",
+            authDomain: "nik-hr.firebaseapp.com",
+            projectId: "nik-hr",
+            storageBucket: "nik-hr.appspot.com",
+            messagingSenderId: "731265316127",
+            appId: "1:731265316127:web:6fda02cb2c7d4adfc92c2a"
         };
 
-        let app, auth, db, storage;
+         let app, auth, db, storage;
 
-        const showLoginPage = () => { /* ... existing code ... */ };
-        const showSignupPage = () => { /* ... existing code ... */ };
-        const showDashboard = () => { /* ... existing code ... */ };
+        // --- AUTH & UI TOGGLING ---
+        const showLoginPage = () => {
+            document.getElementById('login-container').classList.remove('hidden');
+            document.getElementById('signup-container').classList.add('hidden');
+            document.getElementById('dashboard-container').classList.add('hidden');
+            document.getElementById('loading-overlay').style.display = 'none';
+        };
+
+        const showSignupPage = () => {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('signup-container').classList.remove('hidden');
+            document.getElementById('dashboard-container').classList.add('hidden');
+        };
+        
+        const showDashboard = () => {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('signup-container').classList.add('hidden');
+            document.getElementById('dashboard-container').classList.remove('hidden');
+            document.getElementById('dashboard-container').classList.add('flex');
+        };
+
 
         async function initializeFirebase() {
             try {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
-                storage = getStorage(app);
+                 storage = getStorage(app);
+
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        console.log("User is logged in:", user.uid);
                         await fetchUserRole(user);
                         listenToData();
                     } else {
+                        console.log("User is logged out.");
                         state.currentUser = null;
                         showLoginPage();
                     }
                 });
-            } catch (error) { console.error("Firebase Init Error:", error); }
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                document.getElementById('loading-overlay').innerHTML = `<p class="text-red-600 font-semibold">خطا در اتصال به پایگاه داده</p>`;
+            }
         }
 
         async function fetchUserRole(user) {
             const userRef = doc(db, `artifacts/${appId}/public/data/users`, user.uid);
             const userSnap = await getDoc(userRef);
+
             if (userSnap.exists()) {
                 state.currentUser = { uid: user.uid, email: user.email, ...userSnap.data() };
             } else {
+                // This is a new user, check if they are the first user
                 const usersCol = collection(db, `artifacts/${appId}/public/data/users`);
                 const usersSnapshot = await getDocs(usersCol);
                 const isFirstUser = usersSnapshot.empty;
+                
                 const newUserRole = isFirstUser ? 'admin' : 'viewer';
-                const newUser = { email: user.email, role: newUserRole, createdAt: serverTimestamp() };
+                const newUser = {
+                    email: user.email,
+                    role: newUserRole,
+                    createdAt: serverTimestamp()
+                };
                 await setDoc(userRef, newUser);
                 state.currentUser = { uid: user.uid, ...newUser };
                 showToast(isFirstUser ? "ثبت نام موفق! شما ادمین سیستم هستید." : "ثبت نام موفق! به شما دسترسی مشاهده‌گر داده شد.");
             }
+            console.log("Current user role:", state.currentUser.role);
         }
-
+        
+        // --- REAL-TIME DATA LISTENERS ---
         function listenToData() {
             const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses', 'users', 'competencies', 'expenses', 'pettyCashCards', 'chargeHistory'];
             let initialLoads = collectionsToListen.length;
+
             const onDataLoaded = () => {
                 initialLoads--;
                 if (initialLoads === 0) {
-                    calculateAndApplyAnalytics();
+                    console.log("All initial data loaded.");
+                     calculateAndApplyAnalytics();
                     showDashboard();
                     router(); 
                     document.getElementById('loading-overlay').style.display = 'none';
                 }
             };
+
             collectionsToListen.forEach(colName => {
                 const colRef = collection(db, `artifacts/${appId}/public/data/${colName}`);
                 onSnapshot(colRef, (snapshot) => {
                     state[colName] = snapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+                    
                     if (initialLoads > 0) {
                         onDataLoaded();
                     } else {
-                        calculateAndApplyAnalytics();
                         if (!window.location.hash.startsWith('#survey-taker')) {
                             renderPage(state.currentPage);
                         }
                     }
                 }, (error) => {
                     console.error(`Error listening to ${colName}:`, error);
-                    if (['competencies', 'expenses', 'pettyCashCards', 'chargeHistory'].includes(colName)) {
+                    // For collections that might not exist initially, don't show a fatal error
+                    if (['competencies', 'expenses', 'pettyCashCards'].includes(colName)) {
                         state[colName] = [];
                         if (initialLoads > 0) onDataLoaded();
+                        return;
                     }
+                    document.getElementById('loading-overlay').innerHTML = `<p class="text-red-600 font-semibold">خطا در دریافت داده‌ها</p>`;
                 });
             });
         }
@@ -513,14 +681,11 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     };
         // --- تابع جدید برای تحلیل داده‌های نظرسنجی و اعمال نتایج ---
 const calculateAndApplyAnalytics = () => {
-        if (!state.surveyResponses) return;
         console.log("Running survey and risk analytics...");
-        
-        // --- تحلیل نظرسنجی مشارکت کارکنان ---
         const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
-        const employeeScores = {};
         
-        // محاسبه امتیاز برای هر کارمند
+        // محاسبه امتیاز مشارکت برای هر کارمند
+        const employeeScores = {};
         engagementResponses.forEach(res => {
             if (res.employeeId && res.employeeId !== 'anonymous') {
                 if (!employeeScores[res.employeeId]) {
@@ -545,7 +710,7 @@ const calculateAndApplyAnalytics = () => {
             }
         });
 
-        // محاسبه امتیاز برای هر تیم
+        // محاسبه امتیاز مشارکت برای هر تیم
         state.teams.forEach(team => {
             let teamTotalScore = 0;
             let teamQuestionCount = 0;
@@ -559,32 +724,10 @@ const calculateAndApplyAnalytics = () => {
             team.engagementScore = teamQuestionCount > 0 ? Math.round(((teamTotalScore / teamQuestionCount) / 5) * 100) : null;
         });
 
-        // --- بخش جدید: تحلیل دسته‌بندی‌های نظرسنجی برای کل سازمان ---
-        const orgEngagementByCategory = {};
-        const engagementTemplate = surveyTemplates['engagement'];
-        engagementResponses.forEach(res => {
-            engagementTemplate.questions.forEach(q => {
-                if (q.type === 'rating_1_5' && res.answers[q.id]) {
-                    const score = parseInt(res.answers[q.id]);
-                    if (!orgEngagementByCategory[q.category]) {
-                        orgEngagementByCategory[q.category] = { totalScore: 0, count: 0 };
-                    }
-                    orgEngagementByCategory[q.category].totalScore += score;
-                    orgEngagementByCategory[q.category].count++;
-                }
-            });
-        });
-        state.orgAnalytics = {
-            engagementBreakdown: Object.entries(orgEngagementByCategory).map(([category, data]) => ({
-                name: engagementTemplate.categories[category] || category,
-                score: Math.round(((data.totalScore / data.count) / 5) * 100)
-            }))
-        };
-
-        // --- محاسبه هوشمند ریسک خروج و ماتریس ۹ جعبه‌ای ---
+        // محاسبه هوشمند ریسک خروج و ماتریس ۹ جعبه‌ای برای همه
         state.employees.forEach(emp => {
             emp.attritionRisk = calculateAttritionRisk(emp, state.teams);
-            emp.nineBox = determineNineBoxCategory(emp);
+            emp.nineBox = determineNineBoxCategory(emp); // <<-- این خط جدید است
         });
 
         console.log("Analytics applied to state.");
@@ -1614,60 +1757,72 @@ expenses: () => {
                 }
             });
         };
-analytics: () => {
-            const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
-                ?.sort((a, b) => b.score - a.score)
-                .map(cat => `
-                    <div>
-                        <div class="flex justify-between items-center mb-1 text-sm">
-                            <span class="text-slate-600">${cat.name}</span>
-                            <span class="font-medium text-teal-600">${cat.score}%</span>
-                        </div>
-                        <div class="progress-bar w-full">
-                            <div class="progress-bar-fill" style="width: ${cat.score}%;"></div>
-                        </div>
-                    </div>
-                `).join('') || '<p class="text-sm text-slate-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد.</p>';
+        const setupAnalyticsPage = () => {
+            const renderAttritionHotspots = () => {
+                const container = document.getElementById('attrition-hotspot-list');
+                if (!container) return;
+                const highRiskEmployees = state.employees.filter(emp => emp.attritionRisk && emp.attritionRisk.score > 50).sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
+                if (highRiskEmployees.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">هیچ کارمندی با ریسک خروج بالا شناسایی نشد.</p>'; return; }
+                container.innerHTML = highRiskEmployees.map(emp => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${emp.name}</span><span class="font-semibold text-red-600">${emp.attritionRisk.score}%</span></div><div class="progress-bar w-full bg-red-100"><div class="progress-bar-fill bg-red-500" style="width: ${emp.attritionRisk.score}%;"></div></div></div>`).join('');
+            };
 
-            return `
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold text-slate-800">تحلیل هوشمند</h1>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="card p-6">
-                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="pie-chart" class="ml-2 text-teal-500"></i>تحلیل مشارکت سازمانی</h3>
-                        <div class="space-y-4">
-                            ${engagementBreakdownHtml}
-                        </div>
-                    </div>
+            const renderTeamHealth = () => {
+                const container = document.getElementById('team-health-dashboard');
+                if (!container) return;
+                if (state.teams.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">تیمی برای نمایش وجود ندارد.</p>'; return; }
+                container.innerHTML = state.teams.map(team => {
+                    const metrics = team.healthMetrics || {};
+                    const scores = Object.values(metrics);
+                    const avgHealth = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+                    return `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${team.name}</span><span class="font-semibold text-green-600">${Math.round(avgHealth)}%</span></div><div class="progress-bar w-full bg-green-100"><div class="progress-bar-fill bg-green-500" style="width: ${avgHealth}%;"></div></div></div>`;
+                }).join('');
+            };
 
-                    <div class="card p-6">
-                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="shield-alert" class="ml-2 text-rose-500"></i>نقاط داغ ریسک خروج</h3>
-                        <div id="attrition-hotspot-list" class="space-y-3 max-h-80 overflow-y-auto"></div>
-                    </div>
+            const renderNineBoxGrid = () => {
+                const container = document.getElementById('nine-box-grid-container');
+                if (!container) return;
+                const gridMap = { 'معما': { row: 1, col: 1 }, 'عملکرد قابل اتکا': { row: 2, col: 1 }, 'مهره کلیدی': { row: 3, col: 1 }, 'پتانسیل بالا': { row: 2, col: 3 }, 'ستاره': { row: 3, col: 3 } };
+                const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
+                state.employees.forEach(emp => { const pos = gridMap[emp.nineBox]; if (pos) { grid[pos.row - 1][pos.col - 1].push(emp); } });
+                let html = '';
+                for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { const employeesInCell = grid[i][j]; html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[80px] p-1 flex flex-wrap items-start justify-center gap-1">${employeesInCell.map(emp => `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0 bg-gray-200"><img src="${emp.avatar}" alt="${emp.name}" title="${emp.name}" class="w-full h-full object-cover"></div>`).join('')}</div>`; } }
+                container.innerHTML = html;
+            };
 
-                    <div class="card p-6 lg:col-span-2">
-                        <h3 class="font-semibold mb-4 text-slate-700">ماتریس استعداد ۹-جعبه‌ای</h3>
-                        <div id="nine-box-grid-container" class="grid grid-cols-3 gap-2 text-center text-xs border-t-2 border-l-2 border-gray-400 mt-4"></div>
-                    </div>
-                    
-                    <div class="card p-6 lg:col-span-2">
-                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="file-search" class="ml-2 text-indigo-500"></i>تحلیل شکاف مهارتی</h3>
-                        <div class="flex flex-col sm:flex-row gap-2 items-center">
-                            <select id="skill-team-select" class="w-full p-2 border border-slate-300 rounded-lg">
-                                <option value="all">کل سازمان</option>
-                                ${state.teams.map(t => `<option value="${t.firestoreId}">${t.name}</option>`).join('')}
-                            </select>
-                            <input type="text" id="skill-search-input" placeholder="مهارت مورد نظر را وارد کنید (مثلا: Python)" class="w-full p-2 border border-slate-300 rounded-lg">
-                            <button id="find-skill-gap-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 w-full sm:w-auto">جستجو</button>
-                        </div>
-                        <div id="skill-gap-results" class="mt-4 p-4 bg-slate-50 rounded-md min-h-[5rem]">
-                            <p class="text-sm text-slate-500">برای شروع، یک تیم و مهارت را انتخاب و روی دکمه جستجو کلیک کنید.</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        },
+            const setupSkillGapFinder = () => {
+                const findBtn = document.getElementById('find-skill-gap-btn');
+                const teamSelect = document.getElementById('skill-team-select');
+                const skillInput = document.getElementById('skill-search-input');
+                const resultsContainer = document.getElementById('skill-gap-results');
+                if (!findBtn) return;
+                findBtn.addEventListener('click', () => {
+                    const teamId = teamSelect.value;
+                    const skillName = skillInput.value.trim().toLowerCase();
+                    if (!skillName) { resultsContainer.innerHTML = '<p class="text-sm text-red-500">لطفا نام یک مهارت را وارد کنید.</p>'; return; }
+                    let targetEmployees = state.employees;
+                    if (teamId !== 'all') { const team = state.teams.find(t => t.firestoreId === teamId); if (team) { targetEmployees = state.employees.filter(emp => team.memberIds.includes(emp.id)); } }
+                    const skillAnalysis = { expert: [], intermediate: [], beginner: [], none: [] };
+                    targetEmployees.forEach(emp => {
+                        const skills = emp.skills || {};
+                        const skillKeys = Object.keys(skills).map(k => k.toLowerCase());
+                        const skillIndex = skillKeys.findIndex(k => k.includes(skillName));
+                        if (skillIndex > -1) {
+                            const originalKey = Object.keys(skills)[skillIndex];
+                            const level = skills[originalKey];
+                            if (level >= 4) skillAnalysis.expert.push(emp);
+                            else if (level >= 2) skillAnalysis.intermediate.push(emp);
+                            else skillAnalysis.beginner.push(emp);
+                        } else { skillAnalysis.none.push(emp); }
+                    });
+                    resultsContainer.innerHTML = `<h4 class="font-bold mb-2">نتایج برای مهارت: <span class="text-blue-600">${skillInput.value}</span></h4><div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"><div><p class="font-semibold text-lg">${skillAnalysis.expert.length}</p><p class="text-xs text-gray-500">متخصص (4-5)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.intermediate.length}</p><p class="text-xs text-gray-500">متوسط (2-3)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.beginner.length}</p><p class="text-xs text-gray-500">مبتدی (1)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.none.length}</p><p class="text-xs text-gray-500">فاقد مهارت</p></div></div><p class="text-xs text-gray-600 mt-4"><strong>متخصصین:</strong> ${skillAnalysis.expert.map(e => e.name).join(', ') || 'هیچ'}</p>`;
+                });
+            };
+
+            renderAttritionHotspots();
+            renderTeamHealth();
+            renderNineBoxGrid();
+            setupSkillGapFinder();
+        };
         
         // --- [FIX START] ADDED EXPENSES PAGE LISTENERS AND HELPERS ---
   const setupExpensesPageListeners = () => {
