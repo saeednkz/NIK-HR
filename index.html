@@ -192,6 +192,9 @@
                     <a href="#surveys" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="clipboard-list"></i><span>نظرسنجی‌ها</span>
                     </a>
+                     <a href="#expenses" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
+                        <i data-lucide="wallet"></i><span>ثبت هزینه‌ها</span>
+                    </a>
                     <a href="#analytics" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="bar-chart-3"></i><span>تحلیل هوشمند</span>
                     </a>
@@ -359,7 +362,9 @@
             reminders: [],
             surveyResponses: [],
             users: [],
-            competencies: [], // New state for competencies
+            competencies: [],
+            expenses: [],
+            pettyCashCards: [],
             dashboardMetrics: {},
             currentPage: 'dashboard',
             currentUser: null,
@@ -451,7 +456,7 @@
         
         // --- REAL-TIME DATA LISTENERS ---
         function listenToData() {
-            const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses', 'users', 'competencies'];
+            const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses', 'users', 'competencies', 'expenses', 'pettyCashCards'];
             let initialLoads = collectionsToListen.length;
 
             const onDataLoaded = () => {
@@ -478,9 +483,9 @@
                     }
                 }, (error) => {
                     console.error(`Error listening to ${colName}:`, error);
-                    // For competencies, it might not exist, so don't show a fatal error
-                    if (colName === 'competencies') {
-                        state.competencies = [];
+                    // For collections that might not exist initially, don't show a fatal error
+                    if (['competencies', 'expenses', 'pettyCashCards'].includes(colName)) {
+                        state[colName] = [];
                         if (initialLoads > 0) onDataLoaded();
                         return;
                     }
@@ -747,6 +752,74 @@
                         </div>
                     </div>
                 `;
+            },
+            expenses: () => {
+                const cardsHtml = state.pettyCashCards.map(card => `
+                    <div class="card bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-blue-800">${card.name}</p>
+                            <p class="text-sm text-gray-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
+                        </div>
+                        ${isAdmin() ? `<button class="delete-card-btn text-red-500 hover:text-red-700" data-id="${card.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+                    </div>
+                `).join('');
+
+                const expensesRows = state.expenses.map(exp => `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4">${new Date(exp.date).toLocaleDateString('fa-IR')}</td>
+                        <td class="px-6 py-4">${exp.item}</td>
+                        <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
+                        <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
+                        <td class="px-6 py-4">
+                            ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>` : '-'}
+                        </td>
+                         <td class="px-6 py-4">
+                            ${canEdit() ? `<button class="delete-expense-btn text-red-600 hover:underline" data-id="${exp.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+                
+                const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+                return `
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">مدیریت هزینه‌ها</h1>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="lg:col-span-1 card bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
+                            <div class="space-y-3 mb-4" id="cards-list">${cardsHtml}</div>
+                            ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">افزودن کارت جدید</button>` : ''}
+                        </div>
+                        <div class="lg:col-span-2 card bg-white p-6 rounded-lg shadow-md">
+                             <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-semibold">لیست هزینه‌ها</h3>
+                                ${canEdit() ? `<button id="add-expense-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">افزودن هزینه</button>` : ''}
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-right text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">تاریخ</th>
+                                            <th scope="col" class="px-6 py-3">مورد</th>
+                                            <th scope="col" class="px-6 py-3">کارت</th>
+                                            <th scope="col" class="px-6 py-3">مبلغ (تومان)</th>
+                                            <th scope="col" class="px-6 py-3">فاکتور</th>
+                                            <th scope="col" class="px-6 py-3">عملیات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${expensesRows}</tbody>
+                                    <tfoot class="bg-gray-100 font-semibold">
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-3 text-left">جمع کل:</td>
+                                            <td colspan="3" class="px-6 py-3 font-mono">${totalExpenses.toLocaleString('fa-IR')} تومان</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
         };
 
@@ -787,6 +860,7 @@
                 if (pageName === 'talent') { renderEmployeeTable(); setupTalentPageListeners(); }
                 if (pageName === 'organization') { setupOrganizationPageListeners(); }
                 if (pageName === 'surveys') { setupSurveysPageListeners(); }
+                if (pageName === 'expenses') { setupExpensesPageListeners(); }
                 if (pageName === 'analytics') { setupAnalyticsPage(); }
                 if (pageName === 'settings') {
                     if(isAdmin()) {
