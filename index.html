@@ -5,229 +5,289 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سیستم مدیریت منابع انسانی HR-Nik</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+
     <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
     <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+
+    <!-- Persian Font -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
     <style>
-        :root {
-            --color-primary: #14b8a6; /* Teal 500 */
-            --color-primary-light: #f0fdfa; /* Teal 50 */
-            --color-accent: #6366f1; /* Indigo 500 */
-            --color-text-primary: #1e293b; /* Slate 800 */
-            --color-text-secondary: #64748b; /* Slate 500 */
-            --color-bg: #f8fafc; /* Slate 50 */
-            --color-surface: #ffffff;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-        }
-        .sidebar {
-            background-color: var(--color-surface);
-            border-left: 1px solid #e2e8f0;
-            box-shadow: var(--shadow-md);
+            background-color: #f1f5f9;
         }
         .sidebar-item {
-            color: var(--color-text-secondary);
             transition: all 0.2s ease-in-out;
-            border-right: 3px solid transparent;
-            margin-right: -8px; /* For alignment */
-            padding-right: 11px;
         }
         .sidebar-item.active, .sidebar-item:hover {
-            color: var(--color-primary);
-            background-color: var(--color-primary-light);
-            border-right-color: var(--color-primary);
+            background-color: #1e3a8a;
+            color: white;
+            transform: translateX(-4px);
         }
         .card {
-            background-color: var(--color-surface);
-            border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: var(--shadow-sm);
-            border: 1px solid #e2e8f0;
-            transition: box-shadow 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         .card:hover {
-            box-shadow: var(--shadow-md);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
         
-        .progress-bar { background-color: #e2e8f0; border-radius: 9999px; overflow: hidden; height: 0.5rem; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(to right, #14b8a6, #6366f1); border-radius: 9999px; transition: width 0.5s ease-in-out; }
+        .progress-bar { background-color: #e0e0e0; border-radius: 9999px; overflow: hidden; height: 0.75rem; }
+        .progress-bar-fill { height: 100%; background-color: #3b82f6; border-radius: 9999px; transition: width 0.5s ease-in-out; }
         
-        #loading-overlay { position: fixed; inset: 0; background-color: rgba(248, 250, 252, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .spinner { width: 56px; height: 56px; border: 6px solid #f0fdfa; border-top: 6px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .profile-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; color: var(--color-text-secondary); }
-        .profile-tab.active, .profile-tab:hover { border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
-        .profile-tab-content { display: none; }
-        .profile-tab-content.active { display: block; }
-        
-        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { display: flex; align-items: center; padding: 12px 20px; border-radius: 8px; box-shadow: var(--shadow-lg); color: white; opacity: 0; transform: translateY(20px); animation: slideUp 0.5s forwards, fadeOutToast 0.5s 4.5s forwards; }
-        .toast.success { background: linear-gradient(to right, #10b981, #14b8a6); }
-        .toast.error { background: linear-gradient(to right, #f43f5e, #e11d48); }
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOutToast { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
-        .table-row-hover:hover { background-color: #f0fdfa; } /* Teal 50 */
-
+        /* Loading Spinner */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #1d4ed8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Profile Tabs */
+        .profile-tab {
+            cursor: pointer;
+            padding: 8px 16px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .profile-tab.active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .profile-tab-content {
+            display: none;
+        }
+        .profile-tab-content.active {
+            display: block;
+        }
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: white;
+            opacity: 0;
+            transform: translateX(-100%);
+            animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
+        }
+        .toast.success { background-color: #22c55e; }
+        .toast.error { background-color: #ef4444; }
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: scale(0.9); }
+        }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-100">
 
-    <div id="login-container" class="hidden min-h-screen flex items-center justify-center bg-slate-100">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md">
+    <!-- Login Container -->
+    <div id="login-container" class="hidden min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
             <div class="text-center">
-                <i data-lucide="shield-check" class="mx-auto w-12 h-12 text-teal-500"></i>
-                <h2 class="mt-4 text-2xl font-bold text-slate-800">ورود به سیستم HR-Nik</h2>
+                <i data-lucide="shield-check" class="mx-auto w-12 h-12 text-blue-800"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">ورود به سیستم HR-Nik</h2>
             </div>
             <form id="login-form" class="space-y-6">
                 <div>
-                    <label for="email" class="text-sm font-medium text-slate-700">آدرس ایمیل</label>
-                    <input id="email" name="email" type="email" autocomplete="email" required class="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <label for="email" class="text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="password" class="text-sm font-medium text-slate-700">رمز عبور</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <label for="password" class="text-sm font-medium text-gray-700">رمز عبور</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-md transition-all">ورود</button>
+                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">ورود</button>
             </form>
-            <p class="text-sm text-center text-slate-600">
-                حساب کاربری ندارید؟ <a href="#" id="show-signup" class="font-medium text-teal-600 hover:underline">ثبت نام کنید</a>
+            <p class="text-sm text-center text-gray-600">
+                حساب کاربری ندارید؟ <a href="#" id="show-signup" class="font-medium text-blue-600 hover:underline">ثبت نام کنید</a>
             </p>
         </div>
     </div>
 
-    <div id="signup-container" class="hidden min-h-screen flex items-center justify-center bg-slate-100">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md">
+    <!-- Signup Container -->
+    <div id="signup-container" class="hidden min-h-screen flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
             <div class="text-center">
-                 <i data-lucide="user-plus" class="mx-auto w-12 h-12 text-teal-500"></i>
-                <h2 class="mt-4 text-2xl font-bold text-slate-800">ایجاد حساب کاربری جدید</h2>
+                 <i data-lucide="user-plus" class="mx-auto w-12 h-12 text-blue-800"></i>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">ایجاد حساب کاربری جدید</h2>
             </div>
             <form id="signup-form" class="space-y-6">
-                <div>
-                    <label for="signup-email" class="text-sm font-medium text-slate-700">آدرس ایمیل</label>
-                    <input id="signup-email" name="email" type="email" required class="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                 <div>
+                    <label for="signup-email" class="text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                    <input id="signup-email" name="email" type="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label for="signup-password" class="text-sm font-medium text-slate-700">رمز عبور</label>
-                    <input id="signup-password" name="password" type="password" required class="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                    <label for="signup-password" class="text-sm font-medium text-gray-700">رمز عبور</label>
+                    <input id="signup-password" name="password" type="password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-md transition-all">ثبت نام</button>
+                <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">ثبت نام</button>
             </form>
-            <p class="text-sm text-center text-slate-600">
-                قبلا ثبت نام کرده‌اید؟ <a href="#" id="show-login" class="font-medium text-teal-600 hover:underline">وارد شوید</a>
+            <p class="text-sm text-center text-gray-600">
+                قبلا ثبت نام کرده‌اید؟ <a href="#" id="show-login" class="font-medium text-blue-600 hover:underline">وارد شوید</a>
             </p>
         </div>
     </div>
 
+
+    <!-- This container is for the main dashboard view -->
     <div id="dashboard-container" class="hidden h-screen">
-        <aside id="sidebar" class="sidebar w-64 space-y-6 py-7 px-2 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0 transition duration-300 ease-in-out z-30 flex flex-col">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 right-0 transform translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-30 shadow-lg flex flex-col">
             <div>
-                <a href="#dashboard" class="sidebar-logo text-slate-800 text-2xl font-bold px-4 flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="shield-check" class="text-teal-500"></i>
+                <a href="#dashboard" class="sidebar-logo text-white text-2xl font-extrabold px-4 flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="shield-check"></i>
                     <span>HR-Nik</span>
                 </a>
-                <nav id="sidebar-nav" class="mt-10">
-                    <a href="#dashboard" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse">
+                <nav id="sidebar-nav" class="mt-6">
+                    <a href="#dashboard" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="layout-dashboard"></i><span>داشبورد</span>
                     </a>
-                    <a href="#talent" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse">
+                    <a href="#talent" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="users"></i><span>استعدادها</span>
                     </a>
-                    <a href="#organization" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse">
+                    <a href="#organization" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="building-2"></i><span>سازمان</span>
                     </a>
-                    <a href="#surveys" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse">
+                    <a href="#surveys" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="clipboard-list"></i><span>نظرسنجی‌ها</span>
                     </a>
-                    <a href="#expenses" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse">
+                     <a href="#expenses" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="wallet"></i><span>ثبت هزینه‌ها</span>
                     </a>
-                    <a href="#analytics" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse">
+                    <a href="#analytics" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="bar-chart-3"></i><span>تحلیل هوشمند</span>
                     </a>
-                    <a href="#settings" id="settings-nav-link" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse">
+                    <a href="#settings" id="settings-nav-link" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
                         <i data-lucide="settings"></i><span>تنظیمات</span>
                     </a>
                 </nav>
             </div>
             <div class="mt-auto">
-                 <a href="#" id="logout-btn" class="sidebar-item block py-3 px-4 rounded-r-lg flex items-center space-x-3 space-x-reverse !text-red-500 hover:!bg-red-50 hover:!border-red-500">
+                 <a href="#" id="logout-btn" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse text-red-300 hover:bg-red-700 hover:text-white">
                     <i data-lucide="log-out"></i><span>خروج از سیستم</span>
                 </a>
             </div>
         </aside>
 
+        <!-- Main Content Wrapper -->
         <div class="flex-1 flex flex-col h-screen overflow-y-hidden">
-            <header class="flex justify-between items-center p-4 bg-white border-b border-slate-200 md:hidden">
-                <a href="#dashboard" class="sidebar-logo text-slate-800 text-xl font-bold flex items-center space-x-2 space-x-reverse">
-                    <i data-lucide="shield-check" class="text-teal-500"></i>
+            <!-- Mobile Header -->
+            <header class="flex justify-between items-center p-4 bg-white shadow-md md:hidden">
+                <a href="#dashboard" class="sidebar-logo text-blue-900 text-xl font-extrabold flex items-center space-x-2 space-x-reverse">
+                    <i data-lucide="shield-check"></i>
                     <span>HR-Nik</span>
                 </a>
-                <button id="menu-btn" class="text-slate-600 z-40">
+                <button id="menu-btn" class="text-gray-600 z-40">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </header>
             
+            <!-- Scrollable Main Content -->
             <main id="main-content" class="flex-1 p-6 sm:p-10 overflow-y-auto">
-                </main>
+                <!-- Content will be loaded here by JavaScript -->
+            </main>
         </div>
     </div>
     
-    <div id="survey-taker-container" class="hidden"></div>
+    <!-- This container is for the public survey-taking view -->
+    <div id="survey-taker-container" class="hidden">
+        <!-- Public survey content will be injected here -->
+    </div>
 
-    <div id="loading-overlay"><div class="spinner"></div></div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
 
+    <!-- Sidebar Overlay -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
 
+    <!-- Main Modal for Profiles and Forms -->
     <div id="mainModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-40">
         <div class="bg-white rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-4/5 max-w-6xl h-5/6 transform transition-all duration-300 scale-95 opacity-0">
-            <div class="flex justify-between items-center p-4 border-b border-slate-200">
-                <h3 id="modalTitle" class="text-xl font-semibold text-slate-800">پروفایل</h3>
-                <button id="closeModal" class="text-slate-500 hover:text-slate-800">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">پروفایل</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-800">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
-            <div id="modalContent" class="p-6 overflow-y-auto h-[calc(100%-65px)]"></div>
+            <div id="modalContent" class="p-6 overflow-y-auto h-[calc(100%-65px)]">
+                <!-- Modal content will be loaded here -->
+            </div>
         </div>
     </div>
     
+    <!-- Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-sm p-6 transform transition-all duration-300 scale-95 opacity-0">
-            <h3 id="confirmTitle" class="text-lg font-bold text-slate-800 mb-4">آیا مطمئن هستید؟</h3>
-            <p id="confirmMessage" class="text-slate-600 mb-6">این عمل غیرقابل بازگشت است.</p>
+            <h3 id="confirmTitle" class="text-lg font-bold text-gray-800 mb-4">آیا مطمئن هستید؟</h3>
+            <p id="confirmMessage" class="text-gray-600 mb-6">این عمل غیرقابل بازگشت است.</p>
             <div class="flex justify-end gap-4">
-                <button id="confirmCancel" class="bg-slate-200 text-slate-800 py-2 px-4 rounded-md hover:bg-slate-300">انصراف</button>
+                <button id="confirmCancel" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300">انصراف</button>
                 <button id="confirmAccept" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">تایید و حذف</button>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification Container -->
     <div id="toast-container"></div>
     
+    <!-- Hidden input for image uploads -->
     <input type="file" id="image-upload-input" class="hidden" accept="image/*">
 
 
+    <!-- Firebase SDK -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -238,97 +298,106 @@
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-        // --- SURVEY TEMPLATES (COMPREHENSIVE & STANDARD) ---
-        const surveyTemplates = {
-            'engagement': {
-                id: 'engagement',
-                title: 'نظرسنجی جامع مشارکت کارکنان (Engagement)',
-                description: 'سنجش عمیق سطح تعهد، انگیزه و رضایت شغلی بر اساس استانداردهای جهانی.',
-                categories: {
-                    alignment: 'هم‌راستایی و اهداف',
-                    growth: 'رشد و توسعه',
-                    management: 'مدیریت و راهبری',
-                    recognition: 'قدردانی و ارزش‌گذاری',
-                    wellbeing: 'سلامت و تعادل کار و زندگی',
-                    culture: 'فرهنگ و تعلق سازمانی'
-                },
-                questions: [
-                    { id: 'eng_q1', category: 'alignment', text: 'من به وضوح می‌دانم که کار من چگونه به اهداف کلی شرکت کمک می‌کند.', type: 'rating_1_5' },
-                    { id: 'eng_q2', category: 'alignment', text: 'من به ماموریت و چشم‌انداز شرکت باور دارم.', type: 'rating_1_5' },
-                    { id: 'eng_q3', category: 'growth', text: 'در شغل فعلی‌ام فرصت‌های کافی برای یادگیری و رشد حرفه‌ای دارم.', type: 'rating_1_5' },
-                    { id: 'eng_q4', category: 'growth', text: 'شرکت در توسعه مهارت‌های من سرمایه‌گذاری می‌کند.', type: 'rating_1_5' },
-                    { id: 'eng_q5', category: 'management', text: 'مدیر مستقیم من به طور منظم بازخوردهای سازنده و مفیدی به من ارائه می‌دهد.', type: 'rating_1_5' },
-                    { id: 'eng_q6', category: 'management', text: 'من برای انجام کارم از استقلال و اختیار کافی برخوردارم.', type: 'rating_1_5' },
-                    { id: 'eng_q7', category: 'management', text: 'مدیر من به من به عنوان یک فرد اهمیت می‌دهد و حامی من است.', type: 'rating_1_5' },
-                    { id: 'eng_q8', category: 'recognition', text: 'وقتی کارم را به خوبی انجام می‌دهم، احساس می‌کنم از من قدردانی می‌شود.', type: 'rating_1_5' },
-                    { id: 'eng_q9', category: 'recognition', text: 'فرآیندهای ارزیابی و ترفیع در شرکت منصفانه هستند.', type: 'rating_1_5' },
-                    { id: 'eng_q10', category: 'culture', text: 'من احساس تعلق به تیم و سازمان خود دارم.', type: 'rating_1_5' },
-                    { id: 'eng_q11', category: 'culture', text: 'در محیط کار، نظرات و ایده‌های من شنیده و مورد احترام قرار می‌گیرند.', type: 'rating_1_5' },
-                    { id: 'eng_q12', category: 'wellbeing', text: 'حجم کاری من قابل مدیریت است و باعث فرسودگی شغلی‌ام نمی‌شود.', type: 'rating_1_5' },
-                    { id: 'eng_q13', category: 'wellbeing', text: 'من می‌توانم تعادل مناسبی بین کار و زندگی شخصی‌ام برقرار کنم.', type: 'rating_1_5' },
-                    { id: 'eng_q14', category: 'overall', text: 'با توجه به همه جوانب، این شرکت را به عنوان یک محیط کاری عالی به دیگران توصیه می‌کنم (eNPS).', type: 'rating_1_10' },
-                    { id: 'eng_q15', category: 'overall', text: 'چه چیزی را در فرهنگ شرکت بیشتر از همه دوست دارید؟', type: 'open_text' },
-                    { id: 'eng_q16', category: 'overall', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
-                ]
+        // --- SURVEY TEMPLATES (EXPANDED) ---
+   // --- SURVEY TEMPLATES (EXPANDED) ---
+  // --- SURVEY TEMPLATES (EXPANDED & COMPLETE) ---
+ 	// --- SURVEY TEMPLATES (COMPREHENSIVE & STANDARD) ---
+    const surveyTemplates = {
+        // --- نظرسنجی مشارکت کارکنان (جامع) ---
+        'engagement': {
+            id: 'engagement',
+            title: 'نظرسنجی جامع مشارکت کارکنان (Engagement)',
+            description: 'سنجش عمیق سطح تعهد، انگیزه و رضایت شغلی بر اساس استانداردهای جهانی.',
+            categories: {
+                alignment: 'هم‌راستایی و اهداف',
+                growth: 'رشد و توسعه',
+                management: 'مدیریت و راهبری',
+                recognition: 'قدردانی و ارزش‌گذاری',
+                wellbeing: 'سلامت و تعادل کار و زندگی',
+                culture: 'فرهنگ و تعلق سازمانی'
             },
-            'pulse': {
-                id: 'pulse',
-                title: 'نظرسنجی پالس هفتگی',
-                description: 'یک نظرسنجی سریع برای سنجش نبض سازمان و حال و هوای کارکنان در هفته گذشته.',
-                questions: [
-                    { id: 'pls_q1', text: 'در مقیاس ۱ تا ۵، از هفته کاری خود چقدر رضایت داشتید؟', type: 'rating_1_5' },
-                    { id: 'pls_q2', text: 'حجم کاری خود را در این هفته چگونه ارزیابی می‌کنید؟', type: 'choice', options: ['بسیار کم', 'کم', 'مناسب', 'زیاد', 'بسیار زیاد'] },
-                    { id: 'pls_q3', text: 'آیا در هفته گذشته بازخورد مفیدی دریافت کردید که به شما در کارتان کمک کند؟', type: 'yes_no' },
-                    { id: 'pls_q4', text: 'بزرگترین مانع یا چالشی که این هفته با آن روبرو بودید چه بود؟', type: 'open_text' },
-                    { id: 'pls_q5', text: 'یک اتفاق مثبت یا موفقیت از این هفته را نام ببرید.', type: 'open_text' },
-                ]
-            },
-            'onboarding': {
-                id: 'onboarding',
-                title: 'نظرسنجی تجربه جذب و آنبوردینگ',
-                description: 'جمع‌آوری بازخورد از نیروهای جدید برای بهبود فرآیند ورود به سازمان.',
-                questions: [
-                    { id: 'onb_q1', text: 'فرآیند مصاحبه و جذب چقدر شفاف، حرفه‌ای و محترمانه بود؟', type: 'rating_1_5' },
-                    { id: 'onb_q2', text: 'آیا شرح شغلی که مطالعه کردید، با وظایف واقعی شما مطابقت دارد؟', type: 'yes_no_somewhat' },
-                    { id: 'onb_q3', text: 'آیا قبل از روز اول، اطلاعات کافی در مورد شروع به کارتان دریافت کردید؟', type: 'yes_no' },
-                    { id: 'onb_q4', text: 'در هفته اول کاری، تمام ابزارها، نرم‌افزارها و دسترسی‌های لازم را در اختیار داشتید؟', type: 'yes_no' },
-                    { id: 'onb_q5', text: 'معرفی شما به تیم و همکاران چگونه بود و چقدر احساس راحتی کردید؟', type: 'rating_1_5' },
-                    { id: 'onb_q6', text: 'آیا شرح وظایف و انتظارات از شما در ماه اول کاری کاملاً روشن و شفاف بود؟', type: 'rating_1_5' },
-                    { id: 'onb_q7', text: 'آیا مدیرتان در هفته‌های اول به اندازه کافی برای شما وقت گذاشت؟', type: 'yes_no' },
-                    { id: 'onb_q8', text: 'چه پیشنهادی برای بهبود تجربه آنبوردینگ نیروهای جدید دارید؟', type: 'open_text' },
-                ]
-            },
-            'feedback_360': {
-                id: 'feedback_360',
-                title: 'نظرسنجی بازخورد ۳۶۰ درجه',
-                description: 'ارائه بازخورد سازنده به همکاران برای کمک به رشد حرفه‌ای آن‌ها.',
-                requiresTarget: true,
-                questions: [
-                    { id: '360_q1', text: 'این همکار چقدر در ارتباطات خود (گفتاری و نوشتاری) شفاف، محترمانه و موثر است؟', type: 'rating_1_5' },
-                    { id: '360_q2', text: 'این همکار تا چه حد در کار تیمی مشارکت می‌کند، به دیگران کمک می‌کند و دانش خود را به اشتراک می‌گذارد؟', type: 'rating_1_5' },
-                    { id: '360_q3', text: 'این همکار در حل مسائل و رویارویی با چالش‌ها چقدر خلاق، کارآمد و مسئولیت‌پذیر است؟', type: 'rating_1_5' },
-                    { id: '360_q4', text: 'این همکار تا چه حد به اهداف و نتایج متعهد است و کارها را با کیفیت بالا به اتمام می‌رساند؟', type: 'rating_1_5' },
-                    { id: '360_q5', text: 'بزرگترین نقطه قوت این همکار که باید به آن ادامه دهد چیست؟', type: 'open_text' },
-                    { id: '360_q6', text: 'چه پیشنهاد مشخصی برای رشد و پیشرفت این همکار دارید؟ (چه کاری را باید شروع کند، متوقف کند یا ادامه دهد؟)', type: 'open_text' },
-                ]
-            },
-            'exit': {
-                id: 'exit',
-                title: 'نظرسنجی خروج از سازمان',
-                description: 'درک دلایل ترک سازمان برای بهبود محیط کاری برای کارمندان آینده.',
-                questions: [
-                    { id: 'ext_q1', text: 'لطفاً دلیل یا دلایل اصلی خود برای ترک سازمان را بیان کنید.', type: 'open_text' },
-                    { id: 'ext_q2', text: 'از تجربه کاری خود در این شرکت به طور کلی چقدر رضایت داشتید؟', type: 'rating_1_5' },
-                    { id: 'ext_q3', text: 'آیا احساس می‌کردید شغل شما از مهارت‌هایتان به خوبی استفاده می‌کند؟', type: 'rating_1_5' },
-                    { id: 'ext_q4', text: 'رابطه و کیفیت مدیریت مدیر مستقیم خود را چگونه ارزیابی می‌کنید؟', type: 'rating_1_5' },
-                    { id: 'ext_q5', text: 'آیا فرصت‌های کافی برای رشد و پیشرفت شغلی در اختیار شما قرار گرفت؟', type: 'rating_1_5' },
-                    { id: 'ext_q6', text: 'فرهنگ سازمانی شرکت را چگونه توصیف می‌کنید؟', type: 'open_text' },
-                    { id: 'ext_q7', text: 'آیا بسته حقوق و مزایای خود را منصفانه و رقابتی می‌دانستید؟', type: 'yes_no' },
-                    { id: 'ext_q8', text: 'آیا این شرکت را به عنوان یک محیط کاری به دیگران توصیه می‌کنید؟', type: 'yes_no' },
-                    { id: 'ext_q9', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
-                ]
-            }
-        };
+            questions: [
+                { id: 'eng_q1', category: 'alignment', text: 'من به وضوح می‌دانم که کار من چگونه به اهداف کلی شرکت کمک می‌کند.', type: 'rating_1_5' },
+                { id: 'eng_q2', category: 'alignment', text: 'من به ماموریت و چشم‌انداز شرکت باور دارم.', type: 'rating_1_5' },
+                { id: 'eng_q3', category: 'growth', text: 'در شغل فعلی‌ام فرصت‌های کافی برای یادگیری و رشد حرفه‌ای دارم.', type: 'rating_1_5' },
+                { id: 'eng_q4', category: 'growth', text: 'شرکت در توسعه مهارت‌های من سرمایه‌گذاری می‌کند.', type: 'rating_1_5' },
+                { id: 'eng_q5', category: 'management', text: 'مدیر مستقیم من به طور منظم بازخوردهای سازنده و مفیدی به من ارائه می‌دهد.', type: 'rating_1_5' },
+                { id: 'eng_q6', category: 'management', text: 'من برای انجام کارم از استقلال و اختیار کافی برخوردارم.', type: 'rating_1_5' },
+                { id: 'eng_q7', category: 'management', text: 'مدیر من به من به عنوان یک فرد اهمیت می‌دهد و حامی من است.', type: 'rating_1_5' },
+                { id: 'eng_q8', category: 'recognition', text: 'وقتی کارم را به خوبی انجام می‌دهم، احساس می‌کنم از من قدردانی می‌شود.', type: 'rating_1_5' },
+                { id: 'eng_q9', category: 'recognition', text: 'فرآیندهای ارزیابی و ترفیع در شرکت منصفانه هستند.', type: 'rating_1_5' },
+                { id: 'eng_q10', category: 'culture', text: 'من احساس تعلق به تیم و سازمان خود دارم.', type: 'rating_1_5' },
+                { id: 'eng_q11', category: 'culture', text: 'در محیط کار، نظرات و ایده‌های من شنیده و مورد احترام قرار می‌گیرند.', type: 'rating_1_5' },
+                { id: 'eng_q12', category: 'wellbeing', text: 'حجم کاری من قابل مدیریت است و باعث فرسودگی شغلی‌ام نمی‌شود.', type: 'rating_1_5' },
+                { id: 'eng_q13', category: 'wellbeing', text: 'من می‌توانم تعادل مناسبی بین کار و زندگی شخصی‌ام برقرار کنم.', type: 'rating_1_5' },
+                { id: 'eng_q14', category: 'overall', text: 'با توجه به همه جوانب، این شرکت را به عنوان یک محیط کاری عالی به دیگران توصیه می‌کنم (eNPS).', type: 'rating_1_10' }, // eNPS standard is 1-10
+                { id: 'eng_q15', category: 'overall', text: 'چه چیزی را در فرهنگ شرکت بیشتر از همه دوست دارید؟', type: 'open_text' },
+                { id: 'eng_q16', category: 'overall', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی پالس هفتگی (بهبود یافته) ---
+        'pulse': {
+            id: 'pulse',
+            title: 'نظرسنجی پالس هفتگی',
+            description: 'یک نظرسنجی سریع برای سنجش نبض سازمان و حال و هوای کارکنان در هفته گذشته.',
+            questions: [
+                { id: 'pls_q1', text: 'در مقیاس ۱ تا ۵، از هفته کاری خود چقدر رضایت داشتید؟', type: 'rating_1_5' },
+                { id: 'pls_q2', text: 'حجم کاری خود را در این هفته چگونه ارزیابی می‌کنید؟', type: 'choice', options: ['بسیار کم', 'کم', 'مناسب', 'زیاد', 'بسیار زیاد'] },
+                { id: 'pls_q3', text: 'آیا در هفته گذشته بازخورد مفیدی دریافت کردید که به شما در کارتان کمک کند؟', type: 'yes_no' },
+                { id: 'pls_q4', text: 'بزرگترین مانع یا چالشی که این هفته با آن روبرو بودید چه بود؟', type: 'open_text' },
+                { id: 'pls_q5', text: 'یک اتفاق مثبت یا موفقیت از این هفته را نام ببرید.', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی تجربه جذب و آنبوردینگ (کامل) ---
+        'onboarding': {
+            id: 'onboarding',
+            title: 'نظرسنجی تجربه جذب و آنبوردینگ',
+            description: 'جمع‌آوری بازخورد از نیروهای جدید برای بهبود فرآیند ورود به سازمان.',
+            questions: [
+                { id: 'onb_q1', text: 'فرآیند مصاحبه و جذب چقدر شفاف، حرفه‌ای و محترمانه بود؟', type: 'rating_1_5' },
+                { id: 'onb_q2', text: 'آیا شرح شغلی که مطالعه کردید، با وظایف واقعی شما مطابقت دارد؟', type: 'yes_no_somewhat' }, // A more nuanced choice
+                { id: 'onb_q3', text: 'آیا قبل از روز اول، اطلاعات کافی در مورد شروع به کارتان دریافت کردید؟', type: 'yes_no' },
+                { id: 'onb_q4', text: 'در هفته اول کاری، تمام ابزارها، نرم‌افزارها و دسترسی‌های لازم را در اختیار داشتید؟', type: 'yes_no' },
+                { id: 'onb_q5', text: 'معرفی شما به تیم و همکاران چگونه بود و چقدر احساس راحتی کردید؟', type: 'rating_1_5' },
+                { id: 'onb_q6', text: 'آیا شرح وظایف و انتظارات از شما در ماه اول کاری کاملاً روشن و شفاف بود؟', type: 'rating_1_5' },
+                { id: 'onb_q7', text: 'آیا مدیرتان در هفته‌های اول به اندازه کافی برای شما وقت گذاشت؟', type: 'yes_no' },
+                { id: 'onb_q8', text: 'چه پیشنهادی برای بهبود تجربه آنبوردینگ نیروهای جدید دارید؟', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی بازخورد ۳۶۰ درجه (استاندارد) ---
+        'feedback_360': {
+            id: 'feedback_360',
+            title: 'نظرسنجی بازخورد ۳۶۰ درجه',
+            description: 'ارائه بازخورد سازنده به همکاران برای کمک به رشد حرفه‌ای آن‌ها.',
+            requiresTarget: true,
+            questions: [
+                { id: '360_q1', text: 'این همکار چقدر در ارتباطات خود (گفتاری و نوشتاری) شفاف، محترمانه و موثر است؟', type: 'rating_1_5' },
+                { id: '360_q2', text: 'این همکار تا چه حد در کار تیمی مشارکت می‌کند، به دیگران کمک می‌کند و دانش خود را به اشتراک می‌گذارد؟', type: 'rating_1_5' },
+                { id: '360_q3', text: 'این همکار در حل مسائل و رویارویی با چالش‌ها چقدر خلاق، کارآمد و مسئولیت‌پذیر است؟', type: 'rating_1_5' },
+                { id: '360_q4', text: 'این همکار تا چه حد به اهداف و نتایج متعهد است و کارها را با کیفیت بالا به اتمام می‌رساند؟', type: 'rating_1_5' },
+                { id: '360_q5', text: 'بزرگترین نقطه قوت این همکار که باید به آن ادامه دهد چیست؟', type: 'open_text' },
+                { id: '360_q6', text: 'چه پیشنهاد مشخصی برای رشد و پیشرفت این همکار دارید؟ (چه کاری را باید شروع کند، متوقف کند یا ادامه دهد؟)', type: 'open_text' },
+            ]
+        },
+        // --- نظرسنجی خروج از سازمان (کامل) ---
+        'exit': {
+            id: 'exit',
+            title: 'نظرسنجی خروج از سازمان',
+            description: 'درک دلایل ترک سازمان برای بهبود محیط کاری برای کارمندان آینده.',
+            questions: [
+                { id: 'ext_q1', text: 'لطفاً دلیل یا دلایل اصلی خود برای ترک سازمان را بیان کنید.', type: 'open_text' },
+                { id: 'ext_q2', text: 'از تجربه کاری خود در این شرکت به طور کلی چقدر رضایت داشتید؟', type: 'rating_1_5' },
+                { id: 'ext_q3', text: 'آیا احساس می‌کردید شغل شما از مهارت‌هایتان به خوبی استفاده می‌کند؟', type: 'rating_1_5' },
+                { id: 'ext_q4', text: 'رابطه و کیفیت مدیریت مدیر مستقیم خود را چگونه ارزیابی می‌کنید؟', type: 'rating_1_5' },
+                { id: 'ext_q5', text: 'آیا فرصت‌های کافی برای رشد و پیشرفت شغلی در اختیار شما قرار گرفت؟', type: 'rating_1_5' },
+                { id: 'ext_q6', text: 'فرهنگ سازمانی شرکت را چگونه توصیف می‌کنید؟', type: 'open_text' },
+                { id: 'ext_q7', text: 'آیا بسته حقوق و مزایای خود را منصفانه و رقابتی می‌دانستید؟', type: 'yes_no' },
+                { id: 'ext_q8', text: 'آیا این شرکت را به عنوان یک محیط کاری به دیگران توصیه می‌کنید؟', type: 'yes_no' },
+                { id: 'ext_q9', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
+            ]
+        }
+    };
+
 
         // --- GLOBAL STATE & CONFIG ---
         const state = {
@@ -340,10 +409,10 @@
             competencies: [],
             expenses: [],
             pettyCashCards: [],
-            chargeHistory: [],
+             chargeHistory: [],
             dashboardMetrics: {},
             currentPage: 'dashboard',
-            currentPageTalent: 1,
+             currentPageTalent: 1,
             currentUser: null,
         };
         let charts = {};
@@ -359,7 +428,7 @@
             appId: "1:731265316127:web:6fda02cb2c7d4adfc92c2a"
         };
 
-        let app, auth, db, storage;
+         let app, auth, db, storage;
 
         // --- AUTH & UI TOGGLING ---
         const showLoginPage = () => {
@@ -382,12 +451,13 @@
             document.getElementById('dashboard-container').classList.add('flex');
         };
 
+
         async function initializeFirebase() {
             try {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
-                storage = getStorage(app);
+                 storage = getStorage(app);
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
@@ -413,6 +483,7 @@
             if (userSnap.exists()) {
                 state.currentUser = { uid: user.uid, email: user.email, ...userSnap.data() };
             } else {
+                // This is a new user, check if they are the first user
                 const usersCol = collection(db, `artifacts/${appId}/public/data/users`);
                 const usersSnapshot = await getDocs(usersCol);
                 const isFirstUser = usersSnapshot.empty;
@@ -439,7 +510,7 @@
                 initialLoads--;
                 if (initialLoads === 0) {
                     console.log("All initial data loaded.");
-                    calculateAndApplyAnalytics();
+                     calculateAndApplyAnalytics();
                     showDashboard();
                     router(); 
                     document.getElementById('loading-overlay').style.display = 'none';
@@ -454,14 +525,14 @@
                     if (initialLoads > 0) {
                         onDataLoaded();
                     } else {
-                        calculateAndApplyAnalytics(); // Recalculate on any data change
                         if (!window.location.hash.startsWith('#survey-taker')) {
                             renderPage(state.currentPage);
                         }
                     }
                 }, (error) => {
                     console.error(`Error listening to ${colName}:`, error);
-                    if (['competencies', 'expenses', 'pettyCashCards', 'chargeHistory'].includes(colName)) {
+                    // For collections that might not exist initially, don't show a fatal error
+                    if (['competencies', 'expenses', 'pettyCashCards'].includes(colName)) {
                         state[colName] = [];
                         if (initialLoads > 0) onDataLoaded();
                         return;
@@ -472,251 +543,333 @@
         }
 
         // --- UTILITY & HELPER FUNCTIONS ---
-        const toPersianDate = (dateInput) => {
-            if (!dateInput) return 'نامشخص';
-            try {
-                let date;
-                if (dateInput.toDate) { date = dateInput.toDate(); } 
-                else { date = new Date(dateInput); }
-                if (isNaN(date.getTime())) { return 'تاریخ نامعتبر'; }
-                const gYear = date.getFullYear();
-                const gMonth = date.getMonth() + 1;
-                const gDay = date.getDate();
-                const jalaaliDate = jalaali.toJalaali(gYear, gMonth, gDay);
-                const jm = String(jalaaliDate.jm).padStart(2, '0');
-                const jd = String(jalaaliDate.jd).padStart(2, '0');
-                return `${jalaaliDate.jy}/${jm}/${jd}`;
-            } catch (error) {
-                console.error("Error converting date:", dateInput, error);
-                return 'نامشخص';
+        // --- تابع جدید برای تبدیل تاریخ به شمسی ---
+const toPersianDate = (dateInput) => {
+    if (!dateInput) return 'نامشخص';
+    try {
+        let date;
+        if (dateInput.toDate) { // Handle Firebase Timestamps
+            date = dateInput.toDate();
+        } else {
+            date = new Date(dateInput);
+        }
+
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+            return 'تاریخ نامعتبر';
+        }
+
+        const gYear = date.getFullYear();
+        const gMonth = date.getMonth() + 1; // JS month is 0-indexed
+        const gDay = date.getDate();
+
+        const jalaaliDate = jalaali.toJalaali(gYear, gMonth, gDay);
+
+        // Add leading zero to month and day if needed
+        const jm = String(jalaaliDate.jm).padStart(2, '0');
+        const jd = String(jalaaliDate.jd).padStart(2, '0');
+
+        return `${jalaaliDate.jy}/${jm}/${jd}`;
+    } catch (error) {
+        console.error("Error converting date:", dateInput, error);
+        return 'نامشخص';
+    }
+};
+// --- تابع جدید برای تبدیل تاریخ شمسی ورودی به فرمت میلادی برای ذخیره ---
+const persianToEnglishDate = (persianDateStr) => {
+    if (!persianDateStr || !/^\d{4}\/\d{2}\/\d{2}$/.test(persianDateStr)) {
+        console.error("Invalid Persian date format. Expected YYYY/MM/DD");
+        return null; // Return null for invalid format
+    }
+    try {
+        const [jy, jm, jd] = persianDateStr.split('/').map(Number);
+        const gregorian = jalaali.toGregorian(jy, jm, jd);
+        // Return date in 'YYYY-MM-DD' format, which is universally accepted
+        return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
+    } catch (error) {
+        console.error("Error converting Persian to Gregorian:", error);
+        return null;
+    }
+};
+
+// --- تابع جدید برای فعال‌سازی تقویم شمسی روی یک فیلد ---
+const activatePersianDatePicker = (elementId, initialValue = null) => {
+    const input = document.getElementById(elementId);
+    if (!input) return;
+
+    // Change input type to text to allow custom format
+    input.setAttribute('type', 'text');
+    input.setAttribute('placeholder', 'مثال: 1403/05/28');
+    input.setAttribute('autocomplete', 'off');
+
+    if (initialValue) {
+        input.value = toPersianDate(initialValue);
+    }
+
+    $(input).pDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: !!initialValue, // Set to true only if there is an initial value
+        observer: true,
+        calendar: {
+            persian: {
+                locale: 'fa'
             }
-        };
-        const persianToEnglishDate = (persianDateStr) => {
-            if (!persianDateStr || !/^\d{4}\/\d{2}\/\d{2}$/.test(persianDateStr)) {
-                console.error("Invalid Persian date format. Expected YYYY/MM/DD");
-                return null;
+        },
+        navigator: {
+            enabled: true,
+            scroll: {
+                enabled: false
             }
-            try {
-                const [jy, jm, jd] = persianDateStr.split('/').map(Number);
-                const gregorian = jalaali.toGregorian(jy, jm, jd);
-                return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
-            } catch (error) {
-                console.error("Error converting Persian to Gregorian:", error);
-                return null;
-            }
-        };
-        const activatePersianDatePicker = (elementId, initialValue = null) => {
-            const input = document.getElementById(elementId);
-            if (!input) return;
-            input.setAttribute('type', 'text');
-            input.setAttribute('placeholder', 'مثال: 1403/05/28');
-            input.setAttribute('autocomplete', 'off');
-            if (initialValue) {
-                input.value = toPersianDate(initialValue);
-            }
-            $(input).pDatepicker({
-                format: 'YYYY/MM/DD',
-                autoClose: true,
-                initialValue: !!initialValue,
-                observer: true,
-                calendar: { persian: { locale: 'fa' } },
-                navigator: { enabled: true, scroll: { enabled: false } },
-                timePicker: { enabled: false }
-            });
-        };
-        const calculateAndApplyAnalytics = () => {
-            if (!state.surveyResponses) return; // Guard against initial undefined state
-            console.log("Running survey and risk analytics...");
-            const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
-            const employeeScores = {};
-            engagementResponses.forEach(res => {
-                if (res.employeeId && res.employeeId !== 'anonymous') {
-                    if (!employeeScores[res.employeeId]) {
-                        employeeScores[res.employeeId] = { totalScore: 0, questionCount: 0 };
-                    }
-                    Object.values(res.answers).forEach(ans => {
-                        const score = parseInt(ans);
-                        if (!isNaN(score)) {
-                            employeeScores[res.employeeId].totalScore += score;
-                            employeeScores[res.employeeId].questionCount++;
-                        }
-                    });
+        },
+        timePicker: {
+            enabled: false
+        }
+    });
+};
+        // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
+    const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let paginationHtml = '<div class="flex items-center justify-center space-x-1 space-x-reverse">';
+        
+        // دکمه قبلی
+        paginationHtml += `<button data-page="${currentPage - 1}" class="pagination-btn px-4 py-2 text-gray-500 bg-white rounded-md hover:bg-blue-500 hover:text-white" ${currentPage === 1 ? 'disabled' : ''}>قبلی</button>`;
+        
+        // دکمه‌های شماره صفحه
+        for (let i = 1; i <= totalPages; i++) {
+            const isActive = i === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700';
+            paginationHtml += `<button data-page="${i}" class="pagination-btn px-4 py-2 rounded-md hover:bg-blue-500 hover:text-white ${isActive}">${i}</button>`;
+        }
+
+        // دکمه بعدی
+        paginationHtml += `<button data-page="${currentPage + 1}" class="pagination-btn px-4 py-2 text-gray-500 bg-white rounded-md hover:bg-blue-500 hover:text-white" ${currentPage === totalPages ? 'disabled' : ''}>بعدی</button>`;
+
+        paginationHtml += '</div>';
+        container.innerHTML = paginationHtml;
+    };
+        // --- تابع جدید برای تحلیل داده‌های نظرسنجی و اعمال نتایج ---
+const calculateAndApplyAnalytics = () => {
+        console.log("Running survey and risk analytics...");
+        const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
+        
+        // محاسبه امتیاز مشارکت برای هر کارمند
+        const employeeScores = {};
+        engagementResponses.forEach(res => {
+            if (res.employeeId && res.employeeId !== 'anonymous') {
+                if (!employeeScores[res.employeeId]) {
+                    employeeScores[res.employeeId] = { totalScore: 0, questionCount: 0 };
                 }
-            });
-            state.employees.forEach(emp => {
-                if (employeeScores[emp.id]) {
-                    const data = employeeScores[emp.id];
-                    emp.engagementScore = Math.round(((data.totalScore / data.questionCount) / 5) * 100);
-                } else {
-                    emp.engagementScore = null;
-                }
-            });
-            state.teams.forEach(team => {
-                let teamTotalScore = 0;
-                let teamQuestionCount = 0;
-                team.memberIds?.forEach(memberId => {
-                    const memberData = employeeScores[memberId];
-                    if (memberData) {
-                        teamTotalScore += memberData.totalScore;
-                        teamQuestionCount += memberData.questionCount;
+                Object.values(res.answers).forEach(ans => {
+                    const score = parseInt(ans);
+                    if (!isNaN(score)) {
+                        employeeScores[res.employeeId].totalScore += score;
+                        employeeScores[res.employeeId].questionCount++;
                     }
                 });
-                team.engagementScore = teamQuestionCount > 0 ? Math.round(((teamTotalScore / teamQuestionCount) / 5) * 100) : null;
+            }
+        });
+
+        state.employees.forEach(emp => {
+            if (employeeScores[emp.id]) {
+                const data = employeeScores[emp.id];
+                emp.engagementScore = Math.round(((data.totalScore / data.questionCount) / 5) * 100);
+            } else {
+                emp.engagementScore = null;
+            }
+        });
+
+        // محاسبه امتیاز مشارکت برای هر تیم
+        state.teams.forEach(team => {
+            let teamTotalScore = 0;
+            let teamQuestionCount = 0;
+            team.memberIds?.forEach(memberId => {
+                const memberData = employeeScores[memberId];
+                if (memberData) {
+                    teamTotalScore += memberData.totalScore;
+                    teamQuestionCount += memberData.questionCount;
+                }
             });
-            state.employees.forEach(emp => {
-                emp.attritionRisk = calculateAttritionRisk(emp, state.teams);
-                emp.nineBox = determineNineBoxCategory(emp);
-            });
-            console.log("Analytics applied to state.");
+            team.engagementScore = teamQuestionCount > 0 ? Math.round(((teamTotalScore / teamQuestionCount) / 5) * 100) : null;
+        });
+
+        // محاسبه هوشمند ریسک خروج و ماتریس ۹ جعبه‌ای برای همه
+        state.employees.forEach(emp => {
+            emp.attritionRisk = calculateAttritionRisk(emp, state.teams);
+            emp.nineBox = determineNineBoxCategory(emp); // <<-- این خط جدید است
+        });
+
+        console.log("Analytics applied to state.");
+    };
+        // --- تابع هوشمند برای محاسبه ریسک خروج بر اساس مدل امتیازبندی ---
+    const calculateAttritionRisk = (employee, allTeams) => {
+        let riskScore = 0;
+        const reasons = [];
+
+        // معیار ۱: امتیاز مشارکت (تا ۴۰ امتیاز)
+        if (employee.engagementScore != null) {
+            if (employee.engagementScore < 50) {
+                riskScore += 40;
+                reasons.push('مشارکت بسیار پایین');
+            } else if (employee.engagementScore < 70) {
+                riskScore += 20;
+                reasons.push('مشارکت پایین');
+            }
+        } else {
+            riskScore += 10; // امتياز منفی برای شرکت نکردن در نظرسنجی
+            reasons.push('عدم مشارکت در نظرسنجی');
+        }
+
+        // معیار ۲: روند عملکرد (تا ۲۵ امتیاز)
+        if (employee.performanceHistory && employee.performanceHistory.length >= 2) {
+            const lastTwoReviews = employee.performanceHistory.slice(-2);
+            const latestScore = lastTwoReviews[1].overallScore;
+            const previousScore = lastTwoReviews[0].overallScore;
+            if (previousScore - latestScore >= 1) {
+                riskScore += 25;
+                reasons.push('افت شدید عملکرد');
+            } else if (previousScore - latestScore >= 0.5) {
+                riskScore += 15;
+                reasons.push('افت عملکرد');
+            }
+        }
+
+        // معیار ۳: رکود شغلی (تا ۲۵ امتیاز)
+        const isHighPerformer = (employee.performanceHistory && employee.performanceHistory.slice(-1)[0]?.overallScore > 4) || ['ستاره', 'مهره کلیدی'].includes(employee.nineBox);
+        if (isHighPerformer && employee.careerPath && employee.careerPath.length > 0) {
+            const lastMoveDate = new Date(employee.careerPath.slice(-1)[0].date);
+            const monthsSinceLastMove = (new Date() - lastMoveDate) / (1000 * 60 * 60 * 24 * 30);
+            if (monthsSinceLastMove > 24) { // بیشتر از ۲ سال بدون تغییر
+                riskScore += 25;
+                reasons.push('رکود شغلی (استعداد کلیدی)');
+            }
+        }
+
+        // معیار ۴: سلامت تیم (تا ۱۰ امتیاز)
+        const team = allTeams.find(t => t.memberIds?.includes(employee.id));
+        if (team && team.engagementScore != null && team.engagementScore < 60) {
+            riskScore += 10;
+            reasons.push('عضو تیمی با مشارکت پایین');
+        }
+
+        return {
+            score: Math.min(100, riskScore), // امتیاز نهایی بین ۰ تا ۱۰۰
+            reasons: reasons.length > 0 ? reasons : ['ریسک پایین']
         };
-        const calculateAttritionRisk = (employee, allTeams) => {
-            let riskScore = 0;
-            const reasons = [];
-            if (employee.engagementScore != null) {
-                if (employee.engagementScore < 50) {
-                    riskScore += 40;
-                    reasons.push('مشارکت بسیار پایین');
-                } else if (employee.engagementScore < 70) {
-                    riskScore += 20;
-                    reasons.push('مشارکت پایین');
-                }
-            } else {
-                riskScore += 10;
-                reasons.push('عدم مشارکت در نظرسنجی');
+    };
+        // --- تابع جدید برای تعیین هوشمند جعبه در ماتریس ۹ جعبه‌ای ---
+    const determineNineBoxCategory = (employee) => {
+        // ۱. محاسبه امتیاز عملکرد (Performance)
+        let performanceScore = 0;
+        if (employee.performanceHistory && employee.performanceHistory.length > 0) {
+            performanceScore = employee.performanceHistory.slice(-1)[0].overallScore;
+        }
+
+        let performanceCategory; // Low, Medium, High
+        if (performanceScore >= 4.2) {
+            performanceCategory = 'High';
+        } else if (performanceScore >= 3.5) {
+            performanceCategory = 'Medium';
+        } else {
+            performanceCategory = 'Low';
+        }
+
+        // ۲. محاسبه امتیاز پتانسیل (Potential) - ما از میانگین امتیاز شایستگی‌ها به عنوان یک شاخص استفاده می‌کنیم
+        let potentialScore = 0;
+        if (employee.competencies) {
+            const scores = Object.values(employee.competencies);
+            if (scores.length > 0) {
+                potentialScore = scores.reduce((a, b) => a + b, 0) / scores.length;
             }
-            if (employee.performanceHistory && employee.performanceHistory.length >= 2) {
-                const lastTwoReviews = employee.performanceHistory.slice(-2);
-                const latestScore = lastTwoReviews[1].overallScore;
-                const previousScore = lastTwoReviews[0].overallScore;
-                if (previousScore - latestScore >= 1) {
-                    riskScore += 25;
-                    reasons.push('افت شدید عملکرد');
-                } else if (previousScore - latestScore >= 0.5) {
-                    riskScore += 15;
-                    reasons.push('افت عملکرد');
-                }
-            }
-            const isHighPerformer = (employee.performanceHistory && employee.performanceHistory.slice(-1)[0]?.overallScore > 4) || ['ستاره', 'مهره کلیدی'].includes(employee.nineBox);
-            if (isHighPerformer && employee.careerPath && employee.careerPath.length > 0) {
-                const lastMoveDate = new Date(employee.careerPath.slice(-1)[0].date);
-                const monthsSinceLastMove = (new Date() - lastMoveDate) / (1000 * 60 * 60 * 24 * 30);
-                if (monthsSinceLastMove > 24) {
-                    riskScore += 25;
-                    reasons.push('رکود شغلی (استعداد کلیدی)');
-                }
-            }
-            const team = allTeams.find(t => t.memberIds?.includes(employee.id));
-            if (team && team.engagementScore != null && team.engagementScore < 60) {
-                riskScore += 10;
-                reasons.push('عضو تیمی با مشارکت پایین');
-            }
-            return {
-                score: Math.min(100, riskScore),
-                reasons: reasons.length > 0 ? reasons : ['ریسک پایین']
-            };
-        };
-        const determineNineBoxCategory = (employee) => {
-            let performanceScore = 0;
-            if (employee.performanceHistory && employee.performanceHistory.length > 0) {
-                performanceScore = employee.performanceHistory.slice(-1)[0].overallScore;
-            }
-            let performanceCategory;
-            if (performanceScore >= 4.2) {
-                performanceCategory = 'High';
-            } else if (performanceScore >= 3.5) {
-                performanceCategory = 'Medium';
-            } else {
-                performanceCategory = 'Low';
-            }
-            let potentialScore = 0;
-            if (employee.competencies) {
-                const scores = Object.values(employee.competencies);
-                if (scores.length > 0) {
-                    potentialScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-                }
-            }
-            let potentialCategory;
-            if (potentialScore >= 4.2) {
-                potentialCategory = 'High';
-            } else if (potentialScore >= 3.5) {
-                potentialCategory = 'Medium';
-            } else {
-                potentialCategory = 'Low';
-            }
-            if (performanceCategory === 'High' && potentialCategory === 'High') return 'ستاره (Star)';
-            if (performanceCategory === 'High' && potentialCategory === 'Medium') return 'استعداد کلیدی (Core Talent)';
-            if (performanceCategory === 'High' && potentialCategory === 'Low') return 'مهره کلیدی (Key Player)';
-            if (performanceCategory === 'Medium' && potentialCategory === 'High') return 'پتانسیل بالا (High Potential)';
-            if (performanceCategory === 'Medium' && potentialCategory === 'Medium') return 'عملکرد قابل اتکا (Solid Performer)';
-            if (performanceCategory === 'Medium' && potentialCategory === 'Low') return 'عملکرد متوسط (Average Performer)';
-            if (performanceCategory === 'Low' && potentialCategory === 'High') return 'معما (Enigma/Puzzle)';
-            if (performanceCategory === 'Low' && potentialCategory === 'Medium') return 'نیازمند بهبود (Needs Improvement)';
-            if (performanceCategory === 'Low' && potentialCategory === 'Low') return 'ریسک (Risk)';
-            
-            return 'عملکرد قابل اتکا (Solid Performer)';
-        };
-        const analyzeTeamData = (team, members) => {
-            const analysis = {};
-            const engagementByCategory = {};
-            const engagementTemplate = surveyTemplates['engagement'];
-            let memberResponseCount = 0;
-            members.forEach(member => {
-                const responses = state.surveyResponses.filter(r => r.employeeId === member.id && r.surveyId === 'engagement');
-                if (responses.length > 0) {
-                    memberResponseCount++;
-                    responses.forEach(res => {
-                        engagementTemplate.questions.forEach(q => {
-                            if (q.type === 'rating_1_5' && res.answers[q.id]) {
-                                const score = parseInt(res.answers[q.id]);
-                                if (!engagementByCategory[q.category]) {
-                                    engagementByCategory[q.category] = { totalScore: 0, count: 0 };
-                                }
-                                engagementByCategory[q.category].totalScore += score;
-                                engagementByCategory[q.category].count++;
+        }
+
+        let potentialCategory; // Low, Medium, High
+        if (potentialScore >= 4.2) {
+            potentialCategory = 'High';
+        } else if (potentialScore >= 3.5) {
+            potentialCategory = 'Medium';
+        } else {
+            potentialCategory = 'Low';
+        }
+
+        // ۳. تخصیص جعبه بر اساس عملکرد و پتانسیل
+        if (performanceCategory === 'High' && potentialCategory === 'High') return 'ستاره (Star)';
+        if (performanceCategory === 'High' && potentialCategory === 'Medium') return 'استعداد کلیدی (Core Talent)';
+        if (performanceCategory === 'High' && potentialCategory === 'Low') return 'مهره کلیدی (Key Player)';
+
+        if (performanceCategory === 'Medium' && potentialCategory === 'High') return 'پتانسیل بالا (High Potential)';
+        if (performanceCategory === 'Medium' && potentialCategory === 'Medium') return 'عملکرد قابل اتکا (Solid Performer)';
+        if (performanceCategory === 'Medium' && potentialCategory === 'Low') return 'عملکرد متوسط (Average Performer)';
+
+        if (performanceCategory === 'Low' && potentialCategory === 'High') return 'معما (Enigma/Puzzle)';
+        if (performanceCategory === 'Low' && potentialCategory === 'Medium') return 'نیازمند بهبود (Needs Improvement)';
+        if (performanceCategory === 'Low' && potentialCategory === 'Low') return 'ریسک (Risk)';
+        
+        return 'عملکرد قابل اتکا (Solid Performer)'; // مقدار پیش‌فرض
+    };
+        // --- تابع جدید برای تحلیل عمیق داده‌های یک تیم ---
+    const analyzeTeamData = (team, members) => {
+        const analysis = {};
+
+        // ۱. تحلیل عمیق امتیاز مشارکت بر اساس دسته‌بندی
+        const engagementByCategory = {};
+        const engagementTemplate = surveyTemplates['engagement'];
+        let memberResponseCount = 0;
+
+        members.forEach(member => {
+            const responses = state.surveyResponses.filter(r => r.employeeId === member.id && r.surveyId === 'engagement');
+            if (responses.length > 0) {
+                memberResponseCount++;
+                responses.forEach(res => {
+                    engagementTemplate.questions.forEach(q => {
+                        if (q.type === 'rating_1_5' && res.answers[q.id]) {
+                            const score = parseInt(res.answers[q.id]);
+                            if (!engagementByCategory[q.category]) {
+                                engagementByCategory[q.category] = { totalScore: 0, count: 0 };
                             }
-                        });
-                    });
-                }
-            });
-            analysis.engagementBreakdown = Object.entries(engagementByCategory).map(([category, data]) => ({
-                name: engagementTemplate.categories[category] || category,
-                score: Math.round(((data.totalScore / data.count) / 5) * 100)
-            }));
-            const skillMap = new Map();
-            members.forEach(member => {
-                if (member.skills) {
-                    Object.entries(member.skills).forEach(([skill, level]) => {
-                        if (level >= 4) {
-                            skillMap.set(skill, (skillMap.get(skill) || 0) + 1);
+                            engagementByCategory[q.category].totalScore += score;
+                            engagementByCategory[q.category].count++;
                         }
                     });
-                }
-            });
-            analysis.topSkills = [...skillMap.entries()]
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(item => item[0]);
-            analysis.highRiskMembers = members.filter(m => m.attritionRisk && m.attritionRisk.score > 70);
-            return analysis;
-        };
-        const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
-            if (totalPages <= 1) {
-                container.innerHTML = '';
-                return;
+                });
             }
-            let paginationHtml = '<div class="flex items-center justify-center space-x-1 space-x-reverse">';
-            paginationHtml += `<button data-page="${currentPage - 1}" class="pagination-btn px-4 py-2 text-slate-500 bg-white rounded-md hover:bg-teal-500 hover:text-white" ${currentPage === 1 ? 'disabled' : ''}>قبلی</button>`;
-            for (let i = 1; i <= totalPages; i++) {
-                const isActive = i === currentPage ? 'bg-teal-600 text-white' : 'bg-white text-slate-700';
-                paginationHtml += `<button data-page="${i}" class="pagination-btn px-4 py-2 rounded-md hover:bg-teal-500 hover:text-white ${isActive}">${i}</button>`;
+        });
+
+        analysis.engagementBreakdown = Object.entries(engagementByCategory).map(([category, data]) => ({
+            name: engagementTemplate.categories[category] || category,
+            score: Math.round(((data.totalScore / data.count) / 5) * 100)
+        }));
+
+        // ۲. شناسایی نقاط قوت کلیدی (Top Skills)
+        const skillMap = new Map();
+        members.forEach(member => {
+            if (member.skills) {
+                Object.entries(member.skills).forEach(([skill, level]) => {
+                    if (level >= 4) { // فقط مهارت‌های سطح بالا را در نظر بگیر
+                        skillMap.set(skill, (skillMap.get(skill) || 0) + 1);
+                    }
+                });
             }
-            paginationHtml += `<button data-page="${currentPage + 1}" class="pagination-btn px-4 py-2 text-slate-500 bg-white rounded-md hover:bg-teal-500 hover:text-white" ${currentPage === totalPages ? 'disabled' : ''}>بعدی</button>`;
-            paginationHtml += '</div>';
-            container.innerHTML = paginationHtml;
-        };
+        });
+        analysis.topSkills = [...skillMap.entries()]
+            .sort((a, b) => b[1] - a[1]) // مرتب‌سازی بر اساس تعداد تکرار
+            .slice(0, 5) // ۵ مهارت برتر
+            .map(item => item[0]);
+
+        // ۳. شناسایی اعضای پرریسک
+        analysis.highRiskMembers = members.filter(m => m.attritionRisk && m.attritionRisk.score > 70);
+
+        return analysis;
+    };
+        
+    
         const showToast = (message, type = 'success') => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -726,8 +879,10 @@
             lucide.createIcons();
             setTimeout(() => toast.remove(), 5000);
         };
+        
         const isAdmin = () => state.currentUser?.role === 'admin';
         const canEdit = () => state.currentUser?.role === 'admin' || state.currentUser?.role === 'editor';
+
         const calculateDashboardMetrics = () => {
             const totalEmployees = state.employees.length;
             if (totalEmployees === 0) {
@@ -735,7 +890,9 @@
                 return;
             }
             const activeEmployees = state.employees.filter(e => e.status === 'فعال');
+            
             const retentionRate = totalEmployees > 0 ? ((activeEmployees.length / totalEmployees) * 100).toFixed(0) : 0;
+
             const totalTenureDays = activeEmployees.reduce((sum, emp) => {
                 if (!emp.startDate) return sum;
                 const start = new Date(emp.startDate);
@@ -743,6 +900,7 @@
                 return sum + Math.ceil(Math.abs(now - start) / (1000 * 60 * 60 * 24));
             }, 0);
             const averageTenureYears = activeEmployees.length > 0 ? (totalTenureDays / activeEmployees.length / 365).toFixed(1) : 0;
+            
             const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
             let totalScore = 0;
             let ratingCount = 0;
@@ -756,8 +914,10 @@
                 });
             });
             const engagementScore = ratingCount > 0 ? ((totalScore / ratingCount) / 5 * 100).toFixed(0) : 0;
+
             const mobileEmployees = state.employees.filter(e => e.careerPath && e.careerPath.length > 1).length;
             const internalMobilityRate = totalEmployees > 0 ? ((mobileEmployees / totalEmployees) * 100).toFixed(0) : 0;
+
             state.dashboardMetrics = {
                 totalEmployees,
                 retentionRate,
@@ -779,7 +939,6 @@
                 }, {}),
             };
         };
-
 
         // --- PAGE TEMPLATES & RENDERING ---
         const mainContent = document.getElementById('main-content');
