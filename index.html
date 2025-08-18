@@ -2369,12 +2369,10 @@ const viewEmployeeProfile = (employeeId) => {
                             <button id="change-avatar-btn" class="bg-white p-1.5 rounded-full shadow-md"><i data-lucide="camera" class="w-4 h-4"></i></button>
                             <button id="delete-avatar-btn" class="bg-white p-1.5 rounded-full shadow-md"><i data-lucide="trash-2" class="w-4 h-4 text-red-600"></i></button>
                         </div>` : ''}
-                        
                         <div class="flex items-center justify-center gap-2">
                             <h2 class="text-2xl font-bold text-slate-800">${emp.name}</h2>
                             ${canEdit() ? `<button id="main-edit-employee-btn" class="p-1.5 text-slate-500 hover:text-teal-600" title="ویرایش اطلاعات اصلی"><i data-lucide="edit" class="w-5 h-5"></i></button>` : ''}
                         </div>
-
                         <p class="text-teal-600 font-semibold">${emp.jobTitle || 'بدون عنوان شغلی'}</p>
                         <p class="text-sm text-slate-500">${emp.level || ''}</p>
                         <span class="mt-2 inline-block px-3 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span>
@@ -2401,9 +2399,9 @@ const viewEmployeeProfile = (employeeId) => {
                         <div class="border-b border-slate-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="performance" class="profile-tab shrink-0">عملکرد</button><button data-tab="career" class="profile-tab shrink-0">مسیر شغلی</button><button data-tab="contracts" class="profile-tab shrink-0">قراردادها</button><button data-tab="personal" class="profile-tab shrink-0">اطلاعات پرسنلی</button></nav></div>
                         <div class="p-4">
                             <div id="tab-overview" class="profile-tab-content active"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700 flex items-center"><i data-lucide="target" class="ml-2 w-5 h-5 text-blue-500"></i>اهداف و نتایج کلیدی (OKRs)</h4>${canEdit() ? `<button id="edit-okrs-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(emp.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-slate-600">${okr.title}</span><span class="font-medium text-indigo-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('')} ${!(emp.okrs && emp.okrs.length > 0) ? '<p class="text-sm text-slate-500">هدفی ثبت نشده است.</p>' : ''}</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">ماتریس مهارت‌های فنی</h4>${canEdit() ? `<button id="edit-skills-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">ویرایش</button>`:''}</div><canvas id="skillRadarChart"></canvas></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">شایستگی‌های اصلی</h4>${canEdit() ? `<button id="edit-competencies-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">ویرایش</button>`:''}</div><div id="competencyBarsContainer" class="space-y-4">${renderCompetencyBars(emp.competencies || {})}</div></div></div></div></div>
-                            <div id="tab-performance" class="profile-tab-content"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه ارزیابی عملکرد</h4>${canEdit() ? `<button id="add-performance-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن ارزیابی</button>`:''}</div><div id="performance-history-list" class="space-y-3 text-sm">${(emp.performanceHistory || []).map((review, i) => `<div class="p-3 bg-slate-100 rounded-md border"><div class="flex justify-between items-center font-semibold"><p>دوره ارزیابی ${i+1} - ${toPersianDate(review.reviewDate)}</p><div class="flex items-center gap-2"><span class="font-bold text-teal-600">${review.overallScore}/5</span>${canEdit() ? `<button class="edit-performance-btn text-amber-600 hover:text-amber-800" data-index="${i}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-performance-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><p class="text-xs text-slate-500 mt-1">ارزیاب: ${review.reviewer || 'نامشخص'}</p></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">سابقه انضباطی (تذکر/تشویق)</h4>${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map((item, i) => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'} flex justify-between items-center"><div class="flex-grow"><p class="font-semibold">${item.type} - ${toPersianDate(item.date)}</p><p class="text-sm">${item.reason}</p></div>${canEdit() ? `<button class="delete-disciplinary-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div></div>
+                            <div id="tab-performance" class="profile-tab-content"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه ارزیابی عملکرد</h4>${canEdit() ? `<button id="add-performance-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن ارزیابی</button>`:''}</div><div id="performance-history-list" class="space-y-3 text-sm">${(emp.performanceHistory || []).map((review, i) => `<div class="p-3 bg-slate-100 rounded-md border"><div class="flex justify-between items-center font-semibold"><p>دوره ارزیابی ${i+1} - ${toPersianDate(review.reviewDate)}</p><div class="flex items-center gap-2"><span class="font-bold text-teal-600">${review.overallScore}/5</span>${canEdit() ? `<button class="edit-performance-btn text-amber-600 hover:text-amber-800" data-index="${i}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-performance-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><p class="text-xs text-slate-500 mt-1">ارزیاب: ${review.reviewer || 'نامشخص'}</p></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">سابقه انضباطی (تذکر/تشویق)</h4>${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map((item, i) => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'} flex justify-between items-center"><div class="flex-grow"><p class="font-semibold">${item.type} - ${toPersianDate(item.date)}</p><p class="text-sm">${item.reason}</p></div><div class="flex items-center gap-3">${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" class="text-xs text-teal-600 flex items-center hover:underline"><i data-lucide="download" class="w-3 h-3 ml-1"></i>دانلود ضمیمه</a>`:''}${canEdit() ? `<button class="delete-disciplinary-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div></div>
                             <div id="tab-career" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه مسیر شغلی</h4>${canEdit() ? `<button id="add-career-path-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="career-path-list" class="space-y-3">${(emp.careerPath || []).map((entry, i) => `<div class="p-3 bg-slate-100 rounded-md border flex justify-between items-center"><div><p class="font-semibold">${entry.title} در دپارتمان ${entry.department}</p><p class="text-xs text-slate-500">${toPersianDate(entry.date)} - ${entry.type}</p></div>${canEdit() ? `<button class="delete-career-path-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div>
-                            <div id="tab-contracts" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه تمدید قرارداد</h4>${canEdit() ? `<button id="add-contract-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="contracts-list" class="space-y-3">${(emp.contractHistory || []).map((c, index) => `<div class="p-3 rounded-md bg-slate-100 border"><div class="flex justify-between items-center font-semibold"><p>قرارداد ${toPersianDate(c.startDate)}</p><div class="flex items-center gap-2">${c.fileName ? `<a href="#" class="text-xs text-blue-600 flex items-center"><i data-lucide="paperclip" class="w-3 h-3 ml-1"></i>${c.fileName}</a>`:''}${canEdit() ? `<button class="edit-contract-btn text-amber-600 hover:text-amber-800" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-contract-btn text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><div class="grid grid-cols-2 gap-2 text-xs mt-2 border-t pt-2"><p>حقوق ناخالص: <span class="font-mono">${(c.grossSalary || 0).toLocaleString('fa-IR')}</span></p><p>حقوق خالص: <span class="font-mono">${(c.netSalary || 0).toLocaleString('fa-IR')}</span></p><p>مبلغ سفته: <span class="font-mono">${(c.promissoryNote || 0).toLocaleString('fa-IR')}</span></p><p>مدت: <span class="font-mono">${toPersianDate(c.startDate)} تا ${toPersianDate(c.endDate)}</span></p></div></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div>
+                            <div id="tab-contracts" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه تمدید قرارداد</h4>${canEdit() ? `<button id="add-contract-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="contracts-list" class="space-y-3">${(emp.contractHistory || []).map((c, index) => `<div class="p-3 rounded-md bg-slate-100 border"><div class="flex justify-between items-center font-semibold"><p>قرارداد ${toPersianDate(c.startDate)}</p><div class="flex items-center gap-3">${c.fileUrl ? `<a href="${c.fileUrl}" target="_blank" class="text-xs text-teal-600 flex items-center hover:underline"><i data-lucide="download" class="w-3 h-3 ml-1"></i>دانلود قرارداد</a>`:''}${canEdit() ? `<button class="edit-contract-btn text-amber-600 hover:text-amber-800" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-contract-btn text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><div class="grid grid-cols-2 gap-2 text-xs mt-2 border-t pt-2"><p>حقوق ناخالص: <span class="font-mono">${(c.grossSalary || 0).toLocaleString('fa-IR')}</span></p><p>حقوق خالص: <span class="font-mono">${(c.netSalary || 0).toLocaleString('fa-IR')}</span></p><p>مبلغ سفته: <span class="font-mono">${(c.promissoryNote || 0).toLocaleString('fa-IR')}</span></p><p>مدت: <span class="font-mono">${toPersianDate(c.startDate)} تا ${toPersianDate(c.endDate)}</span></p></div></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div>
                             <div id="tab-personal" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">اطلاعات پرسنلی</h4>${canEdit() ? `<button id="edit-personal-info-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">ویرایش</button>`:''}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-slate-500 block">کد ملی</strong> <span>${emp.personalInfo?.nationalId || '-'}</span></div><div><strong class="text-slate-500 block">تاریخ تولد</strong> <span>${toPersianDate(emp.personalInfo?.birthDate) || '-'}</span></div><div><strong class="text-slate-500 block">جنسیت</strong> <span>${emp.gender || '-'}</span></div><div><strong class="text-slate-500 block">شماره موبایل</strong> <span class="font-mono">${emp.personalInfo?.phone || '-'}</span></div><div class="sm:col-span-2"><strong class="text-slate-500 block">آدرس</strong> <span>${emp.personalInfo?.address || '-'}</span></div><div><strong class="text-slate-500 block">وضعیت نظام وظیفه</strong> <span>${emp.personalInfo?.militaryStatus || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-slate-700 mb-3">اطلاعات سازمانی</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-slate-500 block">عنوان شغلی</strong> <span>${emp.jobTitle || '-'}</span></div><div><strong class="text-slate-500 block">سطح</strong> <span>${emp.level || '-'}</span></div><div><strong class="text-slate-500 block">تاریخ استخدام</strong> <span>${toPersianDate(emp.startDate) || '-'}</span></div><div><strong class="text-slate-500 block">تاریخ اتمام قرارداد فعلی</strong> <span>${toPersianDate(latestContract?.endDate) || '-'}</span></div><div><strong class="text-slate-500 block">تیم</strong> <span>${team?.name || '-'}</span></div><div><strong class="text-slate-500 block">مدیر مستقیم</strong> <span>${manager?.name || '-'}</span></div></div><hr class="my-4"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">مدارک پرسنلی</h4>${canEdit() ? `<button id="add-document-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن مدرک</button>`:''}</div><div id="documents-list" class="space-y-2">${(emp.documents || []).map((doc, index) => `<div class="p-2 bg-slate-100 rounded-md flex justify-between items-center"><div><p class="font-semibold">${doc.name}</p><p class="text-xs text-slate-500">${toPersianDate(doc.date)}</p></div><div class="flex items-center gap-3">${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="text-xs text-teal-600 flex items-center hover:underline"><i data-lucide="download" class="w-3 h-3 ml-1"></i>دانلود</a>`:''}${canEdit() ? `<button class="edit-document-btn text-amber-600 hover:text-amber-800" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-document-btn text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div>`).join('') || '<p class="text-sm text-slate-500">مدرکی ثبت نشده است.</p>'}</div></div></div>
                         </div>
                     </div>
@@ -2909,89 +2907,183 @@ const setupProfileModalListeners = (emp) => {
     });
 };
         
-        const showDisciplinaryForm = (emp) => {
-    modalTitle.innerText = `ثبت مورد انضباطی برای ${emp.name}`;
-    modalContent.innerHTML = `<form id="disciplinary-form" class="space-y-4"><div><label class="block font-medium">نوع</label><select id="disciplinary-type" class="w-full p-2 border rounded-md"><option value="تشویق">تشویق</option><option value="تذکر">تذکر</option></select></div><div><label class="block font-medium">تاریخ</label><input type="text" id="disciplinary-date" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">دلیل</label><textarea id="disciplinary-reason" rows="3" class="w-full p-2 border rounded-md" required></textarea></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-disciplinary" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ثبت</button></div></form>`;
+const showDisciplinaryForm = (emp) => {
+        modalTitle.innerText = `ثبت مورد انضباطی برای ${emp.name}`;
+        modalContent.innerHTML = `
+            <form id="disciplinary-form" class="space-y-4">
+                <div><label class="block font-medium">نوع</label><select id="disciplinary-type" class="w-full p-2 border border-slate-300 rounded-lg"><option value="تشویق">تشویق</option><option value="تذکر">تذکر</option></select></div>
+                <div><label class="block font-medium">تاریخ</label><input type="text" id="disciplinary-date" class="w-full p-2 border border-slate-300 rounded-lg" required></div>
+                <div><label class="block font-medium">دلیل</label><textarea id="disciplinary-reason" rows="3" class="w-full p-2 border border-slate-300 rounded-lg" required></textarea></div>
+                <div>
+                    <label class="block font-medium">آپلود فایل ضمیمه (اختیاری - حداکثر ۵ مگابایت)</label>
+                    <input type="file" id="disciplinary-file" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"/>
+                </div>
+                <div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-disciplinary" class="bg-slate-500 text-white py-2 px-6 rounded-lg hover:bg-slate-600">بازگشت</button><button type="submit" id="submit-disciplinary-btn" class="bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600">ثبت</button></div>
+            </form>`;
+        
+        activatePersianDatePicker('disciplinary-date', new Date());
 
-    activatePersianDatePicker('disciplinary-date', new Date()); // فعال‌سازی تقویم شمسی
+        document.getElementById('back-to-profile-disciplinary').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+        
+        document.getElementById('disciplinary-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-disciplinary-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'در حال ثبت...';
 
-    document.getElementById('back-to-profile-disciplinary').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-    document.getElementById('disciplinary-form').addEventListener('submit', async (e) => { 
-        e.preventDefault(); 
-        const gregorianDate = persianToEnglishDate(document.getElementById('disciplinary-date').value);
-        if (!gregorianDate) {
-            showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
-            return;
-        }
-        const newRecord = { 
-            type: document.getElementById('disciplinary-type').value, 
-            date: gregorianDate, 
-            reason: document.getElementById('disciplinary-reason').value, 
-        }; 
-        const updatedHistory = [...(emp.disciplinaryHistory || []), newRecord]; 
-        try { 
-            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
-            await updateDoc(docRef, { disciplinaryHistory: updatedHistory }); 
-            showToast("مورد انضباطی با موفقیت ثبت شد."); 
-            viewEmployeeProfile(emp.firestoreId); 
-        } catch (error) { 
-            console.error("Error adding disciplinary record:", error); 
-            showToast("خطا در ثبت مورد انضباطی.", "error"); 
-        } 
-    });
-};
+            const file = document.getElementById('disciplinary-file').files[0];
+            let fileUrl = '';
+            let fileName = '';
 
-       const showContractForm = (emp, contractIndex = null) => {
-    const isEditing = contractIndex !== null;
-    const contract = isEditing ? emp.contractHistory[contractIndex] : {};
-    modalTitle.innerText = isEditing ? `ویرایش قرارداد برای ${emp.name}` : `ثبت قرارداد جدید برای ${emp.name}`;
-    modalContent.innerHTML = `<form id="contract-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block font-medium">تاریخ شروع</label><input type="text" id="contract-start" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">تاریخ پایان</label><input type="text" id="contract-end" class="w-full p-2 border rounded-md" required></div><div><label class="block font-medium">حقوق ناخالص (ریال)</label><input type="number" id="contract-gross" value="${contract.grossSalary || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">حقوق خالص (ریال)</label><input type="number" id="contract-net" value="${contract.netSalary || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">مبلغ سفته (ریال)</label><input type="number" id="contract-promissory" value="${contract.promissoryNote || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">فایل قرارداد (نام فایل)</label><input type="text" id="contract-file" value="${contract.fileName || ''}" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-contract" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+            if (file && file.size > 5 * 1024 * 1024) { // 5 MB
+                showToast("حجم فایل نباید بیشتر از ۵ مگابایت باشد.", "error");
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'ثبت';
+                return;
+            }
 
-    activatePersianDatePicker('contract-start', contract.startDate);
-    activatePersianDatePicker('contract-end', contract.endDate);
+            try {
+                if (file) {
+                    const filePath = `disciplinary/${emp.id}/${Date.now()}_${file.name}`;
+                    const storageRef = ref(storage, filePath);
+                    const snapshot = await uploadBytes(storageRef, file);
+                    fileUrl = await getDownloadURL(snapshot.ref);
+                    fileName = file.name;
+                }
 
-    document.getElementById('back-to-profile-contract').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-    document.getElementById('contract-form').addEventListener('submit', async (e) => { 
-        e.preventDefault(); 
-        const gregorianStart = persianToEnglishDate(document.getElementById('contract-start').value);
-        const gregorianEnd = persianToEnglishDate(document.getElementById('contract-end').value);
+                const gregorianDate = persianToEnglishDate(document.getElementById('disciplinary-date').value);
+                if (!gregorianDate) {
+                    showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'ثبت';
+                    return;
+                }
 
-        if (!gregorianStart || !gregorianEnd) {
-            showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
-            return;
-        }
+                const newRecord = {
+                    type: document.getElementById('disciplinary-type').value,
+                    date: gregorianDate,
+                    reason: document.getElementById('disciplinary-reason').value,
+                    fileUrl: fileUrl,
+                    fileName: fileName
+                };
+                const updatedHistory = [...(emp.disciplinaryHistory || []), newRecord];
+                
+                const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+                await updateDoc(docRef, { disciplinaryHistory: updatedHistory });
+                
+                closeModal(mainModal, mainModalContainer);
+                showToast("مورد انضباطی با موفقیت ثبت شد.");
+                viewEmployeeProfile(emp.firestoreId);
+            } catch (error) {
+                console.error("Error adding disciplinary record:", error);
+                showToast("خطا در ثبت مورد انضباطی.", "error");
+                if(submitBtn) {
+                   submitBtn.disabled = false;
+                   submitBtn.innerText = 'ثبت';
+                }
+            }
+        });
+    };
 
-        const newContract = { 
-            startDate: gregorianStart, 
-            endDate: gregorianEnd, 
-            grossSalary: Number(document.getElementById('contract-gross').value), 
-            netSalary: Number(document.getElementById('contract-net').value), 
-            promissoryNote: Number(document.getElementById('contract-promissory').value), 
-            fileName: document.getElementById('contract-file').value, 
-        }; 
-        let updatedHistory = [...(emp.contractHistory || [])]; 
-        if(isEditing) { 
-            updatedHistory[contractIndex] = newContract; 
-        } else { 
-            updatedHistory.push(newContract); 
-        } 
-        updatedHistory.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-        const latestContractEndDate = updatedHistory[0]?.endDate || null;
+ const showContractForm = (emp, contractIndex = null) => {
+        const isEditing = contractIndex !== null;
+        const contract = isEditing ? emp.contractHistory[contractIndex] : {};
+        modalTitle.innerText = isEditing ? `ویرایش قرارداد برای ${emp.name}` : `ثبت قرارداد جدید برای ${emp.name}`;
+        modalContent.innerHTML = `
+            <form id="contract-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block font-medium">تاریخ شروع</label><input type="text" id="contract-start" class="w-full p-2 border border-slate-300 rounded-lg" required></div>
+                    <div><label class="block font-medium">تاریخ پایان</label><input type="text" id="contract-end" class="w-full p-2 border border-slate-300 rounded-lg" required></div>
+                    <div><label class="block font-medium">حقوق ناخالص (ریال)</label><input type="number" id="contract-gross" value="${contract.grossSalary || ''}" class="w-full p-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block font-medium">حقوق خالص (ریال)</label><input type="number" id="contract-net" value="${contract.netSalary || ''}" class="w-full p-2 border border-slate-300 rounded-lg"></div>
+                    <div class="md:col-span-2"><label class="block font-medium">مبلغ سفته (ریال)</label><input type="number" id="contract-promissory" value="${contract.promissoryNote || ''}" class="w-full p-2 border border-slate-300 rounded-lg"></div>
+                    <div class="md:col-span-2">
+                        <label class="block font-medium">آپلود فایل قرارداد (اختیاری - حداکثر ۵ مگابایت)</label>
+                        <input type="file" id="contract-file-upload" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"/>
+                        ${contract.fileName ? `<p class="text-xs text-slate-500 mt-2">فایل فعلی: ${contract.fileName} (برای تغییر، فایل جدید را انتخاب کنید)</p>` : ''}
+                    </div>
+                </div>
+                <div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-contract" class="bg-slate-500 text-white py-2 px-6 rounded-lg hover:bg-slate-600">بازگشت</button><button type="submit" id="submit-contract-btn" class="bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600">ذخیره</button></div>
+            </form>`;
 
-        try { 
-            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
-            await updateDoc(docRef, { 
-                contractHistory: updatedHistory,
-                contractEndDate: latestContractEndDate
-            }); 
-            showToast("قرارداد با موفقیت ذخیره شد."); 
-            viewEmployeeProfile(emp.firestoreId); 
-        } catch (error) { 
-            console.error("Error saving contract record:", error); 
-            showToast("خطا در ثبت قرارداد.", "error"); 
-        } 
-    });
-};
+        activatePersianDatePicker('contract-start', contract.startDate);
+        activatePersianDatePicker('contract-end', contract.endDate);
+
+        document.getElementById('back-to-profile-contract').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
+        
+        document.getElementById('contract-form').addEventListener('submit', async (e) => { 
+            e.preventDefault(); 
+            const submitBtn = document.getElementById('submit-contract-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'در حال ذخیره...';
+            
+            const file = document.getElementById('contract-file-upload').files[0];
+            let fileUrl = contract.fileUrl || '';
+            let fileName = contract.fileName || '';
+
+            if (file && file.size > 5 * 1024 * 1024) { // 5 MB
+                showToast("حجم فایل نباید بیشتر از ۵ مگابایت باشد.", "error");
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'ذخیره';
+                return;
+            }
+
+            try {
+                 if (file) {
+                    const filePath = `contracts/${emp.id}/${Date.now()}_${file.name}`;
+                    const storageRef = ref(storage, filePath);
+                    const snapshot = await uploadBytes(storageRef, file);
+                    fileUrl = await getDownloadURL(snapshot.ref);
+                    fileName = file.name;
+                }
+                
+                const gregorianStart = persianToEnglishDate(document.getElementById('contract-start').value);
+                const gregorianEnd = persianToEnglishDate(document.getElementById('contract-end').value);
+
+                if (!gregorianStart || !gregorianEnd) {
+                    showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'ذخیره';
+                    return;
+                }
+
+                const newContract = { 
+                    startDate: gregorianStart, 
+                    endDate: gregorianEnd, 
+                    grossSalary: Number(document.getElementById('contract-gross').value), 
+                    netSalary: Number(document.getElementById('contract-net').value), 
+                    promissoryNote: Number(document.getElementById('contract-promissory').value), 
+                    fileName: fileName,
+                    fileUrl: fileUrl
+                }; 
+                let updatedHistory = [...(emp.contractHistory || [])]; 
+                if(isEditing) { 
+                    updatedHistory[contractIndex] = newContract; 
+                } else { 
+                    updatedHistory.push(newContract); 
+                } 
+                updatedHistory.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+                const latestContractEndDate = updatedHistory[0]?.endDate || null;
+
+                const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
+                await updateDoc(docRef, { 
+                    contractHistory: updatedHistory,
+                    contractEndDate: latestContractEndDate
+                }); 
+                
+                closeModal(mainModal, mainModalContainer);
+                showToast("قرارداد با موفقیت ذخیره شد."); 
+                viewEmployeeProfile(emp.firestoreId); 
+            } catch (error) { 
+                console.error("Error saving contract record:", error); 
+                showToast("خطا در ثبت قرارداد.", "error"); 
+                if(submitBtn) {
+                   submitBtn.disabled = false;
+                   submitBtn.innerText = 'ذخیره';
+                }
+            } 
+        });
+    };
         
         const deleteContract = async (emp, index) => {
             showConfirmationModal("حذف قرارداد", "آیا از حذف این سابقه قرارداد مطمئن هستید؟", async () => {
