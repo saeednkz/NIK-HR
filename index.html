@@ -296,6 +296,7 @@
             getFirestore, doc, getDoc, setDoc, onSnapshot, collection, 
             addDoc, getDocs, writeBatch, deleteDoc, updateDoc, query, serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
         // --- SURVEY TEMPLATES (EXPANDED) ---
         const surveyTemplates = {
@@ -392,7 +393,7 @@
             appId: "1:731265316127:web:6fda02cb2c7d4adfc92c2a"
         };
 
-        let app, auth, db;
+         let app, auth, db, storage;
 
         // --- AUTH & UI TOGGLING ---
         const showLoginPage = () => {
@@ -421,6 +422,7 @@
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+                 storage = getStorage(app);
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
@@ -849,74 +851,74 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
                 </div>
             `;
         },
-        expenses: () => {
-            const cardsHtml = state.pettyCashCards.map(card => `
-                <div class="card bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-blue-800">${card.name}</p>
-                        <p class="text-sm text-gray-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
-                    </div>
-                    ${isAdmin() ? `<button class="delete-card-btn text-red-500 hover:text-red-700" data-id="${card.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
-                </div>
-            `).join('');
+     expenses: () => {
+    const cardsHtml = state.pettyCashCards.map(card => `
+        <div class="card bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
+            <div>
+                <p class="font-bold text-blue-800">${card.name}</p>
+                <p class="text-sm text-gray-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
+            </div>
+            ${isAdmin() ? `<button class="delete-card-btn text-red-500 hover:text-red-700" data-id="${card.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+        </div>
+    `).join('');
 
-            const expensesRows = state.expenses.map(exp => `
-                <tr class="bg-white border-b hover:bg-gray-50">
-                    <td class="px-6 py-4">${toPersianDate(exp.date)}</td>
-                    <td class="px-6 py-4">${exp.item}</td>
-                    <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
-                    <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
-                    <td class="px-6 py-4">
-                        ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>` : '-'}
-                    </td>
-                     <td class="px-6 py-4">
-                        ${canEdit() ? `<button class="delete-expense-btn text-red-600 hover:underline" data-id="${exp.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
-                    </td>
-                </tr>
-            `).join('');
+    const expensesRows = state.expenses.map(exp => `
+        <tr class="bg-white border-b hover:bg-gray-50">
+            <td class="px-6 py-4">${toPersianDate(exp.date)}</td>
+            <td class="px-6 py-4">${exp.item}</td>
+            <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
+            <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
+            <td class="px-6 py-4">
+                ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> مشاهده</a>` : '-'}
+            </td>
+             <td class="px-6 py-4">
+                ${canEdit() ? `<button class="delete-expense-btn text-red-600 hover:underline" data-id="${exp.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+            </td>
+        </tr>
+    `).join('');
 
-            const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-            return `
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">مدیریت هزینه‌ها</h1>
+    return `
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">مدیریت هزینه‌ها</h1>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="lg:col-span-1 card bg-white p-6 rounded-lg shadow-md">
+                <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
+                <div class="space-y-3 mb-4" id="cards-list">${cardsHtml}</div>
+                ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">افزودن کارت جدید</button>` : ''}
+            </div>
+            <div class="lg:col-span-2 card bg-white p-6 rounded-lg shadow-md">
+                 <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold">لیست هزینه‌ها</h3>
+                    ${canEdit() ? `<button id="add-expense-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">افزودن هزینه</button>` : ''}
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <div class="lg:col-span-1 card bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
-                        <div class="space-y-3 mb-4" id="cards-list">${cardsHtml}</div>
-                        ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">افزودن کارت جدید</button>` : ''}
-                    </div>
-                    <div class="lg:col-span-2 card bg-white p-6 rounded-lg shadow-md">
-                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-semibold">لیست هزینه‌ها</h3>
-                            ${canEdit() ? `<button id="add-expense-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">افزودن هزینه</button>` : ''}
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-right text-gray-500">
-                                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                                    <tr>
-                                        <th scope="col" class="px-6 py-3">تاریخ</th>
-                                        <th scope="col" class="px-6 py-3">مورد</th>
-                                        <th scope="col" class="px-6 py-3">کارت</th>
-                                        <th scope="col" class="px-6 py-3">مبلغ (تومان)</th>
-                                        <th scope="col" class="px-6 py-3">فاکتور</th>
-                                        <th scope="col" class="px-6 py-3">عملیات</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${expensesRows}</tbody>
-                                <tfoot class="bg-gray-100 font-semibold">
-                                    <tr>
-                                        <td colspan="3" class="px-6 py-3 text-left">جمع کل:</td>
-                                        <td colspan="3" class="px-6 py-3 font-mono">${totalExpenses.toLocaleString('fa-IR')} تومان</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-right text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">تاریخ</th>
+                                <th scope="col" class="px-6 py-3">مورد</th>
+                                <th scope="col" class="px-6 py-3">کارت</th>
+                                <th scope="col" class="px-6 py-3">مبلغ (تومان)</th>
+                                <th scope="col" class="px-6 py-3">فاکتور</th>
+                                <th scope="col" class="px-6 py-3">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>${expensesRows}</tbody>
+                        <tfoot class="bg-gray-100 font-semibold">
+                            <tr>
+                                <td colspan="3" class="px-6 py-3 text-left">جمع کل:</td>
+                                <td colspan="3" class="px-6 py-3 font-mono">${totalExpenses.toLocaleString('fa-IR')} تومان</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
-            `;
-        }
+            </div>
+        </div>
+    `;
+}
         };
 
         // --- NAVIGATION & ROUTING ---
@@ -1317,7 +1319,7 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
             });
         };
 
-       const showExpenseForm = () => {
+const showExpenseForm = () => {
     modalTitle.innerText = 'افزودن هزینه جدید';
     const cardOptions = state.pettyCashCards.map(c => `<option value="${c.firestoreId}">${c.name}</option>`).join('');
     modalContent.innerHTML = `
@@ -1327,41 +1329,64 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
                 <div><label class="block font-medium">مبلغ (تومان)</label><input type="number" id="expense-amount" class="w-full p-2 border rounded-md" required></div>
                 <div class="md:col-span-2"><label class="block font-medium">شرح هزینه</label><input type="text" id="expense-item" class="w-full p-2 border rounded-md" required></div>
                 <div><label class="block font-medium">کارت تنخواه</label><select id="expense-card" class="w-full p-2 border rounded-md" required>${cardOptions}</select></div>
-                <div><label class="block font-medium">لینک فاکتور (اختیاری)</label><input type="url" id="expense-invoice" class="w-full p-2 border rounded-md"></div>
+                <div>
+                    <label class="block font-medium">آپلود فاکتور (اختیاری)</label>
+                    <input type="file" id="expense-invoice-file" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                </div>
             </div>
-            <div class="pt-6 flex justify-end"><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div>
+            <div class="pt-6 flex justify-end"><button type="submit" id="submit-expense-btn" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div>
         </form>
     `;
     openModal(mainModal, mainModalContainer);
-    activatePersianDatePicker('expense-date', new Date()); // فعال‌سازی تقویم شمسی با تاریخ امروز
+    activatePersianDatePicker('expense-date', new Date());
 
     document.getElementById('expense-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const submitBtn = document.getElementById('submit-expense-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'در حال ذخیره...';
+
         const amount = Number(document.getElementById('expense-amount').value);
         const cardId = document.getElementById('expense-card').value;
         const persianDate = document.getElementById('expense-date').value;
         const gregorianDate = persianToEnglishDate(persianDate);
+        const invoiceFile = document.getElementById('expense-invoice-file').files[0];
+        let invoiceUrl = '';
 
         if (!gregorianDate) {
             showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'ذخیره';
             return;
         }
 
-        const formData = {
-            date: gregorianDate,
-            amount: amount,
-            item: document.getElementById('expense-item').value,
-            cardId: cardId,
-            invoiceUrl: document.getElementById('expense-invoice').value,
-            createdAt: serverTimestamp()
-        };
         try {
+            // اگر فایلی انتخاب شده بود، آن را آپلود کن
+            if (invoiceFile) {
+                const filePath = `invoices/${Date.now()}_${invoiceFile.name}`;
+                const storageRef = ref(storage, filePath);
+                const snapshot = await uploadBytes(storageRef, invoiceFile);
+                invoiceUrl = await getDownloadURL(snapshot.ref);
+            }
+
+            const formData = {
+                date: gregorianDate,
+                amount: amount,
+                item: document.getElementById('expense-item').value,
+                cardId: cardId,
+                invoiceUrl: invoiceUrl,
+                createdAt: serverTimestamp()
+            };
+
+            // بقیه منطق ذخیره‌سازی
             const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId);
             const cardSnap = await getDoc(cardRef);
             if (cardSnap.exists()) {
                 const currentBalance = cardSnap.data().balance || 0;
                 if (currentBalance < amount) {
                     showToast('موجودی کارت کافی نیست.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'ذخیره';
                     return;
                 }
                 const expenseCollectionRef = collection(db, `artifacts/${appId}/public/data/expenses`);
@@ -1374,9 +1399,13 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
             } else {
                 showToast('کارت تنخواه انتخاب شده معتبر نیست.', 'error');
             }
+
         } catch (error) {
             console.error("Error saving expense:", error);
             showToast('خطا در ذخیره هزینه.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'ذخیره';
         }
     });
 };
