@@ -681,11 +681,13 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     };
         // --- تابع جدید برای تحلیل داده‌های نظرسنجی و اعمال نتایج ---
 const calculateAndApplyAnalytics = () => {
+        if (!state.surveyResponses) return;
         console.log("Running survey and risk analytics...");
-        const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
         
-        // محاسبه امتیاز مشارکت برای هر کارمند
+        // --- تحلیل نظرسنجی مشارکت کارکنان ---
+        const engagementResponses = state.surveyResponses.filter(r => r.surveyId === 'engagement');
         const employeeScores = {};
+        
         engagementResponses.forEach(res => {
             if (res.employeeId && res.employeeId !== 'anonymous') {
                 if (!employeeScores[res.employeeId]) {
@@ -710,7 +712,6 @@ const calculateAndApplyAnalytics = () => {
             }
         });
 
-        // محاسبه امتیاز مشارکت برای هر تیم
         state.teams.forEach(team => {
             let teamTotalScore = 0;
             let teamQuestionCount = 0;
@@ -724,10 +725,33 @@ const calculateAndApplyAnalytics = () => {
             team.engagementScore = teamQuestionCount > 0 ? Math.round(((teamTotalScore / teamQuestionCount) / 5) * 100) : null;
         });
 
-        // محاسبه هوشمند ریسک خروج و ماتریس ۹ جعبه‌ای برای همه
+        // --- بخش جدید: تحلیل دسته‌بندی‌های نظرسنجی برای کل سازمان ---
+        const orgEngagementByCategory = {};
+        const engagementTemplate = surveyTemplates['engagement'];
+        engagementResponses.forEach(res => {
+            engagementTemplate.questions.forEach(q => {
+                if (q.type.startsWith('rating_') && res.answers[q.id]) {
+                    const score = parseInt(res.answers[q.id]);
+                    if (!isNaN(score)) {
+                        if (!orgEngagementByCategory[q.category]) {
+                            orgEngagementByCategory[q.category] = { totalScore: 0, count: 0, maxScore: q.type === 'rating_1_10' ? 10 : 5 };
+                        }
+                        orgEngagementByCategory[q.category].totalScore += score;
+                        orgEngagementByCategory[q.category].count++;
+                    }
+                }
+            });
+        });
+        state.orgAnalytics = {
+            engagementBreakdown: Object.entries(orgEngagementByCategory).map(([category, data]) => ({
+                name: engagementTemplate.categories[category] || category,
+                score: data.count > 0 ? Math.round(((data.totalScore / data.count) / data.maxScore) * 100) : 0
+            }))
+        };
+
         state.employees.forEach(emp => {
             emp.attritionRisk = calculateAttritionRisk(emp, state.teams);
-            emp.nineBox = determineNineBoxCategory(emp); // <<-- این خط جدید است
+            emp.nineBox = determineNineBoxCategory(emp);
         });
 
         console.log("Analytics applied to state.");
@@ -968,116 +992,60 @@ const calculateAndApplyAnalytics = () => {
         const mainContent = document.getElementById('main-content');
         
         const pages = {
-          dashboard: () => {
+            dashboard: () => {
             calculateDashboardMetrics();
             const metrics = state.dashboardMetrics;
-            if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
+            if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 card"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-slate-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-indigo-500 text-white py-2 px-5 rounded-lg hover:bg-indigo-600 shadow-md transition">افزودن کارمند</button></div>`;
             
-            // پیدا کردن کارمندان با ریسک بالا برای نمایش در داشبورد
-            const highRiskEmployees = state.employees
-                .filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60)
-                .sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
-
+            const highRiskEmployees = state.employees.filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60).sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
             const highRiskHtml = highRiskEmployees.length > 0 
                 ? highRiskEmployees.map(emp => {
                     const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
-                    return `<div class="bg-red-50 p-3 rounded-md">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div>
-                                        <div><p class="text-sm font-semibold text-red-800">${emp.name}</p></div>
-                                    </div>
-                                    <span class="text-lg font-bold text-red-600">${emp.attritionRisk.score}%</span>
-                                </div>
-                                <div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div>
-                            </div>`
+                    return `<div class="bg-red-50 p-3 rounded-lg"><div class="flex items-center justify-between"><div class="flex items-center"><div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div><div><p class="text-sm font-semibold text-red-800">${emp.name}</p></div></div><span class="text-lg font-bold text-red-600">${emp.attritionRisk.score}%</span></div><div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div></div>`
                 }).join('') 
-                : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
+                : '<p class="text-sm text-slate-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
 
             return `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد استراتژیک</h1>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">تعداد کل پرسنل</p><p class="text-2xl font-bold text-gray-800">${metrics.totalEmployees}</p></div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-gray-800">${metrics.retentionRate}%</p></div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
-                    </div>
-                     <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-purple-100 p-3 rounded-full mr-4"><i data-lucide="recycle" class="text-purple-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">جابجایی داخلی</p><p class="text-2xl font-bold text-gray-800">${metrics.internalMobilityRate}%</p></div>
-                    </div>
+                <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">داشبورد</h1><span class="text-sm text-slate-500 font-light">${toPersianDate(new Date())}</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">تعداد پرسنل</p><span class="bg-teal-100 p-2 rounded-lg"><i data-lucide="users" class="text-teal-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.totalEmployees}</p></div>
+                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">نرخ ماندگاری</p><span class="bg-emerald-100 p-2 rounded-lg"><i data-lucide="trending-up" class="text-emerald-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.retentionRate}<span class="text-lg font-medium">%</span></p></div>
+                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">امتیاز مشارکت</p><span class="bg-rose-100 p-2 rounded-lg"><i data-lucide="heart-pulse" class="text-rose-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.engagementScore > 0 ? metrics.engagementScore : 'N/A'}<span class="text-lg font-medium">%</span></p></div>
+                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">جابجایی داخلی</p><span class="bg-violet-100 p-2 rounded-lg"><i data-lucide="recycle" class="text-violet-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.internalMobilityRate}<span class="text-lg font-medium">%</span></p></div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
-                        <div id="remindersList" class="space-y-4 mb-4 max-h-48 overflow-y-auto pr-2">${renderAllReminders()}</div>
-                        ${canEdit() ? `<div class="border-t pt-4">
-                            <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
-                                <input type="text" id="reminderDate" class="p-2 border rounded-md text-sm">
-                                <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
-                            </div>
-                        </div>` : ''}
-                    </div>
-                    <div class="space-y-6">
-                        <div class="card bg-white p-6 rounded-lg shadow-md">
-                            <p class="text-gray-500 text-sm flex items-center">امتیاز مشارکت کارکنان <i data-lucide="heart-pulse" class="mr-2 text-green-500"></i></p>
-                            <div class="relative w-40 h-20 mx-auto mt-2">
-                                <canvas id="engagementGaugeDashboard"></canvas>
-                                <div class="absolute inset-0 flex items-center justify-center -bottom-4">
-                                    <span class="text-3xl font-bold text-green-600">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card bg-white p-6 rounded-lg shadow-md">
-                            <p class="text-gray-500 text-sm flex items-center">ریسک خروج استعدادهای کلیدی <i data-lucide="shield-alert" class="mr-2 text-red-500"></i></p>
-                            <div class="mt-3 space-y-2">${highRiskHtml}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع استعدادها</h3><div class="relative h-64"><canvas id="nineBoxChart"></canvas></div></div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع دپارتمان‌ها</h3><div class="relative h-64"><canvas id="departmentDistributionChart"></canvas></div></div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">ترکیب جنسیتی</h3><div class="relative h-64"><canvas id="genderCompositionChart"></canvas></div></div>
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="lg:col-span-3 card p-6"><h3 class="font-semibold text-slate-700 mb-4">توزیع استعدادها (ماتریس ۹ جعبه‌ای)</h3><div class="relative h-80"><canvas id="nineBoxChart"></canvas></div></div>
+                    <div class="lg:col-span-2 card p-6"><h3 class="font-semibold mb-4 flex items-center text-slate-700">ریسک خروج استعدادهای کلیدی</h3><div class="mt-3 space-y-3 max-h-80 overflow-y-auto">${highRiskHtml}</div></div>
                 </div>`;
         },
-            talent: () => {
-            if(state.employees.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند جدید</button>` : ''}</div>`;
+        talent: () => {
+            if(state.employees.length === 0) return `<div class="text-center p-10 card"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-indigo-500 text-white py-2 px-5 rounded-lg hover:bg-indigo-600 shadow-md transition">افزودن کارمند جدید</button>` : ''}</div>`;
             return `
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">مدیریت پرسنل</h1>
-                    ${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-slate-800">مدیریت استعدادها</h1>
+                    ${canEdit() ? `<button id="add-employee-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                        <div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو..." class="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"><i data-lucide="search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i></div>
-                        <div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border rounded-md"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].filter(Boolean).map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border rounded-md"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div>
+                <div class="card">
+                    <div class="flex flex-col md:flex-row justify-between items-center p-4 gap-4 border-b border-slate-200">
+                        <div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو بر اساس نام یا کد پرسنلی..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i></div>
+                        <div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].filter(Boolean).map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-right text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <table class="w-full text-sm text-right text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3">تصویر</th>
-                                    <th scope="col" class="px-6 py-3">نام</th>
-                                    <th scope="col" class="px-6 py-3">کد پرسنلی</th>
-                                    <th scope="col" class="px-6 py-3">دپارتمان</th>
-                                    <th scope="col" class="px-6 py-3">وضعیت</th>
-                                    <th scope="col" class="px-6 py-3">عملیات</th>
+                                    <th scope="col" class="px-6 py-3 font-medium">نام</th>
+                                    <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
+                                    <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
+                                    <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
+                                    <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
                                 </tr>
                             </thead>
                             <tbody id="employeeTableBody"></tbody>
                         </table>
                     </div>
-                    <div id="pagination-container" class="mt-6 flex justify-center"></div>
-                </div>`
+                    <div id="pagination-container" class="p-4 flex justify-center border-t border-slate-200"></div>
+                </div>`;
         },
            organization: () => {
             if (state.teams.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن تیم جدید</button>` : ''}</div>`;
@@ -1122,44 +1090,39 @@ const calculateAndApplyAnalytics = () => {
                     `).join('')}
                 </div>
             `,
-            analytics: () => `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">تحلیل هوشمند</h1>
+              analytics: () => {
+            const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
+                ?.sort((a, b) => b.score - a.score)
+                .map(cat => `
+                    <div>
+                        <div class="flex justify-between items-center mb-1 text-sm">
+                            <span class="text-slate-600">${cat.name}</span>
+                            <span class="font-medium text-teal-600">${cat.score}%</span>
+                        </div>
+                        <div class="progress-bar w-full">
+                            <div class="progress-bar-fill" style="width: ${cat.score}%;"></div>
+                        </div>
+                    </div>
+                `).join('') || '<p class="text-sm text-slate-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد.</p>';
+            
+            return `
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold text-slate-800">تحلیل هوشمند</h1>
+                </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Attrition Risk -->
-                    <div class="card bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="shield-alert" class="ml-2 text-red-500"></i>نقاط داغ ریسک خروج</h3>
-                        <div id="attrition-hotspot-list" class="space-y-3"></div>
-                    </div>
-
-                    <!-- Team Health -->
-                    <div class="card bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="heart-pulse" class="ml-2 text-green-500"></i>وضعیت سلامت تیم‌ها</h3>
-                        <div id="team-health-dashboard" class="space-y-3"></div>
-                    </div>
-
-                    <!-- 9-Box Grid -->
-                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
-                        <h3 class="font-semibold mb-4">ماتریس استعداد ۹-جعبه‌ای</h3>
-                        <div id="nine-box-grid-container" class="grid grid-cols-3 gap-2 text-center text-xs border-t-2 border-l-2 border-gray-400 mt-4"></div>
-                    </div>
-                    
-                    <!-- Skill Gap Finder -->
-                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="file-search" class="ml-2 text-blue-500"></i>تحلیل شکاف مهارتی</h3>
-                        <div class="flex flex-col sm:flex-row gap-2 items-center">
-                            <select id="skill-team-select" class="p-2 border rounded-md w-full sm:w-1/3">
-                                <option value="all">کل سازمان</option>
-                                ${state.teams.map(t => `<option value="${t.firestoreId}">${t.name}</option>`).join('')}
-                            </select>
-                            <input type="text" id="skill-search-input" placeholder="مهارت مورد نظر را وارد کنید (مثلا: Python)" class="p-2 border rounded-md w-full sm:w-1/3">
-                            <button id="find-skill-gap-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md w-full sm:w-auto">جستجو</button>
+                    <div class="card p-6">
+                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="pie-chart" class="ml-2 text-teal-500"></i>تحلیل مشارکت سازمانی</h3>
+                        <div class="space-y-4">
+                            ${engagementBreakdownHtml}
                         </div>
-                        <div id="skill-gap-results" class="mt-4 p-4 bg-gray-50 rounded-md min-h-[5rem]">
-                            <p class="text-sm text-gray-500">برای شروع، یک تیم و مهارت را انتخاب و روی دکمه جستجو کلیک کنید.</p>
-                        </div>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="shield-alert" class="ml-2 text-rose-500"></i>نقاط داغ ریسک خروج</h3>
+                        <div id="attrition-hotspot-list" class="space-y-3 max-h-80 overflow-y-auto"></div>
                     </div>
                 </div>
-            `,
+            `;
+        },
            settings: () => {
             if (!isAdmin()) {
                 return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">دسترسی غیر مجاز</h2><p class="mt-2 text-gray-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
@@ -2398,17 +2361,17 @@ const viewEmployeeProfile = (employeeId) => {
                   <div class="bg-white rounded-lg shadow-md">
                         <div class="border-b border-slate-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="performance" class="profile-tab shrink-0">عملکرد</button><button data-tab="career" class="profile-tab shrink-0">مسیر شغلی</button><button data-tab="contracts" class="profile-tab shrink-0">قراردادها</button><button data-tab="personal" class="profile-tab shrink-0">اطلاعات پرسنلی</button></nav></div>
                         <div class="p-4">
-                            <div id="tab-overview" class="profile-tab-content active"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700 flex items-center"><i data-lucide="target" class="ml-2 w-5 h-5 text-blue-500"></i>اهداف و نتایج کلیدی (OKRs)</h4>${canEdit() ? `<button id="edit-okrs-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(emp.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-slate-600">${okr.title}</span><span class="font-medium text-indigo-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('')} ${!(emp.okrs && emp.okrs.length > 0) ? '<p class="text-sm text-slate-500">هدفی ثبت نشده است.</p>' : ''}</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">ماتریس مهارت‌های فنی</h4>${canEdit() ? `<button id="edit-skills-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">ویرایش</button>`:''}</div><canvas id="skillRadarChart"></canvas></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">شایستگی‌های اصلی</h4>${canEdit() ? `<button id="edit-competencies-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">ویرایش</button>`:''}</div><div id="competencyBarsContainer" class="space-y-4">${renderCompetencyBars(emp.competencies || {})}</div></div></div></div></div>
-                            <div id="tab-performance" class="profile-tab-content"><div class="space-y-6"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه ارزیابی عملکرد</h4>${canEdit() ? `<button id="add-performance-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن ارزیابی</button>`:''}</div><div id="performance-history-list" class="space-y-3 text-sm">${(emp.performanceHistory || []).map((review, i) => `<div class="p-3 bg-slate-100 rounded-md border"><div class="flex justify-between items-center font-semibold"><p>دوره ارزیابی ${i+1} - ${toPersianDate(review.reviewDate)}</p><div class="flex items-center gap-2"><span class="font-bold text-teal-600">${review.overallScore}/5</span>${canEdit() ? `<button class="edit-performance-btn text-amber-600 hover:text-amber-800" data-index="${i}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-performance-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><p class="text-xs text-slate-500 mt-1">ارزیاب: ${review.reviewer || 'نامشخص'}</p></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">سابقه انضباطی (تذکر/تشویق)</h4>${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="disciplinary-list" class="space-y-2">${(emp.disciplinaryHistory || []).map((item, i) => `<div class="p-2 rounded-md ${item.type === 'تشویق' ? 'bg-green-100' : 'bg-red-100'} flex justify-between items-center"><div class="flex-grow"><p class="font-semibold">${item.type} - ${toPersianDate(item.date)}</p><p class="text-sm">${item.reason}</p></div><div class="flex items-center gap-3">${item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" class="text-xs text-teal-600 flex items-center hover:underline"><i data-lucide="download" class="w-3 h-3 ml-1"></i>دانلود ضمیمه</a>`:''}${canEdit() ? `<button class="delete-disciplinary-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div></div>
-                            <div id="tab-career" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه مسیر شغلی</h4>${canEdit() ? `<button id="add-career-path-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="career-path-list" class="space-y-3">${(emp.careerPath || []).map((entry, i) => `<div class="p-3 bg-slate-100 rounded-md border flex justify-between items-center"><div><p class="font-semibold">${entry.title} در دپارتمان ${entry.department}</p><p class="text-xs text-slate-500">${toPersianDate(entry.date)} - ${entry.type}</p></div>${canEdit() ? `<button class="delete-career-path-btn text-red-500 hover:text-red-700" data-index="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div>
-                            <div id="tab-contracts" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">تاریخچه تمدید قرارداد</h4>${canEdit() ? `<button id="add-contract-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن</button>`:''}</div><div id="contracts-list" class="space-y-3">${(emp.contractHistory || []).map((c, index) => `<div class="p-3 rounded-md bg-slate-100 border"><div class="flex justify-between items-center font-semibold"><p>قرارداد ${toPersianDate(c.startDate)}</p><div class="flex items-center gap-3">${c.fileUrl ? `<a href="${c.fileUrl}" target="_blank" class="text-xs text-teal-600 flex items-center hover:underline"><i data-lucide="download" class="w-3 h-3 ml-1"></i>دانلود قرارداد</a>`:''}${canEdit() ? `<button class="edit-contract-btn text-amber-600 hover:text-amber-800" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-contract-btn text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div><div class="grid grid-cols-2 gap-2 text-xs mt-2 border-t pt-2"><p>حقوق ناخالص: <span class="font-mono">${(c.grossSalary || 0).toLocaleString('fa-IR')}</span></p><p>حقوق خالص: <span class="font-mono">${(c.netSalary || 0).toLocaleString('fa-IR')}</span></p><p>مبلغ سفته: <span class="font-mono">${(c.promissoryNote || 0).toLocaleString('fa-IR')}</span></p><p>مدت: <span class="font-mono">${toPersianDate(c.startDate)} تا ${toPersianDate(c.endDate)}</span></p></div></div>`).join('') || '<p class="text-sm text-slate-500">سابقه‌ای ثبت نشده است.</p>'}</div></div></div>
-                            <div id="tab-personal" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">اطلاعات پرسنلی</h4>${canEdit() ? `<button id="edit-personal-info-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">ویرایش</button>`:''}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-slate-500 block">کد ملی</strong> <span>${emp.personalInfo?.nationalId || '-'}</span></div><div><strong class="text-slate-500 block">تاریخ تولد</strong> <span>${toPersianDate(emp.personalInfo?.birthDate) || '-'}</span></div><div><strong class="text-slate-500 block">جنسیت</strong> <span>${emp.gender || '-'}</span></div><div><strong class="text-slate-500 block">شماره موبایل</strong> <span class="font-mono">${emp.personalInfo?.phone || '-'}</span></div><div class="sm:col-span-2"><strong class="text-slate-500 block">آدرس</strong> <span>${emp.personalInfo?.address || '-'}</span></div><div><strong class="text-slate-500 block">وضعیت نظام وظیفه</strong> <span>${emp.personalInfo?.militaryStatus || '-'}</span></div></div><hr class="my-4"><h4 class="font-semibold text-slate-700 mb-3">اطلاعات سازمانی</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-sm"><div><strong class="text-slate-500 block">عنوان شغلی</strong> <span>${emp.jobTitle || '-'}</span></div><div><strong class="text-slate-500 block">سطح</strong> <span>${emp.level || '-'}</span></div><div><strong class="text-slate-500 block">تاریخ استخدام</strong> <span>${toPersianDate(emp.startDate) || '-'}</span></div><div><strong class="text-slate-500 block">تاریخ اتمام قرارداد فعلی</strong> <span>${toPersianDate(latestContract?.endDate) || '-'}</span></div><div><strong class="text-slate-500 block">تیم</strong> <span>${team?.name || '-'}</span></div><div><strong class="text-slate-500 block">مدیر مستقیم</strong> <span>${manager?.name || '-'}</span></div></div><hr class="my-4"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-slate-700">مدارک پرسنلی</h4>${canEdit() ? `<button id="add-document-btn" class="text-sm bg-indigo-500 text-white py-1 px-3 rounded-md hover:bg-indigo-600">افزودن مدرک</button>`:''}</div><div id="documents-list" class="space-y-2">${(emp.documents || []).map((doc, index) => `<div class="p-2 bg-slate-100 rounded-md flex justify-between items-center"><div><p class="font-semibold">${doc.name}</p><p class="text-xs text-slate-500">${toPersianDate(doc.date)}</p></div><div class="flex items-center gap-3">${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="text-xs text-teal-600 flex items-center hover:underline"><i data-lucide="download" class="w-3 h-3 ml-1"></i>دانلود</a>`:''}${canEdit() ? `<button class="edit-document-btn text-amber-600 hover:text-amber-800" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-document-btn text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`:''}</div></div>`).join('') || '<p class="text-sm text-slate-500">مدرکی ثبت نشده است.</p>'}</div></div></div>
+                            <div id="tab-overview" class="profile-tab-content active"></div>
+                            <div id="tab-performance" class="profile-tab-content"></div>
+                            <div id="tab-career" class="profile-tab-content"></div>
+                            <div id="tab-contracts" class="profile-tab-content"></div>
+                            <div id="tab-personal" class="profile-tab-content"></div>
                         </div>
                     </div>
                 </div>
             </div>
         `;
-        openModal(mainModal, mainModalContainer); 
+        openModal(mainModal, mainModalContainer);
         if (emp.engagementScore != null) {
             renderEngagementGauge('engagementGaugeProfile', emp.engagementScore);
         }
