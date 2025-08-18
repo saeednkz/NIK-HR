@@ -15,71 +15,85 @@
     <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
-    <style>
-        :root {
-            --color-primary: #14b8a6; /* Teal 500 */
-            --color-primary-light: #f0fdfa; /* Teal 50 */
-            --color-accent: #6366f1; /* Indigo 500 */
-            --color-text-primary: #1e293b; /* Slate 800 */
-            --color-text-secondary: #64748b; /* Slate 500 */
-            --color-bg: #f8fafc; /* Slate 50 */
-            --color-surface: #ffffff;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-        }
-        .sidebar {
-            background-color: var(--color-surface);
-            border-left: 1px solid #e2e8f0;
-            box-shadow: var(--shadow-md);
-        }
-        .sidebar-item {
-            color: var(--color-text-secondary);
-            transition: all 0.2s ease-in-out;
-            border-right: 3px solid transparent;
-            margin-right: -8px;
-            padding-right: 11px;
-        }
-        .sidebar-item.active, .sidebar-item:hover {
-            color: var(--color-primary);
-            background-color: var(--color-primary-light);
-            border-right-color: var(--color-primary);
-        }
-        .card {
-            background-color: var(--color-surface);
-            border-radius: 0.75rem;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid #e2e8f0;
-            transition: box-shadow 0.2s ease-in-out;
-        }
-        .card:hover {
-            box-shadow: var(--shadow-md);
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .progress-bar { background-color: #e2e8f0; border-radius: 9999px; overflow: hidden; height: 0.5rem; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(to right, var(--color-primary), var(--color-accent)); border-radius: 9999px; transition: width 0.5s ease-in-out; }
-        #loading-overlay { position: fixed; inset: 0; background-color: rgba(248, 250, 252, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-        .spinner { width: 56px; height: 56px; border: 6px solid var(--color-primary-light); border-top: 6px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .profile-tab { cursor: pointer; padding: 8px 16px; border-bottom: 2px solid transparent; transition: all 0.2s; color: var(--color-text-secondary); }
-        .profile-tab.active, .profile-tab:hover { border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
-        .profile-tab-content { display: none; }
-        .profile-tab-content.active { display: block; }
-        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { display: flex; align-items: center; padding: 12px 20px; border-radius: 8px; box-shadow: var(--shadow-lg); color: white; opacity: 0; transform: translateY(20px); animation: slideUp 0.5s forwards, fadeOutToast 0.5s 4.5s forwards; }
-        .toast.success { background: linear-gradient(to right, #10b981, #14b8a6); }
-        .toast.error { background: linear-gradient(to right, #f43f5e, #e11d48); }
-        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOutToast { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
-    </style>
+<style>
+    /* New modern, minimal color palette */
+    :root {
+        --color-primary: #3b82f6; /* Blue 500 */
+        --color-primary-light: #eff6ff; /* Blue 50 */
+        --color-accent: #6366f1; /* Indigo 500 */
+        --color-text-primary: #1e293b; /* Slate 800 */
+        --color-text-secondary: #6b7280; /* Gray 500 */
+        --color-bg: #f9fafb; /* Gray 50 */
+        --color-surface: #ffffff;
+        --color-border: #e5e7eb; /* Gray 200 */
+        --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    body {
+        font-family: 'Vazirmatn', sans-serif;
+        background-color: var(--color-bg);
+        color: var(--color-text-primary);
+        line-height: 1.6;
+    }
+    
+    .sidebar {
+        background-color: var(--color-surface);
+        border-left: 1px solid var(--color-border);
+        box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-item {
+        color: var(--color-text-secondary);
+        transition: all 0.2s ease-in-out;
+        border-right: 3px solid transparent;
+        margin-right: -8px;
+        padding-right: 11px;
+    }
+
+    .sidebar-item.active, .sidebar-item:hover {
+        color: var(--color-primary);
+        background-color: var(--color-primary-light);
+        border-right-color: var(--color-primary);
+    }
+    
+    .card {
+        background-color: var(--color-surface);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--color-border);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .progress-bar { background-color: #e2e8f0; border-radius: 9999px; overflow: hidden; height: 0.5rem; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(to right, var(--color-primary), var(--color-accent)); border-radius: 9999px; transition: width 0.5s ease-in-out; }
+    
+    #loading-overlay { position: fixed; inset: 0; background-color: rgba(248, 250, 252, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .spinner { width: 56px; height: 56px; border: 6px solid var(--color-primary-light); border-top: 6px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .profile-tab { cursor: pointer; padding: 12px 20px; border-bottom: 2px solid transparent; transition: all 0.2s; color: var(--color-text-secondary); }
+    .profile-tab.active, .profile-tab:hover { border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
+    .profile-tab-content { display: none; }
+    .profile-tab-content.active { display: block; }
+
+    #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+    .toast { display: flex; align-items: center; padding: 12px 20px; border-radius: 8px; box-shadow: var(--shadow-lg); color: white; opacity: 0; transform: translateY(20px); animation: slideUp 0.5s forwards, fadeOutToast 0.5s 4.5s forwards; }
+    .toast.success { background: linear-gradient(to right, #22c55e, #10b981); }
+    .toast.error { background: linear-gradient(to right, #f43f5e, #e11d48); }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeOutToast { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
+</style>
 </head>
 <body class="bg-slate-50">
 
@@ -764,193 +778,193 @@ const calculateAndApplyAnalytics = () => {
         // --- PAGE TEMPLATES & RENDERING ---
         const mainContent = document.getElementById('main-content');
         
-     const pages = {
- dashboard: () => {
-            calculateDashboardMetrics();
-            const metrics = state.dashboardMetrics;
-            if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
-            
-            const highRiskEmployees = state.employees
-                .filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60)
-                .sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
+const pages = {
+    dashboard: () => {
+        calculateDashboardMetrics();
+        const metrics = state.dashboardMetrics;
+        if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
+        
+        const highRiskEmployees = state.employees
+            .filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60)
+            .sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
 
-            const highRiskHtml = highRiskEmployees.length > 0 
-                ? highRiskEmployees.map(emp => {
-                    const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
-                    return `<div class="bg-red-50 p-3 rounded-md">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div>
-                                        <div><p class="text-sm font-semibold text-red-800">${emp.name}</p></div>
-                                    </div>
-                                    <span class="text-lg font-bold text-red-600">${emp.attritionRisk.score}%</span>
-                                </div>
-                                <div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div>
-                            </div>`
-                }).join('') 
-                : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
-
-            return `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد استراتژیک</h1>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">تعداد کل پرسنل</p><p class="text-2xl font-bold text-gray-800">${metrics.totalEmployees}</p></div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-gray-800">${metrics.retentionRate}%</p></div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
-                    </div>
-                     <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-purple-100 p-3 rounded-full mr-4"><i data-lucide="recycle" class="text-purple-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">جابجایی داخلی</p><p class="text-2xl font-bold text-gray-800">${metrics.internalMobilityRate}%</p></div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
-                        <div id="remindersList" class="space-y-4 mb-4 max-h-48 overflow-y-auto pr-2">${renderAllReminders()}</div>
-                        ${canEdit() ? `<div class="border-t pt-4">
-                            <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
-                                <input type="text" id="reminderDate" class="p-2 border rounded-md text-sm">
-                                <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
+        const highRiskHtml = highRiskEmployees.length > 0 
+            ? highRiskEmployees.map(emp => {
+                const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
+                return `<div class="bg-red-50 p-3 rounded-md">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div>
+                                <div><p class="text-sm font-semibold text-red-800">${emp.name}</p></div>
                             </div>
-                        </div>` : ''}
-                    </div>
-                    <div class="space-y-6">
-                        <div class="card bg-white p-6 rounded-lg shadow-md">
-                            <p class="text-gray-500 text-sm flex items-center">امتیاز مشارکت کارکنان <i data-lucide="heart-pulse" class="mr-2 text-green-500"></i></p>
-                            <div class="relative w-40 h-20 mx-auto mt-2">
-                                <canvas id="engagementGaugeDashboard"></canvas>
-                                <div class="absolute inset-0 flex items-center justify-center -bottom-4">
-                                    <span class="text-3xl font-bold text-green-600">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</span>
-                                </div>
+                            <span class="text-lg font-bold text-red-600">${emp.attritionRisk.score}%</span>
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div>
+                    </div>`
+            }).join('') 
+            : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
+
+        return `
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد استراتژیک</h1>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="card bg-white p-6 rounded-xl shadow-md flex items-center">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
+                    <div><p class="text-gray-500 text-sm">تعداد کل پرسنل</p><p class="text-2xl font-bold text-gray-800">${metrics.totalEmployees}</p></div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md flex items-center">
+                    <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div>
+                    <div><p class="text-gray-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-gray-800">${metrics.retentionRate}%</p></div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md flex items-center">
+                    <div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div>
+                    <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md flex items-center">
+                    <div class="bg-purple-100 p-3 rounded-full mr-4"><i data-lucide="recycle" class="text-purple-600"></i></div>
+                    <div><p class="text-gray-500 text-sm">جابجایی داخلی</p><p class="text-2xl font-bold text-gray-800">${metrics.internalMobilityRate}%</p></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="card bg-white p-6 rounded-xl shadow-md lg:col-span-2">
+                    <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
+                    <div id="remindersList" class="space-y-4 mb-4 max-h-48 overflow-y-auto pr-2">${renderAllReminders()}</div>
+                    ${canEdit() ? `<div class="border-t pt-4">
+                        <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
+                            <input type="text" id="reminderDate" class="p-2 border rounded-md text-sm">
+                            <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
+                        </div>
+                    </div>` : ''}
+                </div>
+                <div class="space-y-6">
+                    <div class="card bg-white p-6 rounded-xl shadow-md">
+                        <p class="text-gray-500 text-sm flex items-center">امتیاز مشارکت کارکنان <i data-lucide="heart-pulse" class="mr-2 text-green-500"></i></p>
+                        <div class="relative w-40 h-20 mx-auto mt-2">
+                            <canvas id="engagementGaugeDashboard"></canvas>
+                            <div class="absolute inset-0 flex items-center justify-center -bottom-4">
+                                <span class="text-3xl font-bold text-green-600">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</span>
                             </div>
                         </div>
-                        <div class="card bg-white p-6 rounded-lg shadow-md">
-                            <p class="text-gray-500 text-sm flex items-center">ریسک خروج استعدادهای کلیدی <i data-lucide="shield-alert" class="mr-2 text-red-500"></i></p>
-                            <div class="mt-3 space-y-2">${highRiskHtml}</div>
-                        </div>
+                    </div>
+                    <div class="card bg-white p-6 rounded-xl shadow-md">
+                        <p class="text-gray-500 text-sm flex items-center">ریسک خروج استعدادهای کلیدی <i data-lucide="shield-alert" class="mr-2 text-red-500"></i></p>
+                        <div class="mt-3 space-y-2">${highRiskHtml}</div>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع استعدادها</h3><div class="relative h-64"><canvas id="nineBoxChart"></canvas></div></div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع دپارتمان‌ها</h3><div class="relative h-64"><canvas id="departmentDistributionChart"></canvas></div></div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">ترکیب جنسیتی</h3><div class="relative h-64"><canvas id="genderCompositionChart"></canvas></div></div>
-                </div>`;
-        },
-        talent: () => {
-            if(state.employees.length === 0) return `<div class="text-center p-10 card"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-indigo-500 text-white py-2 px-5 rounded-lg hover:bg-indigo-600 shadow-md transition">افزودن کارمند جدید</button>` : ''}</div>`;
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card bg-white p-6 rounded-xl shadow-md"><h3 class="font-semibold mb-4">توزیع استعدادها</h3><div class="relative h-64"><canvas id="nineBoxChart"></canvas></div></div>
+                <div class="card bg-white p-6 rounded-xl shadow-md"><h3 class="font-semibold mb-4">توزیع دپارتمان‌ها</h3><div class="relative h-64"><canvas id="departmentDistributionChart"></canvas></div></div>
+                <div class="card bg-white p-6 rounded-xl shadow-md"><h3 class="font-semibold mb-4">ترکیب جنسیتی</h3><div class="relative h-64"><canvas id="genderCompositionChart"></canvas></div></div>
+            </div>`;
+    },
+    talent: () => {
+        if(state.employees.length === 0) return `<div class="text-center p-10 card"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-md transition">افزودن کارمند جدید</button>` : ''}</div>`;
+        return `
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">مدیریت استعدادها</h1>
+                ${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}
+            </div>
+            <div class="card">
+                <div class="flex flex-col md:flex-row justify-between items-center p-4 gap-4 border-b border-slate-200">
+                    <div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو بر اساس نام یا کد پرسنلی..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i></div>
+                    <div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].filter(Boolean).map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-right text-slate-500">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 font-medium">نام</th>
+                                <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
+                                <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
+                                <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
+                                <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="pagination-container" class="p-4 flex justify-center border-t border-slate-200"></div>
+            </div>`;
+    },
+    organization: () => {
+        if (state.teams.length === 0) return `<div class="text-center p-10 card"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-md transition">افزودن تیم جدید</button>` : ''}</div>`;
+        return `<div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => {
+            const leader = state.employees.find(e => e.id === team.leaderId);
             return `
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold text-slate-800">مدیریت استعدادها</h1>
-                    ${canEdit() ? `<button id="add-employee-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}
-                </div>
-                <div class="card">
-                    <div class="flex flex-col md:flex-row justify-between items-center p-4 gap-4 border-b border-slate-200">
-                        <div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو بر اساس نام یا کد پرسنلی..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i></div>
-                        <div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].filter(Boolean).map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-right text-slate-500">
-                            <thead class="text-xs text-slate-700 uppercase bg-slate-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 font-medium">نام</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
-                                    <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="employeeTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div id="pagination-container" class="p-4 flex justify-center border-t border-slate-200"></div>
-                </div>`;
-        },
-        organization: () => {
-             if (state.teams.length === 0) return `<div class="text-center p-10 card"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-indigo-500 text-white py-2 px-5 rounded-lg hover:bg-indigo-600 shadow-md transition">افزودن تیم جدید</button>` : ''}</div>`;
-            return `<div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => {
-                const leader = state.employees.find(e => e.id === team.leaderId);
-                return `
-                <div class="card p-6 flex flex-col">
-                    <div class="flex items-center mb-4">
-                        <img src="${team.avatar}" alt="${team.name}" class="w-16 h-16 rounded-full object-cover mr-4 border-2 border-teal-100">
-                        <div>
-                            <h3 class="text-xl font-bold text-teal-700">${team.name}</h3>
-                            <p class="text-slate-600 text-sm">رهبر تیم: ${leader ? leader.name : 'نامشخص'}</p>
-                        </div>
-                    </div>
-                    <p class="text-slate-600 mb-4 flex-grow text-sm">ماموریت: ${team.mission || 'ثبت نشده'}</p>
-                    <div class="mb-4">
-                        <p class="font-semibold text-sm mb-2 text-slate-700">اعضای تیم:</p>
-                        <div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => {
-                            const member = state.employees.find(e => e.id === memberId);
-                            return member ? `<div class="w-10 h-10 border-2 border-white rounded-full overflow-hidden shrink-0 bg-gray-200"><img class="w-full h-full object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}"></div>` : '';
-                        }).join('')}</div>
-                    </div>
-                    <div class="flex gap-2 mt-auto border-t border-slate-200 pt-4">
-                        <button class="view-team-profile-btn w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 shadow-sm transition" data-team-id="${team.firestoreId}">مشاهده</button>
-                        ${isAdmin() ? `<button class="delete-team-btn p-2 bg-rose-500 text-white rounded-md hover:bg-rose-600 shadow-sm transition" data-team-id="${team.firestoreId}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
-                    </div>
-                </div>`
-            }).join('')}</div>`;
-        },
-        surveys: () => {
-            return `
-                <h1 class="text-3xl font-bold text-slate-800 mb-8">مدیریت نظرسنجی‌ها</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    ${Object.values(surveyTemplates).map(survey => `
-                        <div class="card p-6 flex flex-col">
-                            <h3 class="text-xl font-bold text-teal-700 mb-2">${survey.title}</h3>
-                            <p class="text-slate-600 mb-4 text-sm flex-grow">${survey.description}</p>
-                            <button class="create-survey-link-btn mt-auto w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 shadow-md transition flex items-center justify-center gap-2" data-survey-id="${survey.id}">
-                                <i data-lucide="link"></i>ایجاد لینک
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        },
-        expenses: () => {
-            const cardsHtml = state.pettyCashCards.map(card => `
-                <div class="card p-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-teal-700">${card.name}</p>
-                            <p class="text-sm text-slate-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                             ${canEdit() ? `<button class="charge-card-btn text-green-600 hover:text-green-800" data-id="${card.firestoreId}" data-name="${card.name}" title="شارژ کارت"><i data-lucide="plus-circle"></i></button>` : ''}
-                             ${isAdmin() ? `<button class="delete-card-btn text-rose-500 hover:text-rose-700" data-id="${card.firestoreId}" title="حذف کارت"><i data-lucide="trash-2"></i></button>` : ''}
-                        </div>
+            <div class="card p-6 flex flex-col">
+                <div class="flex items-center mb-4">
+                    <img src="${team.avatar}" alt="${team.name}" class="w-16 h-16 rounded-full object-cover mr-4 border-2 border-blue-100">
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-700">${team.name}</h3>
+                        <p class="text-slate-600 text-sm">رهبر تیم: ${leader ? leader.name : 'نامشخص'}</p>
                     </div>
                 </div>
-            `).join('');
+                <p class="text-slate-600 mb-4 flex-grow text-sm">ماموریت: ${team.mission || 'ثبت نشده'}</p>
+                <div class="mb-4">
+                    <p class="font-semibold text-sm mb-2 text-slate-700">اعضای تیم:</p>
+                    <div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => {
+                        const member = state.employees.find(e => e.id === memberId);
+                        return member ? `<div class="w-10 h-10 border-2 border-white rounded-full overflow-hidden shrink-0 bg-gray-200"><img class="w-full h-full object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}"></div>` : '';
+                    }).join('')}</div>
+                </div>
+                <div class="flex gap-2 mt-auto border-t border-slate-200 pt-4">
+                    <button class="view-team-profile-btn w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 shadow-sm transition" data-team-id="${team.firestoreId}">مشاهده</button>
+                    ${isAdmin() ? `<button class="delete-team-btn p-2 bg-rose-500 text-white rounded-md hover:bg-rose-600 shadow-sm transition" data-team-id="${team.firestoreId}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
+                </div>
+            </div>`
+        }).join('')}</div>`;
+    },
+    surveys: () => {
+        return `
+            <h1 class="text-3xl font-bold text-slate-800 mb-8">مدیریت نظرسنجی‌ها</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${Object.values(surveyTemplates).map(survey => `
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-xl font-bold text-blue-700 mb-2">${survey.title}</h3>
+                        <p class="text-slate-600 mb-4 text-sm flex-grow">${survey.description}</p>
+                        <button class="create-survey-link-btn mt-auto w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2" data-survey-id="${survey.id}">
+                            <i data-lucide="link"></i>ایجاد لینک
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    },
+    expenses: () => {
+        const cardsHtml = state.pettyCashCards.map(card => `
+            <div class="card p-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-blue-700">${card.name}</p>
+                        <p class="text-sm text-slate-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                            ${canEdit() ? `<button class="charge-card-btn text-green-600 hover:text-green-800" data-id="${card.firestoreId}" data-name="${card.name}" title="شارژ کارت"><i data-lucide="plus-circle"></i></button>` : ''}
+                            ${isAdmin() ? `<button class="delete-card-btn text-rose-500 hover:text-rose-700" data-id="${card.firestoreId}" title="حذف کارت"><i data-lucide="trash-2"></i></button>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
 
-            const expensesRows = state.expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(exp => `
-                <tr class="border-b border-slate-200 hover:bg-slate-50">
-                    <td class="px-6 py-4">${toPersianDate(exp.date)}</td>
-                    <td class="px-6 py-4">${exp.item}</td>
-                    <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
-                    <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
+        const expensesRows = state.expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(exp => `
+            <tr class="border-b border-slate-200 hover:bg-slate-50">
+                <td class="px-6 py-4">${toPersianDate(exp.date)}</td>
+                <td class="px-6 py-4">${exp.item}</td>
+                <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
+                <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
+                <td class="px-6 py-4">
+                    ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> مشاهده</a>` : '-'}
+                </td>
                     <td class="px-6 py-4">
-                        ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-teal-600 hover:underline flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> مشاهده</a>` : '-'}
-                    </td>
-                     <td class="px-6 py-4">
                         ${canEdit() ? `<button class="delete-expense-btn text-rose-600 hover:text-rose-800" data-id="${exp.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
                     </td>
-                </tr>
-            `).join('');
-            
-            const chargeHistoryRows = state.chargeHistory.sort((a,b) => b.chargedAt?.toDate() - a.chargedAt?.toDate()).map(log => `
-                 <tr class="border-b border-slate-200 hover:bg-slate-50">
+            </tr>
+        `).join('');
+        
+        const chargeHistoryRows = state.chargeHistory.sort((a,b) => b.chargedAt?.toDate() - a.chargedAt?.toDate()).map(log => `
+                <tr class="border-b border-slate-200 hover:bg-slate-50">
                     <td class="px-6 py-4">${toPersianDate(log.chargedAt)}</td>
                     <td class="px-6 py-4">${log.cardName}</td>
                     <td class="px-6 py-4 font-mono text-green-600 font-semibold">+${log.amount.toLocaleString('fa-IR')}</td>
@@ -959,129 +973,129 @@ const calculateAndApplyAnalytics = () => {
                         ${canEdit() ? `<button class="delete-charge-log-btn text-rose-600 hover:text-rose-800" data-id="${log.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
                     </td>
                 </tr>
-            `).join('');
-            
-            const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        `).join('');
+        
+        const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-            return `
-                <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">مدیریت هزینه‌ها</h1></div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    <div class="lg:col-span-1 card p-6">
-                        <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
-                        <div class="space-y-3 mb-4" id="cards-list">${cardsHtml || '<p class="text-sm text-slate-500">کارتی ثبت نشده است.</p>'}</div>
-                        ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 shadow-md">افزودن کارت جدید</button>` : ''}
-                    </div>
-                    <div class="lg:col-span-2 card p-6">
-                         <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">لیست هزینه‌ها</h3>${canEdit() ? `<button id="add-expense-btn" class="bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600 shadow-md">افزودن هزینه</button>` : ''}</div>
+        return `
+            <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">مدیریت هزینه‌ها</h1></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="lg:col-span-1 card p-6">
+                    <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
+                    <div class="space-y-3 mb-4" id="cards-list">${cardsHtml || '<p class="text-sm text-slate-500">کارتی ثبت نشده است.</p>'}</div>
+                    ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md">افزودن کارت جدید</button>` : ''}
+                </div>
+                <div class="lg:col-span-2 card p-6">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">لیست هزینه‌ها</h3>${canEdit() ? `<button id="add-expense-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md">افزودن هزینه</button>` : ''}</div>
                         <div class="overflow-x-auto max-h-96"><table class="w-full text-sm text-right text-slate-500"><thead class="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0"><tr><th scope="col" class="px-6 py-3">تاریخ</th><th scope="col" class="px-6 py-3">مورد</th><th scope="col" class="px-6 py-3">کارت</th><th scope="col" class="px-6 py-3">مبلغ (تومان)</th><th scope="col" class="px-6 py-3">فاکتور</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody>${expensesRows || '<tr><td colspan="6" class="text-center p-4">هزینه‌ای ثبت نشده است.</td></tr>'}</tbody><tfoot class="bg-slate-100 font-semibold sticky bottom-0"><tr><td colspan="3" class="px-6 py-3 text-left">جمع کل هزینه‌ها:</td><td colspan="3" class="px-6 py-3 font-mono">${totalExpenses.toLocaleString('fa-IR')} تومان</td></tr></tfoot></table></div>
+                </div>
+            </div>
+            <div class="card p-6">
+                    <h3 class="font-semibold mb-4">تاریخچه شارژ کارت‌ها</h3>
+                    <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-right text-slate-500"><thead class="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0"><tr><th scope="col" class="px-6 py-3">تاریخ شارژ</th><th scope="col" class="px-6 py-3">نام کارت</th><th scope="col" class="px-6 py-3">مبلغ شارژ (تومان)</th><th scope="col" class="px-6 py-3">کاربر</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody>${chargeHistoryRows || '<tr><td colspan="5" class="text-center p-4">سابقه‌ای برای شارژ کارت‌ها وجود ندارد.</td></tr>'}</tbody></table></div>
+            </div>
+        `;
+    },
+    analytics: () => {
+        const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
+            ?.sort((a, b) => b.score - a.score)
+            .map(cat => `
+                <div>
+                    <div class="flex justify-between items-center mb-1 text-sm">
+                        <span class="text-gray-600">${cat.name}</span>
+                        <span class="font-medium text-blue-600">${cat.score}%</span>
+                    </div>
+                    <div class="progress-bar w-full">
+                        <div class="progress-bar-fill" style="width: ${cat.score}%;"></div>
+                    </div>
+                </div>
+            `).join('') || '<p class="text-sm text-gray-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد.</p>';
+
+        return `
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">تحلیل هوشمند</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="pie-chart" class="ml-2 text-blue-500"></i>تحلیل مشارکت سازمانی</h3>
+                    <div class="space-y-4">
+                        ${engagementBreakdownHtml}
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="shield-alert" class="ml-2 text-red-500"></i>نقاط داغ ریسک خروج</h3>
+                    <div id="attrition-hotspot-list" class="space-y-3 max-h-80 overflow-y-auto"></div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="heart-pulse" class="ml-2 text-green-500"></i>وضعیت سلامت تیم‌ها</h3>
+                    <div id="team-health-dashboard" class="space-y-3"></div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="file-search" class="ml-2 text-indigo-500"></i>تحلیل شکاف مهارتی</h3>
+                    <div class="flex flex-col sm:flex-row gap-2 items-center">
+                        <select id="skill-team-select" class="w-full p-2 border border-slate-300 rounded-lg">
+                            <option value="all">کل سازمان</option>
+                            ${state.teams.map(t => `<option value="${t.firestoreId}">${t.name}</option>`).join('')}
+                        </select>
+                        <input type="text" id="skill-search-input" placeholder="مهارت مورد نظر (مثلا: Python)" class="w-full p-2 border border-slate-300 rounded-lg">
+                        <button id="find-skill-gap-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 w-full sm:w-auto">جستجو</button>
+                    </div>
+                    <div id="skill-gap-results" class="mt-4 p-4 bg-slate-50 rounded-md min-h-[5rem]">
+                        <p class="text-sm text-slate-500">برای شروع، یک تیم و مهارت را انتخاب کنید.</p>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-xl shadow-md lg:col-span-2">
+                    <h3 class="font-semibold mb-4">ماتریس استعداد ۹-جعبه‌ای</h3>
+                    <div id="nine-box-grid-container" class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white"></div>
+                </div>
+            </div>
+        `;
+    },
+    settings: () => {
+        if (!isAdmin()) {
+            return `<div class="text-center p-10 card"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">دسترسی غیر مجاز</h2><p class="mt-2 text-slate-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
+        }
+        const usersHtml = state.users.map(user => `
+            <tr class="border-b border-slate-200">
+                <td class="px-6 py-4">${user.email}</td>
+                <td class="px-6 py-4">${toPersianDate(user.createdAt)}</td>
+                <td class="px-6 py-4">
+                    <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-slate-50" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>Editor</option>
+                        <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>Viewer</option>
+                    </select>
+                </td>
+            </tr>
+        `).join('');
+        const competenciesHtml = state.competencies.map(c => `
+            <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                <span>${c.name}</span>
+                <button class="delete-competency-btn text-rose-500 hover:text-rose-700" data-id="${c.firestoreId}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+        `).join('');
+        return `
+            <h1 class="text-3xl font-bold text-slate-800 mb-8">تنظیمات سیستم</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6">
+                        <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">مدیریت کاربران</h3><button id="add-user-btn" class="bg-blue-600 text-white py-1 px-3 rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1"><i data-lucide="plus" class="w-4 h-4"></i> افزودن</button></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right text-slate-500">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-50"><tr><th scope="col" class="px-6 py-3">ایمیل کاربر</th><th scope="col" class="px-6 py-3">تاریخ عضویت</th><th scope="col" class="px-6 py-3">سطح دسترسی</th></tr></thead>
+                            <tbody>${usersHtml}</tbody>
+                        </table>
                     </div>
                 </div>
                 <div class="card p-6">
-                     <h3 class="font-semibold mb-4">تاریخچه شارژ کارت‌ها</h3>
-                     <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-right text-slate-500"><thead class="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0"><tr><th scope="col" class="px-6 py-3">تاریخ شارژ</th><th scope="col" class="px-6 py-3">نام کارت</th><th scope="col" class="px-6 py-3">مبلغ شارژ (تومان)</th><th scope="col" class="px-6 py-3">کاربر</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody>${chargeHistoryRows || '<tr><td colspan="5" class="text-center p-4">سابقه‌ای برای شارژ کارت‌ها وجود ندارد.</td></tr>'}</tbody></table></div>
+                    <h3 class="font-semibold mb-4">مدیریت شایستگی‌های سازمان</h3>
+                    <div id="competencies-list" class="space-y-2 mb-4 max-h-60 overflow-y-auto">${competenciesHtml || '<p class="text-sm text-slate-500">هنوز شایستگی‌ای تعریف نشده است.</p>'}</div>
+                    <form id="add-competency-form" class="flex gap-2">
+                        <input type="text" id="new-competency-name" placeholder="نام شایستگی جدید..." class="w-full p-2 border border-slate-300 rounded-lg text-sm" required>
+                        <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">افزودن</button>
+                    </form>
                 </div>
-            `;
-        },
-analytics: () => {
-            const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
-                ?.sort((a, b) => b.score - a.score)
-                .map(cat => `
-                    <div>
-                        <div class="flex justify-between items-center mb-1 text-sm">
-                            <span class="text-gray-600">${cat.name}</span>
-                            <span class="font-medium text-blue-600">${cat.score}%</span>
-                        </div>
-                        <div class="progress-bar w-full">
-                            <div class="progress-bar-fill" style="width: ${cat.score}%;"></div>
-                        </div>
-                    </div>
-                `).join('') || '<p class="text-sm text-gray-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد.</p>';
-
-            return `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">تحلیل هوشمند</h1>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="card bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="pie-chart" class="ml-2 text-blue-500"></i>تحلیل مشارکت سازمانی</h3>
-                        <div class="space-y-4">
-                            ${engagementBreakdownHtml}
-                        </div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="shield-alert" class="ml-2 text-red-500"></i>نقاط داغ ریسک خروج</h3>
-                        <div id="attrition-hotspot-list" class="space-y-3 max-h-80 overflow-y-auto"></div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="heart-pulse" class="ml-2 text-green-500"></i>وضعیت سلامت تیم‌ها</h3>
-                        <div id="team-health-dashboard" class="space-y-3"></div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="file-search" class="ml-2 text-indigo-500"></i>تحلیل شکاف مهارتی</h3>
-                        <div class="flex flex-col sm:flex-row gap-2 items-center">
-                            <select id="skill-team-select" class="w-full p-2 border border-slate-300 rounded-lg">
-                                <option value="all">کل سازمان</option>
-                                ${state.teams.map(t => `<option value="${t.firestoreId}">${t.name}</option>`).join('')}
-                            </select>
-                            <input type="text" id="skill-search-input" placeholder="مهارت مورد نظر (مثلا: Python)" class="w-full p-2 border border-slate-300 rounded-lg">
-                            <button id="find-skill-gap-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 w-full sm:w-auto">جستجو</button>
-                        </div>
-                        <div id="skill-gap-results" class="mt-4 p-4 bg-slate-50 rounded-md min-h-[5rem]">
-                            <p class="text-sm text-slate-500">برای شروع، یک تیم و مهارت را انتخاب کنید.</p>
-                        </div>
-                    </div>
-                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
-                        <h3 class="font-semibold mb-4">ماتریس استعداد ۹-جعبه‌ای</h3>
-                        <div id="nine-box-grid-container" class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white"></div>
-                    </div>
-                </div>
-            `;
-        },
-        settings: () => {
-            if (!isAdmin()) {
-                return `<div class="text-center p-10 card"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">دسترسی غیر مجاز</h2><p class="mt-2 text-slate-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
-            }
-            const usersHtml = state.users.map(user => `
-                <tr class="border-b border-slate-200">
-                    <td class="px-6 py-4">${user.email}</td>
-                    <td class="px-6 py-4">${toPersianDate(user.createdAt)}</td>
-                    <td class="px-6 py-4">
-                        <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-slate-50" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
-                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-                            <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>Editor</option>
-                            <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>Viewer</option>
-                        </select>
-                    </td>
-                </tr>
-            `).join('');
-            const competenciesHtml = state.competencies.map(c => `
-                <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                    <span>${c.name}</span>
-                    <button class="delete-competency-btn text-rose-500 hover:text-rose-700" data-id="${c.firestoreId}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>
-            `).join('');
-            return `
-                <h1 class="text-3xl font-bold text-slate-800 mb-8">تنظیمات سیستم</h1>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="card p-6">
-                         <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">مدیریت کاربران</h3><button id="add-user-btn" class="bg-indigo-500 text-white py-1 px-3 rounded-lg hover:bg-indigo-600 text-sm flex items-center gap-1"><i data-lucide="plus" class="w-4 h-4"></i> افزودن</button></div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-right text-slate-500">
-                                <thead class="text-xs text-slate-700 uppercase bg-slate-50"><tr><th scope="col" class="px-6 py-3">ایمیل کاربر</th><th scope="col" class="px-6 py-3">تاریخ عضویت</th><th scope="col" class="px-6 py-3">سطح دسترسی</th></tr></thead>
-                                <tbody>${usersHtml}</tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="card p-6">
-                        <h3 class="font-semibold mb-4">مدیریت شایستگی‌های سازمان</h3>
-                        <div id="competencies-list" class="space-y-2 mb-4 max-h-60 overflow-y-auto">${competenciesHtml || '<p class="text-sm text-slate-500">هنوز شایستگی‌ای تعریف نشده است.</p>'}</div>
-                        <form id="add-competency-form" class="flex gap-2">
-                            <input type="text" id="new-competency-name" placeholder="نام شایستگی جدید..." class="w-full p-2 border border-slate-300 rounded-lg text-sm" required>
-                            <button type="submit" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600">افزودن</button>
-                        </form>
-                    </div>
-                </div>
-            `;
-        },
-    };
+            </div>
+        `;
+    },
+};
         
 
         // --- NAVIGATION & ROUTING ---
@@ -2026,7 +2040,7 @@ const showEmployeeForm = (employeeId = null) => {
                     </div>
                 </div>
                 <div class="pt-4 flex justify-end">
-                    <button type="submit" class="bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600 shadow-md transition">ذخیره</button>
+                    <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-600 shadow-md transition">ذخیره</button>
                 </div>
             </form>
         `;
@@ -2112,255 +2126,255 @@ const showEmployeeForm = (employeeId = null) => {
         });
     };
 const viewEmployeeProfile = (employeeId) => {
-        const emp = state.employees.find(e => e.firestoreId === employeeId); if (!emp) return;
-        const analysis = generateSmartAnalysis(emp);
-        const team = state.teams.find(t => t.memberIds?.includes(emp.id));
-        const manager = team ? state.employees.find(e => e.id === team.leaderId) : null;
-        const latestContract = emp.contractHistory && emp.contractHistory.length > 0 ? emp.contractHistory.slice().sort((a, b) => new Date(b.startDate) - new Date(a.startDate))[0] : null;
-
-        modalTitle.innerText = 'پروفایل ۳۶۰ درجه: ' + emp.name;
-        modalContent.innerHTML = `
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-1 space-y-6">
-                    <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
-                        <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
-                            <img src="${emp.avatar}" alt="${emp.name}" class="w-full h-full object-cover">
-                        </div>
-                        ${canEdit() ? `<div class="absolute top-2 left-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button id="change-avatar-btn" class="bg-white p-1.5 rounded-full shadow-md"><i data-lucide="camera" class="w-4 h-4"></i></button>
-                            <button id="delete-avatar-btn" class="bg-white p-1.5 rounded-full shadow-md"><i data-lucide="trash-2" class="w-4 h-4 text-red-600"></i></button>
-                        </div>` : ''}
-                        <div class="flex items-center justify-center gap-2">
-                            <h2 class="text-2xl font-bold text-slate-800">${emp.name}</h2>
-                            ${canEdit() ? `<button id="main-edit-employee-btn" class="p-1.5 text-slate-500 hover:text-teal-600" title="ویرایش اطلاعات اصلی"><i data-lucide="edit" class="w-5 h-5"></i></button>` : ''}
-                        </div>
-                        <p class="text-teal-600 font-semibold">${emp.jobTitle || 'بدون عنوان شغلی'}</p>
-                        <p class="text-sm text-slate-500">${emp.level || ''}</p>
-                        <span class="mt-2 inline-block px-3 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span>
+    const emp = state.employees.find(e => e.firestoreId === employeeId);
+    if (!emp) return;
+    const analysis = generateSmartAnalysis(emp);
+    const team = state.teams.find(t => t.memberIds?.includes(emp.id));
+    const manager = team ? state.employees.find(e => e.id === team.leaderId) : null;
+    
+    modalTitle.innerText = 'پروفایل ۳۶۰ درجه: ' + emp.name;
+    modalContent.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 space-y-6">
+                <div class="card p-6 bg-gray-50 rounded-xl text-center relative group">
+                    <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
+                        <img src="${emp.avatar}" alt="${emp.name}" class="w-full h-full object-cover">
                     </div>
-                    <div class="card p-4 bg-gray-50 rounded-lg">
-                        <h4 class="font-semibold mb-3 text-slate-700 flex items-center"><i data-lucide="heart-pulse" class="ml-2 w-5 h-5 text-green-500"></i>امتیاز مشارکت (Engagement)</h4>
-                        ${emp.engagementScore != null ? `
-                        <div class="relative w-40 h-20 mx-auto mt-2">
-                            <canvas id="engagementGaugeProfile"></canvas>
-                            <div class="absolute inset-0 flex items-center justify-center -bottom-4">
-                                <span class="text-3xl font-bold text-green-600">${emp.engagementScore}%</span>
+                    ${canEdit() ? `<div class="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button id="change-avatar-btn" class="bg-white p-2 rounded-full shadow-md text-slate-500 hover:text-blue-600"><i data-lucide="camera" class="w-4 h-4"></i></button>
+                        <button id="delete-avatar-btn" class="bg-white p-2 rounded-full shadow-md text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>` : ''}
+                    <div class="flex items-center justify-center gap-2">
+                        <h2 class="text-2xl font-bold text-slate-800">${emp.name}</h2>
+                        ${canEdit() ? `<button id="main-edit-employee-btn" class="p-1.5 text-slate-500 hover:text-blue-600" title="ویرایش اطلاعات اصلی"><i data-lucide="edit" class="w-5 h-5"></i></button>` : ''}
+                    </div>
+                    <p class="text-blue-600 font-semibold">${emp.jobTitle || 'بدون عنوان شغلی'}</p>
+                    <p class="text-sm text-slate-500">${emp.level || ''}</p>
+                    <span class="mt-2 inline-block px-3 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span>
+                </div>
+                <div class="card p-6 bg-gray-50 rounded-xl">
+                    <h4 class="font-semibold mb-4 text-slate-700 flex items-center"><i data-lucide="heart-pulse" class="ml-2 w-5 h-5 text-green-500"></i>امتیاز مشارکت (Engagement)</h4>
+                    ${emp.engagementScore != null ? `
+                    <div class="relative w-40 h-20 mx-auto mt-2">
+                        <canvas id="engagementGaugeProfile"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center -bottom-4">
+                            <span class="text-3xl font-bold text-green-600">${emp.engagementScore}%</span>
+                        </div>
+                    </div>
+                    ` : '<p class="text-sm text-slate-500 text-center">هنوز امتیازی ثبت نشده است.</p>'}
+                </div>
+                <div class="card p-6 bg-gray-50 rounded-xl">
+                    <h4 class="font-semibold mb-4 text-slate-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
+                    <div class="text-sm space-y-3">${Object.values(analysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('')}</div>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl shadow-md">
+                    <div class="border-b border-slate-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="performance" class="profile-tab shrink-0">عملکرد</button><button data-tab="career" class="profile-tab shrink-0">مسیر شغلی</button><button data-tab="contracts" class="profile-tab shrink-0">قراردادها</button><button data-tab="personal" class="profile-tab shrink-0">اطلاعات پرسنلی</button></nav></div>
+                    <div class="p-4">
+                        <div id="tab-overview" class="profile-tab-content active">
+                            <div class="space-y-4">
+                                <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                    <h4 class="font-semibold mb-3 text-slate-700 flex items-center">
+                                        <i data-lucide="info" class="ml-2 w-5 h-5 text-gray-500"></i>
+                                        اطلاعات اصلی
+                                    </h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-slate-600">
+                                        <p><strong>کد پرسنلی:</strong> ${emp.id}</p>
+                                        <p><strong>دپارتمان:</strong> ${emp.department || 'نامشخص'}</p>
+                                        <p><strong>مدیر:</strong> ${manager ? manager.name : 'نامشخص'}</p>
+                                        <p><strong>تاریخ استخدام:</strong> ${toPersianDate(emp.startDate)}</p>
+                                        <p><strong>وضعیت:</strong> <span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></p>
+                                    </div>
+                                </div>
+                                <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h4 class="font-semibold text-slate-700">
+                                            <i data-lucide="star" class="ml-2 w-5 h-5 text-amber-500"></i>
+                                            شایستگی‌های کلیدی
+                                        </h4>
+                                        ${canEdit() ? `<button id="edit-competencies-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>` : ''}
+                                    </div>
+                                    <div class="space-y-4">
+                                        ${renderCompetencyBars(emp.competencies)}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        ` : '<p class="text-sm text-slate-500 text-center">هنوز امتیازی ثبت نشده است.</p>'}
-                    </div>
-                    <div class="card p-4 bg-gray-50 rounded-lg">
-                        <h4 class="font-semibold mb-3 text-slate-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
-                        <div class="text-sm space-y-3">${Object.values(analysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('')}</div>
-                    </div>
-                </div>
-                
-                <div class="lg:col-span-2 space-y-6">
-                  <div class="bg-white rounded-lg shadow-md">
-                        <div class="border-b border-slate-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="performance" class="profile-tab shrink-0">عملکرد</button><button data-tab="career" class="profile-tab shrink-0">مسیر شغلی</button><button data-tab="contracts" class="profile-tab shrink-0">قراردادها</button><button data-tab="personal" class="profile-tab shrink-0">اطلاعات پرسنلی</button></nav></div>
-                        <div class="p-4">
-                    <div id="tab-overview" class="profile-tab-content active">
-    <div class="space-y-4">
-        <div class="card p-4 bg-gray-50 rounded-lg">
-            <h4 class="font-semibold mb-3 text-slate-700 flex items-center">
-                <i data-lucide="info" class="ml-2 w-5 h-5 text-gray-500"></i>
-                اطلاعات اصلی
-            </h4>
-            <div class="text-sm text-slate-600 space-y-2">
-                <p><strong>کد پرسنلی:</strong> ${emp.id}</p>
-                <p><strong>دپارتمان:</strong> ${emp.department || 'نامشخص'}</p>
-                <p><strong>مدیر:</strong> ${manager ? manager.name : 'نامشخص'}</p>
-                <p><strong>تاریخ استخدام:</strong> ${toPersianDate(emp.startDate)}</p>
-                <p><strong>وضعیت:</strong> ${emp.status}</p>
-            </div>
-        </div>
-        <div class="card p-4 bg-gray-50 rounded-lg">
-            <div class="flex justify-between items-center mb-3">
-                <h4 class="font-semibold text-slate-700">
-                    <i data-lucide="award" class="ml-2 w-5 h-5 text-amber-500"></i>
-                    شایستگی‌های کلیدی
-                </h4>
-                ${canEdit() ? `<button id="edit-competencies-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>` : ''}
-            </div>
-            <div class="space-y-4">
-                ${renderCompetencyBars(emp.competencies)}
-            </div>
-        </div>
-    </div>
-</div>
-<div id="tab-performance" class="profile-tab-content">
-    <div class="space-y-4">
-        <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-slate-700">
-                <i data-lucide="clipboard-check" class="ml-2 w-5 h-5 text-teal-600"></i>
-                سابقه ارزیابی عملکرد
-            </h4>
-            ${canEdit() ? `<button id="add-performance-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن</button>` : ''}
-        </div>
-        <div class="space-y-4">
-            ${(emp.performanceHistory && emp.performanceHistory.length > 0) ? emp.performanceHistory.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map((review, index) => `
-            <div class="card p-4 bg-white rounded-lg border border-slate-200">
-                <div class="flex justify-between items-center mb-2">
-                    <p class="font-bold text-slate-800">امتیاز کلی: <span class="text-lg text-teal-600">${review.overallScore}/5</span></p>
-                    ${canEdit() ? `<div class="flex gap-2">
-                        <button class="edit-performance-btn text-blue-500" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                        <button class="delete-performance-btn text-red-500" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </div>` : ''}
-                </div>
-                <p class="text-sm text-slate-500">تاریخ: ${toPersianDate(review.reviewDate)} | ارزیاب: ${review.reviewer}</p>
-                <div class="mt-4 border-t border-dashed pt-4">
-                    <p class="text-xs text-slate-700"><strong>نقاط قوت:</strong> ${review.strengths || '-'}</p>
-                    <p class="text-xs text-slate-700 mt-2"><strong>زمینه‌های بهبود:</strong> ${review.areasForImprovement || '-'}</p>
-                </div>
-            </div>`).join('') : '<p class="text-sm text-slate-500">هنوز سابقه ارزیابی عملکردی ثبت نشده است.</p>'}
-        </div>
-    </div>
-</div>
-<div id="tab-career" class="profile-tab-content">
-    <div class="space-y-4">
-        <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-slate-700">
-                <i data-lucide="briefcase" class="ml-2 w-5 h-5 text-indigo-600"></i>
-                مسیر شغلی و سابقه انضباطی
-            </h4>
-            <div class="flex gap-2">
-                ${canEdit() ? `<button id="add-career-path-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">رویداد شغلی</button>` : ''}
-                ${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">انضباطی</button>` : ''}
-            </div>
-        </div>
-        <div class="relative space-y-6 after:absolute after:inset-y-0 after:w-px after:bg-slate-300 after:right-4 after:top-2 after:-bottom-2">
-            ${(emp.careerPath && emp.careerPath.length > 0) ? emp.careerPath.sort((a,b) => new Date(a.date) - new Date(b.date)).map((item, index) => `
-            <div class="flex items-center space-x-3 space-x-reverse relative">
-                <div class="z-10 w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white shrink-0"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
-                <div class="flex-grow card p-4 border-l-4 border-indigo-500 shadow-sm relative">
-                    <p class="font-semibold text-sm">${item.title}</p>
-                    <p class="text-xs text-slate-500">${item.type} در ${item.department}</p>
-                    <p class="text-xs text-slate-400 mt-1">${toPersianDate(item.date)}</p>
-                    ${canEdit() ? `<button class="delete-career-path-btn absolute top-2 left-2 text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                </div>
-            </div>`).join('') : '<p class="text-sm text-slate-500">هنوز رویداد شغلی‌ای ثبت نشده است.</p>'}
-            ${(emp.disciplinaryHistory && emp.disciplinaryHistory.length > 0) ? emp.disciplinaryHistory.sort((a,b) => new Date(a.date) - new Date(b.date)).map((item, index) => `
-            <div class="flex items-center space-x-3 space-x-reverse relative">
-                <div class="z-10 w-8 h-8 rounded-full ${item.type === 'تشویق' ? 'bg-green-500' : 'bg-red-500'} flex items-center justify-center text-white shrink-0"><i data-lucide="${item.type === 'تشویق' ? 'star' : 'alert-circle'}" class="w-4 h-4"></i></div>
-                <div class="flex-grow card p-4 border-l-4 ${item.type === 'تشویق' ? 'border-green-500' : 'border-red-500'} shadow-sm relative">
-                    <p class="font-semibold text-sm">${item.type}</p>
-                    <p class="text-xs text-slate-500">${item.reason}</p>
-                    <p class="text-xs text-slate-400 mt-1">${toPersianDate(item.date)}</p>
-                    ${canEdit() ? `<button class="delete-disciplinary-btn absolute top-2 left-2 text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                </div>
-            </div>`).join('') : ''}
-        </div>
-    </div>
-</div>
-<div id="tab-contracts" class="profile-tab-content">
-    <div class="space-y-4">
-        <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-slate-700">
-                <i data-lucide="clipboard-list" class="ml-2 w-5 h-5 text-purple-600"></i>
-                سابقه قرارداد و مدارک
-            </h4>
-            <div class="flex gap-2">
-                ${canEdit() ? `<button id="add-contract-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">قرارداد</button>` : ''}
-                ${canEdit() ? `<button id="add-document-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">مدارک</button>` : ''}
-            </div>
-        </div>
-        <div class="space-y-4">
-            <div class="card p-4 bg-gray-50 rounded-lg">
-                <h5 class="font-semibold mb-2">قراردادها</h5>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-right">
-                        <thead class="text-xs text-slate-700 uppercase bg-slate-100">
-                            <tr>
-                                <th class="px-3 py-2">شروع</th>
-                                <th class="px-3 py-2">پایان</th>
-                                <th class="px-3 py-2">حقوق خالص</th>
-                                <th class="px-3 py-2">سفته</th>
-                                <th class="px-3 py-2">فایل</th>
-                                <th class="px-3 py-2">عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${(emp.contractHistory && emp.contractHistory.length > 0) ? emp.contractHistory.map((contract, index) => `
-                            <tr class="border-b">
-                                <td class="px-3 py-2">${toPersianDate(contract.startDate)}</td>
-                                <td class="px-3 py-2">${toPersianDate(contract.endDate)}</td>
-                                <td class="px-3 py-2">${contract.netSalary ? contract.netSalary.toLocaleString('fa-IR') : '-'}</td>
-                                <td class="px-3 py-2">${contract.promissoryNote ? contract.promissoryNote.toLocaleString('fa-IR') : '-'}</td>
-                                <td class="px-3 py-2">
-                                    ${contract.fileUrl ? `<a href="${contract.fileUrl}" target="_blank" class="text-teal-600 hover:underline">مشاهده</a>` : '-'}
-                                </td>
-                                <td class="px-3 py-2">
-                                    ${canEdit() ? `<div class="flex gap-2"><button class="edit-contract-btn text-blue-500" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-contract-btn text-red-500" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : ''}
-                                </td>
-                            </tr>`).join('') : `<tr><td colspan="6" class="text-center py-4 text-slate-500">قراردادی ثبت نشده است.</td></tr>`}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card p-4 bg-gray-50 rounded-lg">
-                <h5 class="font-semibold mb-2">مدارک</h5>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-right">
-                        <thead class="text-xs text-slate-700 uppercase bg-slate-100">
-                            <tr>
-                                <th class="px-3 py-2">نام مدرک</th>
-                                <th class="px-3 py-2">تاریخ</th>
-                                <th class="px-3 py-2">فایل</th>
-                                <th class="px-3 py-2">عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${(emp.documents && emp.documents.length > 0) ? emp.documents.map((doc, index) => `
-                            <tr class="border-b">
-                                <td class="px-3 py-2">${doc.name || '-'}</td>
-                                <td class="px-3 py-2">${toPersianDate(doc.date)}</td>
-                                <td class="px-3 py-2">
-                                    ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="text-teal-600 hover:underline">مشاهده</a>` : '-'}
-                                </td>
-                                <td class="px-3 py-2">
-                                    ${canEdit() ? `<div class="flex gap-2"><button class="edit-document-btn text-blue-500" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-document-btn text-red-500" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : ''}
-                                </td>
-                            </tr>`).join('') : `<tr><td colspan="4" class="text-center py-4 text-slate-500">مدرکی ثبت نشده است.</td></tr>`}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="tab-personal" class="profile-tab-content">
-    <div class="space-y-4">
-        <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-slate-700">
-                <i data-lucide="user-cog" class="ml-2 w-5 h-5 text-gray-600"></i>
-                اطلاعات پرسنلی
-            </h4>
-            ${canEdit() ? `<button id="edit-personal-info-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>` : ''}
-        </div>
-        <div class="card p-4 bg-gray-50 rounded-lg">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
-                <p><strong>جنسیت:</strong> ${emp.gender || '-'}</p>
-                <p><strong>تاریخ تولد:</strong> ${emp.personalInfo?.birthDate ? toPersianDate(emp.personalInfo.birthDate) : '-'}</p>
-                <p><strong>کد ملی:</strong> ${emp.personalInfo?.nationalId || '-'}</p>
-                <p><strong>شماره تماس:</strong> ${emp.personalInfo?.phone || '-'}</p>
-                <p class="md:col-span-2"><strong>آدرس:</strong> ${emp.personalInfo?.address || '-'}</p>
-                <p><strong>وضعیت نظام وظیفه:</strong> ${emp.personalInfo?.militaryStatus || '-'}</p>
-                <p><strong>مخاطب اضطراری:</strong> ${emp.personalInfo?.emergencyContactName || '-'}</p>
-            </div>
-        </div>
-    </div>
-</div>
+                        <div id="tab-performance" class="profile-tab-content">
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-semibold text-slate-700">
+                                        <i data-lucide="clipboard-check" class="ml-2 w-5 h-5 text-green-600"></i>
+                                        سابقه ارزیابی عملکرد
+                                    </h4>
+                                    ${canEdit() ? `<button id="add-performance-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">افزودن</button>` : ''}
+                                </div>
+                                <div class="space-y-4">
+                                    ${(emp.performanceHistory && emp.performanceHistory.length > 0) ? emp.performanceHistory.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map((review, index) => `
+                                    <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <p class="font-bold text-slate-800">امتیاز کلی: <span class="text-lg text-green-600">${review.overallScore}/5</span></p>
+                                            ${canEdit() ? `<div class="flex gap-2">
+                                                <button class="edit-performance-btn text-blue-500" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                                <button class="delete-performance-btn text-red-500" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                            </div>` : ''}
+                                        </div>
+                                        <p class="text-sm text-slate-500">تاریخ: ${toPersianDate(review.reviewDate)} | ارزیاب: ${review.reviewer}</p>
+                                        <div class="mt-4 border-t border-dashed pt-4">
+                                            <p class="text-xs text-slate-700"><strong>نقاط قوت:</strong> ${review.strengths || '-'}</p>
+                                            <p class="text-xs text-slate-700 mt-2"><strong>زمینه‌های بهبود:</strong> ${review.areasForImprovement || '-'}</p>
+                                        </div>
+                                    </div>`).join('') : '<p class="text-sm text-slate-500">هنوز سابقه ارزیابی عملکردی ثبت نشده است.</p>'}
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-career" class="profile-tab-content">
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-semibold text-slate-700">
+                                        <i data-lucide="briefcase" class="ml-2 w-5 h-5 text-indigo-600"></i>
+                                        مسیر شغلی و سابقه انضباطی
+                                    </h4>
+                                    <div class="flex gap-2">
+                                        ${canEdit() ? `<button id="add-career-path-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">رویداد شغلی</button>` : ''}
+                                        ${canEdit() ? `<button id="add-disciplinary-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">انضباطی</button>` : ''}
+                                    </div>
+                                </div>
+                                <div class="relative space-y-6 after:absolute after:inset-y-0 after:w-px after:bg-slate-300 after:right-4 after:top-2 after:-bottom-2">
+                                    ${(emp.careerPath && emp.careerPath.length > 0) ? emp.careerPath.sort((a,b) => new Date(a.date) - new Date(b.date)).map((item, index) => `
+                                    <div class="flex items-center space-x-3 space-x-reverse relative">
+                                        <div class="z-10 w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white shrink-0"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
+                                        <div class="flex-grow card p-4 border-r-4 border-indigo-500 shadow-sm relative">
+                                            <p class="font-semibold text-sm">${item.title}</p>
+                                            <p class="text-xs text-slate-500">${item.type} در ${item.department}</p>
+                                            <p class="text-xs text-slate-400 mt-1">${toPersianDate(item.date)}</p>
+                                            ${canEdit() ? `<button class="delete-career-path-btn absolute top-2 left-2 text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                                        </div>
+                                    </div>`).join('') : '<p class="text-sm text-slate-500">هنوز رویداد شغلی‌ای ثبت نشده است.</p>'}
+                                    ${(emp.disciplinaryHistory && emp.disciplinaryHistory.length > 0) ? emp.disciplinaryHistory.sort((a,b) => new Date(a.date) - new Date(b.date)).map((item, index) => `
+                                    <div class="flex items-center space-x-3 space-x-reverse relative">
+                                        <div class="z-10 w-8 h-8 rounded-full ${item.type === 'تشویق' ? 'bg-green-500' : 'bg-red-500'} flex items-center justify-center text-white shrink-0"><i data-lucide="${item.type === 'تشویق' ? 'star' : 'alert-circle'}" class="w-4 h-4"></i></div>
+                                        <div class="flex-grow card p-4 border-r-4 ${item.type === 'تشویق' ? 'border-green-500' : 'border-red-500'} shadow-sm relative">
+                                            <p class="font-semibold text-sm">${item.type}</p>
+                                            <p class="text-xs text-slate-500">${item.reason}</p>
+                                            <p class="text-xs text-slate-400 mt-1">${toPersianDate(item.date)}</p>
+                                            ${canEdit() ? `<button class="delete-disciplinary-btn absolute top-2 left-2 text-red-500 hover:text-red-700" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                                        </div>
+                                    </div>`).join('') : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-contracts" class="profile-tab-content">
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-semibold text-slate-700">
+                                        <i data-lucide="clipboard-list" class="ml-2 w-5 h-5 text-purple-600"></i>
+                                        سابقه قرارداد و مدارک
+                                    </h4>
+                                    <div class="flex gap-2">
+                                        ${canEdit() ? `<button id="add-contract-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">قرارداد</button>` : ''}
+                                        ${canEdit() ? `<button id="add-document-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">مدارک</button>` : ''}
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                        <h5 class="font-semibold mb-2">قراردادها</h5>
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-sm text-right">
+                                                <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                                    <tr>
+                                                        <th class="px-3 py-2">شروع</th>
+                                                        <th class="px-3 py-2">پایان</th>
+                                                        <th class="px-3 py-2">حقوق خالص</th>
+                                                        <th class="px-3 py-2">سفته</th>
+                                                        <th class="px-3 py-2">فایل</th>
+                                                        <th class="px-3 py-2">عملیات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${(emp.contractHistory && emp.contractHistory.length > 0) ? emp.contractHistory.map((contract, index) => `
+                                                    <tr class="border-b">
+                                                        <td class="px-3 py-2">${toPersianDate(contract.startDate)}</td>
+                                                        <td class="px-3 py-2">${toPersianDate(contract.endDate)}</td>
+                                                        <td class="px-3 py-2">${contract.netSalary ? contract.netSalary.toLocaleString('fa-IR') : '-'}</td>
+                                                        <td class="px-3 py-2">${contract.promissoryNote ? contract.promissoryNote.toLocaleString('fa-IR') : '-'}</td>
+                                                        <td class="px-3 py-2">
+                                                            ${contract.fileUrl ? `<a href="${contract.fileUrl}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>` : '-'}
+                                                        </td>
+                                                        <td class="px-3 py-2">
+                                                            ${canEdit() ? `<div class="flex gap-2"><button class="edit-contract-btn text-blue-500" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-contract-btn text-red-500" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : ''}
+                                                        </td>
+                                                    </tr>`).join('') : `<tr><td colspan="6" class="text-center py-4 text-slate-500">قراردادی ثبت نشده است.</td></tr>`}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                        <h5 class="font-semibold mb-2">مدارک</h5>
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-sm text-right">
+                                                <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                                    <tr>
+                                                        <th class="px-3 py-2">نام مدرک</th>
+                                                        <th class="px-3 py-2">تاریخ</th>
+                                                        <th class="px-3 py-2">فایل</th>
+                                                        <th class="px-3 py-2">عملیات</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${(emp.documents && emp.documents.length > 0) ? emp.documents.map((doc, index) => `
+                                                    <tr class="border-b">
+                                                        <td class="px-3 py-2">${doc.name || '-'}</td>
+                                                        <td class="px-3 py-2">${toPersianDate(doc.date)}</td>
+                                                        <td class="px-3 py-2">
+                                                            ${doc.fileUrl ? `<a href="${doc.fileUrl}" target="_blank" class="text-blue-600 hover:underline">مشاهده</a>` : '-'}
+                                                        </td>
+                                                        <td class="px-3 py-2">
+                                                            ${canEdit() ? `<div class="flex gap-2"><button class="edit-document-btn text-blue-500" data-index="${index}"><i data-lucide="edit" class="w-4 h-4"></i></button><button class="delete-document-btn text-red-500" data-index="${index}"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : ''}
+                                                        </td>
+                                                    </tr>`).join('') : `<tr><td colspan="4" class="text-center py-4 text-slate-500">مدرکی ثبت نشده است.</td></tr>`}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-personal" class="profile-tab-content">
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-semibold text-slate-700">
+                                        <i data-lucide="user-cog" class="ml-2 w-5 h-5 text-gray-600"></i>
+                                        اطلاعات پرسنلی
+                                    </h4>
+                                    ${canEdit() ? `<button id="edit-personal-info-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">ویرایش</button>` : ''}
+                                </div>
+                                <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                        <p><strong>جنسیت:</strong> ${emp.gender || '-'}</p>
+                                        <p><strong>تاریخ تولد:</strong> ${emp.personalInfo?.birthDate ? toPersianDate(emp.personalInfo.birthDate) : '-'}</p>
+                                        <p><strong>کد ملی:</strong> ${emp.personalInfo?.nationalId || '-'}</p>
+                                        <p><strong>شماره تماس:</strong> ${emp.personalInfo?.phone || '-'}</p>
+                                        <p class="md:col-span-2"><strong>آدرس:</strong> ${emp.personalInfo?.address || '-'}</p>
+                                        <p><strong>وضعیت نظام وظیفه:</strong> ${emp.personalInfo?.militaryStatus || '-'}</p>
+                                        <p><strong>مخاطب اضطراری:</strong> ${emp.personalInfo?.emergencyContactName || '-'}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        `;
-        openModal(mainModal, mainModalContainer);
-        if (emp.engagementScore != null) {
-            renderEngagementGauge('engagementGaugeProfile', emp.engagementScore);
-        }
-        setupProfileModalListeners(emp);
-    };
+        </div>
+    `;
+    openModal(mainModal, mainModalContainer);
+    if (emp.engagementScore != null) {
+        renderEngagementGauge('engagementGaugeProfile', emp.engagementScore);
+    }
+    setupProfileModalListeners(emp);
+};
         
         // --- [FIX START] ADDED TEAM HEALTH METRICS RENDERER ---
       const renderTeamHealthMetrics = (team) => {
@@ -2397,57 +2411,74 @@ const viewEmployeeProfile = (employeeId) => {
     };
         // --- [FIX END] ---
 const viewTeamProfile = (teamId) => {
-        const team = state.teams.find(t => t.firestoreId === teamId); if (!team) return;
-        const leader = state.employees.find(e => e.id === team.leaderId);
-        const members = state.employees.filter(e => team.memberIds?.includes(e.id));
-        const basicAnalysis = generateTeamSmartAnalysis(team);
-        const advancedAnalysis = analyzeTeamData(team, members); // اجرای تحلیلگر پیشرفته
+    const team = state.teams.find(t => t.firestoreId === teamId);
+    if (!team) return;
+    const leader = state.employees.find(e => e.id === team.leaderId);
+    const members = state.employees.filter(e => team.memberIds?.includes(e.id));
+    const basicAnalysis = generateTeamSmartAnalysis(team);
+    const advancedAnalysis = analyzeTeamData(team, members);
 
-        modalTitle.innerText = 'پروفایل تیم: ' + team.name;
-        
-        // نمایش نام افراد پرریسک در تحلیل هوشمند
-        const highRiskNames = advancedAnalysis.highRiskMembers.map(e => e.name).join('، ');
-        if(highRiskNames) {
-            basicAnalysis.risk = { text: `اعضای پرریسک: <strong>${highRiskNames}</strong>`, icon: 'shield-alert', color: 'text-red-600' };
-        }
+    const highRiskNames = advancedAnalysis.highRiskMembers.map(e => e.name).join('، ');
+    if(highRiskNames) {
+        basicAnalysis.risk = { text: `اعضای پرریسک: <strong>${highRiskNames}</strong>`, icon: 'shield-alert', color: 'text-red-600' };
+    }
 
-        modalContent.innerHTML = `
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-1 space-y-6">
-                    <div class="card p-4 bg-gray-50 rounded-lg text-center relative group">
-                        <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
-                            <img src="${team.avatar}" alt="${team.name}" class="w-full h-full object-cover">
-                        </div>
-                        ${canEdit() ? `<button id="change-team-avatar-btn" class="absolute top-2 left-2 bg-white p-1.5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
-                        <h2 class="text-2xl font-bold text-gray-800">${team.name}</h2><p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p></div>
-                    <div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4><div class="text-sm space-y-3">${Object.keys(basicAnalysis).length > 0 ? Object.values(basicAnalysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div></div>
+    modalTitle.innerText = 'پروفایل تیم: ' + team.name;
+    modalContent.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 space-y-6">
+                <div class="card p-6 bg-gray-50 rounded-xl text-center relative group">
+                    <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
+                        <img src="${team.avatar}" alt="${team.name}" class="w-full h-full object-cover">
+                    </div>
+                    ${canEdit() ? `<button id="change-team-avatar-btn" class="absolute top-4 left-4 bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-blue-600"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
+                    <h2 class="text-2xl font-bold text-gray-800">${team.name}</h2>
+                    <p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p>
                 </div>
-                <div class="lg:col-span-2 space-y-6">
-                     <div class="bg-white rounded-lg shadow-md">
-                        <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="team-overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="team-skills" class="profile-tab shrink-0">مهارت و مشارکت</button><button data-tab="team-talent" class="profile-tab shrink-0">ماتریس استعداد</button></nav></div>
-                        <div class="p-4">
-                            <div id="tab-team-overview" class="profile-tab-content active"><div class="space-y-4"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">اعضای تیم (${members.length} نفر)</h4><div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img src="${m.avatar}" class="w-full h-full object-cover"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div></div><div class="card p-4 bg-gray-50 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">افزودن/ویرایش</button>`:''}</div><div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div></div></div></div>
-                            <div id="tab-team-skills" class="profile-tab-content">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="card p-4 bg-gray-50 rounded-lg">
-                                        <h4 class="font-semibold mb-3 text-gray-700">نقاط قوت کلیدی تیم</h4>
-                                        ${advancedAnalysis.topSkills.length > 0 ? advancedAnalysis.topSkills.map(skill => `<span class="inline-block bg-blue-100 text-blue-800 text-sm font-medium m-1 px-3 py-1 rounded-full">${skill}</span>`).join('') : '<p class="text-sm text-gray-500">مهارت کلیدی (سطح ۴ به بالا) یافت نشد.</p>'}
+                <div class="card p-6 bg-gray-50 rounded-xl">
+                    <h4 class="font-semibold mb-4 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
+                    <div class="text-sm space-y-3">${Object.keys(basicAnalysis).length > 0 ? Object.values(basicAnalysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div>
+                </div>
+            </div>
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl shadow-md">
+                    <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="team-overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="team-health" class="profile-tab shrink-0">سلامت تیم</button><button data-tab="team-talent" class="profile-tab shrink-0">ماتریس استعداد</button></nav></div>
+                    <div class="p-4">
+                        <div id="tab-team-overview" class="profile-tab-content active">
+                            <div class="space-y-4">
+                                <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h4 class="font-semibold text-gray-700">اعضای تیم (${members.length} نفر)</h4>
+                                        <button id="edit-team-members-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">ویرایش</button>
                                     </div>
-                                    <div class="card p-4 bg-gray-50 rounded-lg">
-                                        <h4 class="font-semibold mb-3 text-gray-700">تحلیل عمیق مشارکت</h4>
-                                        <div class="space-y-3">${advancedAnalysis.engagementBreakdown.length > 0 ? advancedAnalysis.engagementBreakdown.map(cat => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${cat.name}</span><span class="font-medium text-blue-600">${cat.score}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${cat.score}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">داده‌ای برای تحلیل مشارکت وجود ندارد.</p>'}</div>
-                                    </div>
+                                    <div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img src="${m.avatar}" class="w-full h-full object-cover"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div>
                                 </div>
-                             </div>
-                            <div id="tab-team-talent" class="profile-tab-content"><div class="card p-4 bg-gray-50 rounded-lg"><h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4><div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div></div></div>
+                                <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>
+                                        ${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">افزودن/ویرایش</button>`:''}
+                                    </div>
+                                    <div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-team-health" class="profile-tab-content">
+                            ${renderTeamHealthMetrics(team)}
+                        </div>
+                        <div id="tab-team-talent" class="profile-tab-content">
+                            <div class="card p-6 bg-white rounded-xl border border-slate-200">
+                                <h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4>
+                                <div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        `;
-        openModal(mainModal, mainModalContainer);
-        setupTeamProfileModalListeners(team);
-    };
+        </div>
+    `;
+    openModal(mainModal, mainModalContainer);
+    setupTeamProfileModalListeners(team);
+};
 
         const generateTeamNineBoxGrid = (members) => {
             const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
