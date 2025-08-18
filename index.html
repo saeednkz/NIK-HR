@@ -1000,16 +1000,35 @@ const calculateAndApplyAnalytics = () => {
                 if(state.employees.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند جدید</button>` : ''}</div>`;
                 return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت پرسنل</h1>${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}</div><div class="bg-white p-6 rounded-lg shadow-md"><div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4"><div class="w-full md:w-1/2 lg:w-1/3 relative"><input type="text" id="searchInput" placeholder="جستجو..." class="w-full p-2 pr-10 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"><i data-lucide="search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i></div><div class="w-full md:w-auto flex flex-wrap gap-2"><select id="departmentFilter" class="p-2 border rounded-md"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border rounded-md"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select></div></div><div class="overflow-x-auto"><table class="w-full text-sm text-right text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">نام</th><th scope="col" class="px-6 py-3">کد پرسنلی</th><th scope="col" class="px-6 py-3">دپارتمان</th><th scope="col" class="px-6 py-3">وضعیت</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div></div>`
             },
-            organization: () => {
-                 if(state.teams.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن تیم جدید</button>` : ''}</div>`;
-                return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => { const leader = state.employees.find(e => e.id === team.leaderId); return `<div class="card bg-white p-6 rounded-lg shadow-md flex flex-col"><h3 class="text-xl font-bold text-blue-800 mb-2">${team.name}</h3><p class="text-gray-600 mb-4 text-sm"><strong>رهبر تیم:</strong> ${leader ? leader.name : 'نامشخص'}</p><p class="text-gray-700 mb-4 flex-grow"><strong>ماموریت:</strong> ${team.mission || ''}</p><div class="mb-4"><p class="font-semibold mb-2">اعضای تیم:</p><div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => { const member = state.employees.find(e => e.id === memberId); return member ? `<div class="w-10 h-10 border-2 border-white rounded-full overflow-hidden shrink-0 bg-gray-200"><img class="w-full h-full object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}"></div>` : ''; }).join('')}</div></div>
-                <div class="flex gap-2 mt-auto">
-                    <button class="view-team-profile-btn w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition" data-team-id="${team.firestoreId}">مشاهده</button>
-                    ${canEdit() ? `<button class="edit-team-btn w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600 transition" data-team-id="${team.firestoreId}">ویرایش</button>` : ''}
-                    ${isAdmin() ? `<button class="delete-team-btn w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition" data-team-id="${team.firestoreId}">حذف</button>` : ''}
-                </div>
-                </div>` }).join('')}</div>`
-            },
+           organization: () => {
+            if (state.teams.length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-gray-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن تیم جدید</button>` : ''}</div>`;
+            return `<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold text-gray-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => {
+                const leader = state.employees.find(e => e.id === team.leaderId);
+                return `
+                <div class="card bg-white p-6 rounded-lg shadow-md flex flex-col">
+                    <div class="flex items-center mb-4">
+                        <img src="${team.avatar}" alt="${team.name}" class="w-16 h-16 rounded-full object-cover mr-4 border-2 border-blue-100">
+                        <div>
+                            <h3 class="text-xl font-bold text-blue-800">${team.name}</h3>
+                            <p class="text-gray-600 text-sm"><strong>رهبر تیم:</strong> ${leader ? leader.name : 'نامشخص'}</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mb-4 flex-grow"><strong>ماموریت:</strong> ${team.mission || ''}</p>
+                    <div class="mb-4">
+                        <p class="font-semibold mb-2">اعضای تیم:</p>
+                        <div class="flex flex-wrap -space-x-2 space-x-reverse">${(team.memberIds || []).map(memberId => {
+                            const member = state.employees.find(e => e.id === memberId);
+                            return member ? `<div class="w-10 h-10 border-2 border-white rounded-full overflow-hidden shrink-0 bg-gray-200"><img class="w-full h-full object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}"></div>` : '';
+                        }).join('')}</div>
+                    </div>
+                    <div class="flex gap-2 mt-auto">
+                        <button class="view-team-profile-btn w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition" data-team-id="${team.firestoreId}">مشاهده</button>
+                        ${canEdit() ? `<button class="edit-team-btn w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600 transition" data-team-id="${team.firestoreId}">ویرایش</button>` : ''}
+                        ${isAdmin() ? `<button class="delete-team-btn w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition" data-team-id="${team.firestoreId}">حذف</button>` : ''}
+                    </div>
+                </div>`
+            }).join('')}</div>`
+        },
             surveys: () => `
                 <h1 class="text-3xl font-bold text-gray-800 mb-6">مدیریت نظرسنجی‌ها</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1490,12 +1509,29 @@ expenses: () => {
         }
     });
 };
-        const renderEmployeeTable = () => {
-            const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || ''; const departmentFilter = document.getElementById('departmentFilter')?.value || ''; const statusFilter = document.getElementById('statusFilter')?.value || '';
-            const filteredEmployees = state.employees.filter(emp => (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) && (!departmentFilter || emp.department === departmentFilter) && (!statusFilter || emp.status === statusFilter));
-            const tableBody = document.getElementById('employeeTableBody');
-            if (tableBody) { 
-                tableBody.innerHTML = filteredEmployees.map(emp => `<tr class="bg-white border-b hover:bg-gray-50">
+       const renderEmployeeTable = () => {
+        const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        const departmentFilter = document.getElementById('departmentFilter')?.value || '';
+        const statusFilter = document.getElementById('statusFilter')?.value || '';
+        const filteredEmployees = state.employees.filter(emp =>
+            (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) &&
+            (!departmentFilter || emp.department === departmentFilter) &&
+            (!statusFilter || emp.status === statusFilter)
+        );
+        
+        const tableBody = document.getElementById('employeeTableBody');
+        if (tableBody) {
+            // به‌روزرسانی هدر جدول برای اضافه کردن ستون تصویر
+            const tableHead = tableBody.previousElementSibling; // Thead
+            if (!tableHead.innerHTML.includes('تصویر')) {
+                tableHead.querySelector('tr').insertAdjacentHTML('afterbegin', '<th scope="col" class="px-6 py-3">تصویر</th>');
+            }
+
+            tableBody.innerHTML = filteredEmployees.map(emp => `
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <img src="${emp.avatar}" alt="${emp.name}" class="w-10 h-10 rounded-full object-cover">
+                    </td>
                     <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${emp.name}</td>
                     <td class="px-6 py-4">${emp.id}</td>
                     <td class="px-6 py-4">${emp.department}</td>
@@ -1505,9 +1541,9 @@ expenses: () => {
                         ${canEdit() ? `<button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button>` : ''}
                         ${isAdmin() ? `<button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button>` : ''}
                     </td>
-                </tr>`).join(''); 
-            }
-        };
+                </tr>`).join('');
+        }
+    };
         const setupTalentPageListeners = () => {
             document.getElementById('searchInput')?.addEventListener('input', renderEmployeeTable); 
             document.getElementById('departmentFilter')?.addEventListener('change', renderEmployeeTable); 
