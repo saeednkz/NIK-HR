@@ -2071,14 +2071,16 @@ const showExpenseForm = () => {
             return analysis;
         };
 
-    const showEmployeeForm = (employeeId = null) => {
+ const showEmployeeForm = (employeeId = null) => {
         const isEditing = employeeId !== null;
         const emp = isEditing ? state.employees.find(e => e.firestoreId === employeeId) : {};
 
         // پیدا کردن تیم فعلی کارمند برای حالت ویرایش
-        const currentTeam = isEditing ? state.teams.find(t => t.memberIds?.includes(emp.id)) : null;
+        // ما تیم را بر اساس نام دپارتمان ذخیره شده پیدا می‌کنیم
+        const currentTeam = isEditing ? state.teams.find(t => t.name === emp.department) : null;
 
         // ایجاد لیست تیم‌ها برای منوی کشویی
+        // مقدار هر گزینه، ID منحصر به فرد تیم است
         const teamOptions = state.teams.map(team =>
             `<option value="${team.firestoreId}" ${currentTeam?.firestoreId === team.firestoreId ? 'selected' : ''}>${team.name}</option>`
         ).join('');
@@ -2095,22 +2097,20 @@ const showExpenseForm = () => {
                         <label for="id" class="block text-sm font-medium text-gray-700">کد پرسنلی</label>
                         <input type="text" id="id" value="${emp.id || ''}" class="mt-1 block w-full p-2 border rounded-md" ${isEditing ? 'readonly' : ''} required>
                     </div>
+                    
                     <div>
-                        <label for="department" class="block text-sm font-medium text-gray-700">دپارتمان</label>
-                        <input type="text" id="department" value="${emp.department || ''}" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <label for="department-team-select" class="block text-sm font-medium text-gray-700">دپارتمان / تیم</label>
+                        <select id="department-team-select" class="mt-1 block w-full p-2 border rounded-md">
+                            <option value="">انتخاب کنید...</option>
+                            ${teamOptions}
+                        </select>
                     </div>
+
                      <div>
                         <label for="status" class="block text-sm font-medium text-gray-700">وضعیت</label>
                         <select id="status" class="mt-1 block w-full p-2 border rounded-md">
                             <option value="فعال" ${emp.status === 'فعال' ? 'selected' : ''}>فعال</option>
                             <option value="غیرفعال" ${emp.status === 'غیرفعال' ? 'selected' : ''}>غیرفعال</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="team" class="block text-sm font-medium text-gray-700">تیم (اختیاری)</label>
-                        <select id="team" class="mt-1 block w-full p-2 border rounded-md">
-                            <option value="">بدون تیم</option>
-                            ${teamOptions}
                         </select>
                     </div>
                 </div>
@@ -2125,16 +2125,19 @@ const showExpenseForm = () => {
             e.preventDefault();
             const form = e.target;
             const oldTeamId = form.dataset.oldTeamId;
-            const newTeamId = document.getElementById('team').value;
+            const newTeamId = document.getElementById('department-team-select').value;
             const name = document.getElementById('name').value;
             const employeeCode = document.getElementById('id').value;
+
+            // پیدا کردن نام تیم انتخاب شده برای ذخیره در فیلد دپارتمان
+            const selectedTeam = state.teams.find(t => t.firestoreId === newTeamId);
+            const departmentName = selectedTeam ? selectedTeam.name : '';
 
             const formData = {
                 name: name,
                 id: employeeCode,
-                department: document.getElementById('department').value,
+                department: departmentName, // <<-- نام تیم اینجا ذخیره می‌شود
                 status: document.getElementById('status').value,
-                // حفظ داده‌های قبلی در حالت ویرایش
                 avatar: emp.avatar || `https://placehold.co/100x100/E2E8F0/4A5568?text=${name.substring(0, 2)}`,
                 ...isEditing && {
                     personalInfo: emp.personalInfo || {},
