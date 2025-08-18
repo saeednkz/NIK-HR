@@ -2228,12 +2228,10 @@ const showEmployeeForm = (employeeId = null) => {
                         <label for="id" class="block text-sm font-medium text-slate-700">کد پرسنلی</label>
                         <input type="text" id="id" value="${emp.id || ''}" class="mt-1 block w-full p-2 border border-slate-300 rounded-lg" ${isEditing ? 'readonly' : ''} required>
                     </div>
-
                     <div>
                         <label for="jobTitle" class="block text-sm font-medium text-slate-700">عنوان شغلی</label>
                         <input type="text" id="jobTitle" value="${emp.jobTitle || ''}" placeholder="مثال: کارشناس بازاریابی دیجیتال" class="mt-1 block w-full p-2 border border-slate-300 rounded-lg">
                     </div>
-
                     <div>
                         <label for="level" class="block text-sm font-medium text-slate-700">سطح</label>
                         <select id="level" class="mt-1 block w-full p-2 border border-slate-300 rounded-lg">
@@ -2244,7 +2242,6 @@ const showEmployeeForm = (employeeId = null) => {
                             <option value="Manager" ${emp.level === 'Manager' ? 'selected' : ''}>Manager (مدیر)</option>
                         </select>
                     </div>
-                    
                     <div>
                         <label for="department-team-select" class="block text-sm font-medium text-slate-700">دپارتمان / تیم</label>
                         <select id="department-team-select" class="mt-1 block w-full p-2 border border-slate-300 rounded-lg">
@@ -2259,6 +2256,10 @@ const showEmployeeForm = (employeeId = null) => {
                             <option value="غیرفعال" ${emp.status === 'غیرفعال' ? 'selected' : ''}>غیرفعال</option>
                         </select>
                     </div>
+                    <div class="md:col-span-2">
+                         <label for="startDate" class="block text-sm font-medium text-slate-700">تاریخ استخدام</label>
+                         <input type="text" id="startDate" class="mt-1 block w-full p-2 border border-slate-300 rounded-lg">
+                    </div>
                 </div>
                 <div class="pt-4 flex justify-end">
                     <button type="submit" class="bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600 shadow-md transition">ذخیره</button>
@@ -2266,6 +2267,8 @@ const showEmployeeForm = (employeeId = null) => {
             </form>
         `;
         openModal(mainModal, mainModalContainer);
+        // فعال‌سازی تقویم شمسی برای فیلد تاریخ استخدام
+        activatePersianDatePicker('startDate', emp.startDate);
 
         document.getElementById('employee-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2277,23 +2280,37 @@ const showEmployeeForm = (employeeId = null) => {
 
             const selectedTeam = state.teams.find(t => t.firestoreId === newTeamId);
             const departmentName = selectedTeam ? selectedTeam.name : '';
+            
+            const gregorianStartDate = persianToEnglishDate(document.getElementById('startDate').value);
 
             const formData = {
                 name: name,
                 id: employeeCode,
-                jobTitle: document.getElementById('jobTitle').value, // ذخیره عنوان شغلی
-                level: document.getElementById('level').value,       // ذخیره سطح
+                jobTitle: document.getElementById('jobTitle').value,
+                level: document.getElementById('level').value,
                 department: departmentName,
                 status: document.getElementById('status').value,
+                startDate: gregorianStartDate, // ذخیره تاریخ استخدام
                 avatar: emp.avatar || `https://placehold.co/100x100/E2E8F0/4A5568?text=${name.substring(0, 2)}`,
                 ...isEditing && {
                     personalInfo: emp.personalInfo || {},
                     skills: emp.skills || {},
                     performanceHistory: emp.performanceHistory || [],
                     competencies: emp.competencies || {},
+                    careerPath: emp.careerPath || [],
                 }
             };
             
+            // اگر کارمند جدید است، اولین رویداد مسیر شغلی را به صورت خودکار بساز
+            if (!isEditing) {
+                formData.careerPath = [{
+                    date: gregorianStartDate,
+                    type: 'استخدام',
+                    title: formData.jobTitle,
+                    department: formData.department
+                }];
+            }
+
             try {
                 const batch = writeBatch(db);
                 const docRef = doc(db, `artifacts/${appId}/public/data/employees`, isEditing ? emp.firestoreId : employeeCode);
@@ -2323,7 +2340,7 @@ const showEmployeeForm = (employeeId = null) => {
                 
                 await batch.commit();
                 closeModal(mainModal, mainModalContainer);
-                showToast(isEditing ? "کارمند با موفقیت ویرایش شد." : "کارمند با موفقیت اضافه و به تیم اختصاص داده شد.");
+                showToast(isEditing ? "کارمند با موفقیت ویرایش شد." : "کارمند با موفقیت اضافه و مسیر شغلی او ثبت شد.");
             } catch (error) {
                 console.error("Error saving employee and updating team:", error);
                 showToast("خطا در ذخیره اطلاعات.", "error");
