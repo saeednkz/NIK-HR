@@ -992,30 +992,35 @@ const calculateAndApplyAnalytics = () => {
         const mainContent = document.getElementById('main-content');
         
      const pages = {
-        dashboard: () => {
+     dashboard: () => {
             calculateDashboardMetrics();
             const metrics = state.dashboardMetrics;
-            if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 card"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-slate-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-indigo-500 text-white py-2 px-5 rounded-lg hover:bg-indigo-600 shadow-md transition">افزودن کارمند</button></div>`;
+            if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
             
-            const highRiskEmployees = state.employees.filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60).sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
-            const highRiskHtml = highRiskEmployees.length > 0 
-                ? highRiskEmployees.map(emp => {
-                    const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
-                    return `<div class="bg-red-50 p-3 rounded-lg"><div class="flex items-center justify-between"><div class="flex items-center"><div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div><div><p class="text-sm font-semibold text-red-800">${emp.name}</p></div></div><span class="text-lg font-bold text-red-600">${emp.attritionRisk.score}%</span></div><div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div></div>`
-                }).join('') 
-                : '<p class="text-sm text-slate-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
-
             return `
-                <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">داشبورد</h1><span class="text-sm text-slate-500 font-light">${toPersianDate(new Date())}</span></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">تعداد پرسنل</p><span class="bg-teal-100 p-2 rounded-lg"><i data-lucide="users" class="text-teal-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.totalEmployees}</p></div>
-                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">نرخ ماندگاری</p><span class="bg-emerald-100 p-2 rounded-lg"><i data-lucide="trending-up" class="text-emerald-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.retentionRate}<span class="text-lg font-medium">%</span></p></div>
-                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">امتیاز مشارکت</p><span class="bg-rose-100 p-2 rounded-lg"><i data-lucide="heart-pulse" class="text-rose-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.engagementScore > 0 ? metrics.engagementScore : 'N/A'}<span class="text-lg font-medium">%</span></p></div>
-                    <div class="card p-5"><div class="flex justify-between items-center"><p class="text-slate-500 text-sm">جابجایی داخلی</p><span class="bg-violet-100 p-2 rounded-lg"><i data-lucide="recycle" class="text-violet-600 w-5 h-5"></i></span></div><p class="text-3xl font-bold text-slate-800 mt-2">${metrics.internalMobilityRate}<span class="text-lg font-medium">%</span></p></div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد</h1>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                        <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
+                        <div><p class="text-gray-500 text-sm">تعداد کل پرسنل</p><p class="text-2xl font-bold text-gray-800">${metrics.totalEmployees}</p></div>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                        <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div>
+                        <div><p class="text-gray-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-gray-800">${metrics.retentionRate}%</p></div>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                        <div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div>
+                        <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
+                    </div>
+                     <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
+                        <div class="bg-red-100 p-3 rounded-full mr-4"><i data-lucide="heart-pulse" class="text-red-600"></i></div>
+                        <div><p class="text-gray-500 text-sm">امتیاز مشارکت</p><p class="text-2xl font-bold text-gray-800">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</p></div>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div class="lg:col-span-3 card p-6"><h3 class="font-semibold text-slate-700 mb-4">توزیع استعدادها (ماتریس ۹ جعبه‌ای)</h3><div class="relative h-80"><canvas id="nineBoxChart"></canvas></div></div>
-                    <div class="lg:col-span-2 card p-6"><h3 class="font-semibold mb-4 flex items-center text-slate-700">ریسک خروج استعدادهای کلیدی</h3><div class="mt-3 space-y-3 max-h-80 overflow-y-auto">${highRiskHtml}</div></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع استعدادها</h3><div class="relative h-64"><canvas id="nineBoxChart"></canvas></div></div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع دپارتمان‌ها</h3><div class="relative h-64"><canvas id="departmentDistributionChart"></canvas></div></div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">ترکیب جنسیتی</h3><div class="relative h-64"><canvas id="genderCompositionChart"></canvas></div></div>
                 </div>`;
         },
         talent: () => {
@@ -1155,35 +1160,55 @@ const calculateAndApplyAnalytics = () => {
                 </div>
             `;
         },
-        analytics: () => {
+analytics: () => {
             const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
                 ?.sort((a, b) => b.score - a.score)
                 .map(cat => `
                     <div>
                         <div class="flex justify-between items-center mb-1 text-sm">
-                            <span class="text-slate-600">${cat.name}</span>
-                            <span class="font-medium text-teal-600">${cat.score}%</span>
+                            <span class="text-gray-600">${cat.name}</span>
+                            <span class="font-medium text-blue-600">${cat.score}%</span>
                         </div>
                         <div class="progress-bar w-full">
                             <div class="progress-bar-fill" style="width: ${cat.score}%;"></div>
                         </div>
                     </div>
-                `).join('') || '<p class="text-sm text-slate-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد. لطفا «نظرسنجی جامع مشارکت کارکنان» را ارسال کنید.</p>';
+                `).join('') || '<p class="text-sm text-gray-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد.</p>';
 
             return `
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold text-slate-800">تحلیل هوشمند</h1>
-                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">تحلیل هوشمند</h1>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="card p-6">
-                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="pie-chart" class="ml-2 text-teal-500"></i>تحلیل مشارکت سازمانی</h3>
+                    <div class="card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="pie-chart" class="ml-2 text-blue-500"></i>تحلیل مشارکت سازمانی</h3>
                         <div class="space-y-4">
                             ${engagementBreakdownHtml}
                         </div>
                     </div>
-                    <div class="card p-6">
-                        <h3 class="font-semibold mb-4 flex items-center text-slate-700"><i data-lucide="shield-alert" class="ml-2 text-rose-500"></i>نقاط داغ ریسک خروج</h3>
+                    <div class="card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="shield-alert" class="ml-2 text-red-500"></i>نقاط داغ ریسک خروج</h3>
                         <div id="attrition-hotspot-list" class="space-y-3 max-h-80 overflow-y-auto"></div>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="heart-pulse" class="ml-2 text-green-500"></i>وضعیت سلامت تیم‌ها</h3>
+                        <div id="team-health-dashboard" class="space-y-3"></div>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="file-search" class="ml-2 text-indigo-500"></i>تحلیل شکاف مهارتی</h3>
+                        <div class="flex flex-col sm:flex-row gap-2 items-center">
+                            <select id="skill-team-select" class="w-full p-2 border border-slate-300 rounded-lg">
+                                <option value="all">کل سازمان</option>
+                                ${state.teams.map(t => `<option value="${t.firestoreId}">${t.name}</option>`).join('')}
+                            </select>
+                            <input type="text" id="skill-search-input" placeholder="مهارت مورد نظر (مثلا: Python)" class="w-full p-2 border border-slate-300 rounded-lg">
+                            <button id="find-skill-gap-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 w-full sm:w-auto">جستجو</button>
+                        </div>
+                        <div id="skill-gap-results" class="mt-4 p-4 bg-slate-50 rounded-md min-h-[5rem]">
+                            <p class="text-sm text-slate-500">برای شروع، یک تیم و مهارت را انتخاب کنید.</p>
+                        </div>
+                    </div>
+                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                        <h3 class="font-semibold mb-4">ماتریس استعداد ۹-جعبه‌ای</h3>
+                        <div id="nine-box-grid-container" class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white"></div>
                     </div>
                 </div>
             `;
