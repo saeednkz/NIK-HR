@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستم مدیریت سرمایه های انسانی NikHR</title>
+    <title>سیستم مدیریت منابع انسانی HR-Nik</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -136,7 +136,7 @@
         <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
             <div class="text-center">
                 <i data-lucide="shield-check" class="mx-auto w-12 h-12 text-blue-800"></i>
-                <h2 class="mt-4 text-2xl font-bold text-gray-900">ورود به سیستم NikHR</h2>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">ورود به سیستم HR-Nik</h2>
             </div>
             <form id="login-form" class="space-y-6">
                 <div>
@@ -187,7 +187,7 @@
             <div>
                 <a href="#dashboard" class="sidebar-logo text-white text-2xl font-extrabold px-4 flex items-center space-x-2 space-x-reverse">
                     <i data-lucide="shield-check"></i>
-                    <span>NikHR</span>
+                    <span>HR-Nik</span>
                 </a>
                 <nav id="sidebar-nav" class="mt-6">
                     <a href="#dashboard" class="sidebar-item block py-2.5 px-4 rounded flex items-center space-x-2 space-x-reverse">
@@ -226,7 +226,7 @@
             <header class="flex justify-between items-center p-4 bg-white shadow-md md:hidden">
                 <a href="#dashboard" class="sidebar-logo text-blue-900 text-xl font-extrabold flex items-center space-x-2 space-x-reverse">
                     <i data-lucide="shield-check"></i>
-                    <span>NikHR</span>
+                    <span>HR-Nik</span>
                 </a>
                 <button id="menu-btn" class="text-gray-600 z-40">
                     <i data-lucide="menu" class="w-6 h-6"></i>
@@ -418,7 +418,7 @@
         let charts = {};
         
         // --- FIREBASE SETUP ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'NikHR-prod';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'hr-nik-prod';
         const firebaseConfig = {
             apiKey: "AIzaSyCCfPmxQy1uAKu0lPGSe3bc-P15iLYLHJo",
             authDomain: "nik-hr.firebaseapp.com",
@@ -947,7 +947,7 @@ const calculateAndApplyAnalytics = () => {
           dashboard: () => {
             calculateDashboardMetrics();
             const metrics = state.dashboardMetrics;
-            if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
+            if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به HR-Nik خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
             
             // پیدا کردن کارمندان با ریسک بالا برای نمایش در داشبورد
             const highRiskEmployees = state.employees
