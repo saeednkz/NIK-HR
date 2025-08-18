@@ -1071,7 +1071,7 @@ const calculateAndApplyAnalytics = () => {
                     <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع دپارتمان‌ها</h3><div class="relative h-64"><canvas id="departmentDistributionChart"></canvas></div></div>
                     <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">ترکیب جنسیتی</h3><div class="relative h-64"><canvas id="genderCompositionChart"></canvas></div></div>
                 </div>`;
-        },,
+        },
         talent: () => {
             if(state.employees.length === 0) return `<div class="text-center p-10 card"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-indigo-500 text-white py-2 px-5 rounded-lg hover:bg-indigo-600 shadow-md transition">افزودن کارمند جدید</button>` : ''}</div>`;
             return `
