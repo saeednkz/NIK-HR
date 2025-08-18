@@ -544,6 +544,21 @@
 
         // --- UTILITY & HELPER FUNCTIONS ---
         // --- تابع جدید برای تبدیل تاریخ به شمسی ---
+        // --- تابع جدید برای تبدیل اعداد فارسی به انگلیسی ---
+    const convertPersianNumbersToEnglish = (str) => {
+        if (!str) return '';
+        return str.toString()
+            .replace(/۱/g, '1')
+            .replace(/۲/g, '2')
+            .replace(/۳/g, '3')
+            .replace(/۴/g, '4')
+            .replace(/۵/g, '5')
+            .replace(/۶/g, '6')
+            .replace(/۷/g, '7')
+            .replace(/۸/g, '8')
+            .replace(/۹/g, '9')
+            .replace(/۰/g, '0');
+    };
 const toPersianDate = (dateInput) => {
     if (!dateInput) return 'نامشخص';
     try {
@@ -577,22 +592,22 @@ const toPersianDate = (dateInput) => {
 };
 // --- تابع جدید برای تبدیل تاریخ شمسی ورودی به فرمت میلادی برای ذخیره ---
 const persianToEnglishDate = (persianDateStr) => {
-        // اگر ورودی خالی است، همان لحظه خارج شو
         if (!persianDateStr) return null;
 
-        // اگر ورودی یک عدد (timestamp) بود، آن را به فرمت صحیح تبدیل کن
-        if (!isNaN(persianDateStr) && typeof persianDateStr !== 'string') {
-            const date = new persianDate(persianDateStr);
-            persianDateStr = date.format('YYYY/MM/DD');
+        // ابتدا اعداد فارسی را به انگلیسی تبدیل می‌کنیم
+        let englishDateStr = convertPersianNumbersToEnglish(persianDateStr);
+
+        if (!isNaN(englishDateStr) && typeof englishDateStr !== 'string') {
+            const date = new persianDate(parseInt(englishDateStr));
+            englishDateStr = date.format('YYYY/MM/DD');
         }
 
-        // حالا با فرمت صحیح، به میلادی تبدیل کن
-        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(persianDateStr)) {
-            console.error("Invalid Persian date format. Expected YYYY/MM/DD, but got:", persianDateStr);
+        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(englishDateStr)) {
+            console.error("Invalid Persian date format. Expected YYYY/MM/DD, but got:", englishDateStr);
             return null;
         }
         try {
-            const [jy, jm, jd] = persianDateStr.split('/').map(Number);
+            const [jy, jm, jd] = englishDateStr.split('/').map(Number);
             const gregorian = jalaali.toGregorian(jy, jm, jd);
             return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
         } catch (error) {
