@@ -376,6 +376,7 @@
             competencies: [],
             expenses: [],
             pettyCashCards: [],
+             chargeHistory: [],
             dashboardMetrics: {},
             currentPage: 'dashboard',
             currentUser: null,
@@ -468,7 +469,7 @@
         
         // --- REAL-TIME DATA LISTENERS ---
         function listenToData() {
-            const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses', 'users', 'competencies', 'expenses', 'pettyCashCards'];
+            const collectionsToListen = ['employees', 'teams', 'reminders', 'surveyResponses', 'users', 'competencies', 'expenses', 'pettyCashCards', 'chargeHistory'];
             let initialLoads = collectionsToListen.length;
 
             const onDataLoaded = () => {
@@ -851,74 +852,104 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
                 </div>
             `;
         },
-     expenses: () => {
-    const cardsHtml = state.pettyCashCards.map(card => `
-        <div class="card bg-white p-4 rounded-lg shadow-md flex justify-between items-center">
-            <div>
-                <p class="font-bold text-blue-800">${card.name}</p>
-                <p class="text-sm text-gray-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
-            </div>
-            ${isAdmin() ? `<button class="delete-card-btn text-red-500 hover:text-red-700" data-id="${card.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
-        </div>
-    `).join('');
-
-    const expensesRows = state.expenses.map(exp => `
-        <tr class="bg-white border-b hover:bg-gray-50">
-            <td class="px-6 py-4">${toPersianDate(exp.date)}</td>
-            <td class="px-6 py-4">${exp.item}</td>
-            <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
-            <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
-            <td class="px-6 py-4">
-                ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> مشاهده</a>` : '-'}
-            </td>
-             <td class="px-6 py-4">
-                ${canEdit() ? `<button class="delete-expense-btn text-red-600 hover:underline" data-id="${exp.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
-            </td>
-        </tr>
-    `).join('');
-
-    const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-
-    return `
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">مدیریت هزینه‌ها</h1>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="lg:col-span-1 card bg-white p-6 rounded-lg shadow-md">
-                <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
-                <div class="space-y-3 mb-4" id="cards-list">${cardsHtml}</div>
-                ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">افزودن کارت جدید</button>` : ''}
-            </div>
-            <div class="lg:col-span-2 card bg-white p-6 rounded-lg shadow-md">
-                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-semibold">لیست هزینه‌ها</h3>
-                    ${canEdit() ? `<button id="add-expense-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">افزودن هزینه</button>` : ''}
+expenses: () => {
+            const cardsHtml = state.pettyCashCards.map(card => `
+                <div class="card bg-white p-4 rounded-lg shadow-md">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-blue-800">${card.name}</p>
+                            <p class="text-sm text-gray-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                             ${canEdit() ? `<button class="charge-card-btn text-green-600 hover:text-green-800" data-id="${card.firestoreId}" data-name="${card.name}" title="شارژ کارت"><i data-lucide="plus-circle"></i></button>` : ''}
+                             ${isAdmin() ? `<button class="delete-card-btn text-red-500 hover:text-red-700" data-id="${card.firestoreId}" title="حذف کارت"><i data-lucide="trash-2"></i></button>` : ''}
+                        </div>
+                    </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-right text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3">تاریخ</th>
-                                <th scope="col" class="px-6 py-3">مورد</th>
-                                <th scope="col" class="px-6 py-3">کارت</th>
-                                <th scope="col" class="px-6 py-3">مبلغ (تومان)</th>
-                                <th scope="col" class="px-6 py-3">فاکتور</th>
-                                <th scope="col" class="px-6 py-3">عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>${expensesRows}</tbody>
-                        <tfoot class="bg-gray-100 font-semibold">
-                            <tr>
-                                <td colspan="3" class="px-6 py-3 text-left">جمع کل:</td>
-                                <td colspan="3" class="px-6 py-3 font-mono">${totalExpenses.toLocaleString('fa-IR')} تومان</td>
-                            </tr>
-                        </tfoot>
-                    </table>
+            `).join('');
+
+            const expensesRows = state.expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(exp => `
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4">${toPersianDate(exp.date)}</td>
+                    <td class="px-6 py-4">${exp.item}</td>
+                    <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
+                    <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
+                    <td class="px-6 py-4">
+                        ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> مشاهده</a>` : '-'}
+                    </td>
+                     <td class="px-6 py-4">
+                        ${canEdit() ? `<button class="delete-expense-btn text-red-600 hover:underline" data-id="${exp.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+            
+            const chargeHistoryRows = state.chargeHistory.sort((a,b) => b.chargedAt?.toDate() - a.chargedAt?.toDate()).map(log => `
+                 <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4">${toPersianDate(log.chargedAt)}</td>
+                    <td class="px-6 py-4">${log.cardName}</td>
+                    <td class="px-6 py-4 font-mono text-green-600 font-semibold">+${log.amount.toLocaleString('fa-IR')}</td>
+                    <td class="px-6 py-4 text-xs text-gray-500">${log.chargedBy}</td>
+                </tr>
+            `).join('');
+            
+            const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+            return `
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">مدیریت هزینه‌ها</h1>
                 </div>
-            </div>
-        </div>
-    `;
-}
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="lg:col-span-1 card bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
+                        <div class="space-y-3 mb-4" id="cards-list">${cardsHtml || '<p class="text-sm text-gray-500">کارتی ثبت نشده است.</p>'}</div>
+                        ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">افزودن کارت جدید</button>` : ''}
+                    </div>
+                    <div class="lg:col-span-2 card bg-white p-6 rounded-lg shadow-md">
+                         <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold">لیست هزینه‌ها</h3>
+                            ${canEdit() ? `<button id="add-expense-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">افزودن هزینه</button>` : ''}
+                        </div>
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="w-full text-sm text-right text-gray-500">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">تاریخ</th>
+                                        <th scope="col" class="px-6 py-3">مورد</th>
+                                        <th scope="col" class="px-6 py-3">کارت</th>
+                                        <th scope="col" class="px-6 py-3">مبلغ (تومان)</th>
+                                        <th scope="col" class="px-6 py-3">فاکتور</th>
+                                        <th scope="col" class="px-6 py-3">عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${expensesRows || '<tr><td colspan="6" class="text-center p-4">هزینه‌ای ثبت نشده است.</td></tr>'}</tbody>
+                                <tfoot class="bg-gray-100 font-semibold sticky bottom-0">
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-3 text-left">جمع کل هزینه‌ها:</td>
+                                        <td colspan="3" class="px-6 py-3 font-mono">${totalExpenses.toLocaleString('fa-IR')} تومان</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md">
+                     <h3 class="font-semibold mb-4">تاریخچه شارژ کارت‌ها</h3>
+                     <div class="overflow-x-auto max-h-80">
+                         <table class="w-full text-sm text-right text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">تاریخ شارژ</th>
+                                    <th scope="col" class="px-6 py-3">نام کارت</th>
+                                    <th scope="col" class="px-6 py-3">مبلغ شارژ (تومان)</th>
+                                    <th scope="col" class="px-6 py-3">کاربر</th>
+                                </tr>
+                            </thead>
+                            <tbody>${chargeHistoryRows || '<tr><td colspan="4" class="text-center p-4">سابقه‌ای برای شارژ کارت‌ها وجود ندارد.</td></tr>'}</tbody>
+                        </table>
+                     </div>
+                </div>
+            `;
+        },
         };
 
         // --- NAVIGATION & ROUTING ---
@@ -1244,50 +1275,57 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
         };
         
         // --- [FIX START] ADDED EXPENSES PAGE LISTENERS AND HELPERS ---
-        const setupExpensesPageListeners = () => {
-            document.getElementById('add-card-btn')?.addEventListener('click', () => showPettyCashCardForm());
-            document.getElementById('add-expense-btn')?.addEventListener('click', () => showExpenseForm());
+    const setupExpensesPageListeners = () => {
+        document.getElementById('add-card-btn')?.addEventListener('click', () => showPettyCashCardForm());
+        document.getElementById('add-expense-btn')?.addEventListener('click', () => showExpenseForm());
 
-            mainContent.addEventListener('click', (e) => {
-                const deleteCardBtn = e.target.closest('.delete-card-btn');
-                const deleteExpenseBtn = e.target.closest('.delete-expense-btn');
+        mainContent.addEventListener('click', (e) => {
+            const deleteCardBtn = e.target.closest('.delete-card-btn');
+            const deleteExpenseBtn = e.target.closest('.delete-expense-btn');
+            const chargeCardBtn = e.target.closest('.charge-card-btn'); // <<-- این خط جدید است
 
-                if (deleteCardBtn) {
-                    const cardId = deleteCardBtn.dataset.id;
-                    showConfirmationModal('حذف کارت تنخواه', 'آیا از حذف این کارت مطمئن هستید؟', async () => {
-                        try {
-                            await deleteDoc(doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId));
-                            showToast('کارت با موفقیت حذف شد.');
-                        } catch (error) {
-                            console.error("Error deleting card:", error);
-                            showToast('خطا در حذف کارت.', 'error');
-                        }
-                    });
-                }
+            if (chargeCardBtn) { // <<-- این بلوک if جدید است
+                const cardId = chargeCardBtn.dataset.id;
+                const cardName = chargeCardBtn.dataset.name;
+                showChargeCardForm(cardId, cardName);
+            }
 
-                if (deleteExpenseBtn) {
-                    const expenseId = deleteExpenseBtn.dataset.id;
-                    showConfirmationModal('حذف هزینه', 'آیا از حذف این هزینه مطمئن هستید؟', async () => {
-                        try {
-                            const expenseToDelete = state.expenses.find(ex => ex.firestoreId === expenseId);
-                            if (expenseToDelete) {
-                                const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, expenseToDelete.cardId);
-                                const cardSnap = await getDoc(cardRef);
-                                if (cardSnap.exists()) {
-                                    const currentBalance = cardSnap.data().balance || 0;
-                                    await updateDoc(cardRef, { balance: currentBalance + expenseToDelete.amount });
-                                }
+            if (deleteCardBtn) {
+                const cardId = deleteCardBtn.dataset.id;
+                showConfirmationModal('حذف کارت تنخواه', 'آیا از حذف این کارت مطمئن هستید؟ تمام تاریخچه آن باقی می‌ماند.', async () => {
+                    try {
+                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId));
+                        showToast('کارت با موفقیت حذف شد.');
+                    } catch (error) {
+                        console.error("Error deleting card:", error);
+                        showToast('خطا در حذف کارت.', 'error');
+                    }
+                });
+            }
+
+            if (deleteExpenseBtn) {
+                const expenseId = deleteExpenseBtn.dataset.id;
+                showConfirmationModal('حذف هزینه', 'آیا از حذف این هزینه مطمئن هستید؟ مبلغ آن به کارت بازگردانده می‌شود.', async () => {
+                    try {
+                        const expenseToDelete = state.expenses.find(ex => ex.firestoreId === expenseId);
+                        if (expenseToDelete) {
+                            const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, expenseToDelete.cardId);
+                            const cardSnap = await getDoc(cardRef);
+                            if (cardSnap.exists()) {
+                                const currentBalance = cardSnap.data().balance || 0;
+                                await updateDoc(cardRef, { balance: currentBalance + expenseToDelete.amount });
                             }
-                            await deleteDoc(doc(db, `artifacts/${appId}/public/data/expenses`, expenseId));
-                            showToast('هزینه با موفقیت حذف شد.');
-                        } catch (error) {
-                            console.error("Error deleting expense:", error);
-                            showToast('خطا در حذف هزینه.', 'error');
                         }
-                    });
-                }
-            });
-        };
+                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/expenses`, expenseId));
+                        showToast('هزینه با موفقیت حذف شد.');
+                    } catch (error) {
+                        console.error("Error deleting expense:", error);
+                        showToast('خطا در حذف هزینه.', 'error');
+                    }
+                });
+            }
+        });
+    };
 
         const showPettyCashCardForm = (cardId = null) => {
             const isEditing = cardId !== null;
@@ -1409,6 +1447,75 @@ const showExpenseForm = () => {
         }
     });
 };
+        const showChargeCardForm = (cardId, cardName) => {
+        modalTitle.innerText = `شارژ کارت تنخواه: ${cardName}`;
+        modalContent.innerHTML = `
+            <form id="charge-card-form" class="space-y-4">
+                <div>
+                    <label class="block font-medium">مبلغ شارژ (تومان)</label>
+                    <input type="number" id="charge-amount" class="w-full p-2 border rounded-md" required>
+                </div>
+                <div class="pt-6 flex justify-end">
+                    <button type="submit" id="submit-charge-btn" class="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700">تایید و شارژ</button>
+                </div>
+            </form>
+        `;
+        openModal(mainModal, mainModalContainer);
+
+        document.getElementById('charge-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-charge-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'در حال پردازش...';
+
+            const amount = Number(document.getElementById('charge-amount').value);
+            if (amount <= 0) {
+                showToast("مبلغ شارژ باید مثبت باشد.", "error");
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'تایید و شارژ';
+                return;
+            }
+
+            try {
+                const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId);
+                const chargeHistoryRef = collection(db, `artifacts/${appId}/public/data/chargeHistory`);
+                const cardSnap = await getDoc(cardRef);
+
+                if (cardSnap.exists()) {
+                    const currentBalance = cardSnap.data().balance || 0;
+                    const newBalance = currentBalance + amount;
+
+                    const batch = writeBatch(db);
+                    
+                    // 1. Update card balance
+                    batch.update(cardRef, { balance: newBalance });
+
+                    // 2. Log the transaction
+                    batch.set(doc(chargeHistoryRef), {
+                        cardId: cardId,
+                        cardName: cardName,
+                        amount: amount,
+                        chargedAt: serverTimestamp(),
+                        chargedBy: state.currentUser.email
+                    });
+
+                    await batch.commit();
+                    closeModal(mainModal, mainModalContainer);
+                    showToast(`کارت ${cardName} با موفقیت شارژ شد.`);
+                } else {
+                    showToast("کارت مورد نظر یافت نشد.", "error");
+                }
+            } catch (error) {
+                console.error("Error charging card:", error);
+                showToast("خطا در عملیات شارژ کارت.", "error");
+            } finally {
+                 if(document.getElementById('submit-charge-btn')) { // Check if modal is still open
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'تایید و شارژ';
+                 }
+            }
+        });
+    };
         // --- [FIX END] ---
 
         // --- MODAL & FORM LOGIC ---
