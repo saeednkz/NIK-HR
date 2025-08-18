@@ -819,14 +819,14 @@ dashboard: () => {
 
     const highRiskHtml = highRiskEmployees.length > 0 
         ? highRiskEmployees.map(emp => {
-            const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
+            const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
             return `<div class="p-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
                             <div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div>
-                            <div><p class="text-sm font-semibold text-red-800">${emp.name}</p></div>
+                            <div><p class="text-sm font-semibold text-purple-800">${emp.name}</p></div>
                         </div>
-                        <span class="text-lg font-bold text-red-600">${emp.attritionRisk.score}%</span>
+                        <span class="text-lg font-bold text-purple-600">${emp.attritionRisk.score}%</span>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div>
                 </div>`
@@ -919,6 +919,7 @@ dashboard: () => {
         </div>
     `;
 },
+// ... ادامه سایر صفحات
 // ... ادامه سایر صفحات
 // ... ادامه سایر صفحات
     talent: () => {
@@ -1522,7 +1523,7 @@ const renderAllReminders = () => {
                     text: `ارزیابی عملکرد معوق: ${emp.name}`,
                     subtext: `آخرین ارزیابی: ${toPersianDate(lastReviewDate)}`,
                     icon: 'clipboard-x',
-                    color: 'orange'
+                    color: 'teal'
                 });
             }
         }
