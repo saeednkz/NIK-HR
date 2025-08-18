@@ -300,64 +300,92 @@
 
         // --- SURVEY TEMPLATES (EXPANDED) ---
    // --- SURVEY TEMPLATES (EXPANDED) ---
-    const surveyTemplates = {
-        'engagement': {
-            id: 'engagement',
-            title: 'نظرسنجی جامع مشارکت کارکنان',
-            description: 'سنجش عمیق سطح تعهد، انگیزه و رضایت شغلی کارکنان بر اساس استانداردهای جهانی.',
-            categories: {
-                alignment: 'هم‌راستایی و اهداف',
-                growth: 'رشد و توسعه',
-                management: 'مدیریت و راهبری',
-                recognition: 'قدردانی و ارزش‌گذاری',
-                wellbeing: 'سلامت و تعادل کار و زندگی'
-            },
-            questions: [
-                // Alignment
-                { id: 'q1', category: 'alignment', text: 'من به وضوح می‌دانم که کار من چگونه به اهداف کلی شرکت کمک می‌کند.', type: 'rating_1_5' },
-                { id: 'q2', category: 'alignment', text: 'من به ماموریت و چشم‌انداز شرکت باور دارم.', type: 'rating_1_5' },
-                // Growth
-                { id: 'q3', category: 'growth', text: 'در شغل فعلی‌ام فرصت‌های کافی برای یادگیری و رشد حرفه‌ای دارم.', type: 'rating_1_5' },
-                { id: 'q4', category: 'growth', text: 'شرکت در توسعه مهارت‌های من سرمایه‌گذاری می‌کند.', type: 'rating_1_5' },
-                // Management
-                { id: 'q5', category: 'management', text: 'مدیر مستقیم من به طور منظم بازخوردهای سازنده و مفیدی به من ارائه می‌دهد.', type: 'rating_1_5' },
-                { id: 'q6', category: 'management', text: 'من برای انجام کارم از استقلال و اختیار کافی برخوردارم.', type: 'rating_1_5' },
-                { id: 'q7', category: 'management', text: 'مدیر من به من به عنوان یک فرد اهمیت می‌دهد.', type: 'rating_1_5' },
-                // Recognition
-                { id: 'q8', category: 'recognition', text: 'وقتی کارم را به خوبی انجام می‌دهم، احساس می‌کنم از من قدردانی می‌شود.', type: 'rating_1_5' },
-                { id: 'q9', category: 'recognition', text: 'فرآیندهای ارزیابی و ترفیع در شرکت منصفانه هستند.', type: 'rating_1_5' },
-                // Wellbeing
-                { id: 'q10', category: 'wellbeing', text: 'حجم کاری من قابل مدیریت است و باعث فرسودگی شغلی‌ام نمی‌شود.', type: 'rating_1_5' },
-                { id: 'q11', category: 'wellbeing', text: 'من می‌توانم تعادل مناسبی بین کار و زندگی شخصی‌ام برقرار کنم.', type: 'rating_1_5' },
-                // Overall
-                { id: 'q12', category: 'overall', text: 'با توجه به همه جوانب، این شرکت را به عنوان یک محیط کاری عالی به دیگران توصیه می‌کنم.', type: 'rating_1_5' },
-                { id: 'q13', category: 'overall', text: 'چه چیزی را در فرهنگ شرکت بیشتر از همه دوست دارید؟', type: 'open_text' },
-                { id: 'q14', category: 'overall', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
-            ]
-        },
-        // بقیه قالب‌های نظرسنجی مثل قبل باقی می‌مانند
-        'pulse': {
-            id: 'pulse',
-            title: 'نظرسنجی پالس هفتگی',
-            description: 'یک نظرسنجی سریع برای سنجش نبض سازمان و حال و هوای کارکنان.',
-            questions: [
-                { id: 'q1', text: 'در مقیاس ۱ تا ۵، چقدر از هفته کاری خود رضایت داشتید؟ (۱=خیلی کم، ۵=خیلی زیاد)', type: 'rating_1_5' },
-                { id: 'q2', text: 'آیا احساس می‌کنید در هفته گذشته به اندازه کافی از شما قدردانی شده است؟', type: 'yes_no' },
-                { id: 'q3', text: 'بزرگترین چالش شما در این هفته چه بود؟', type: 'open_text' },
-            ]
-        },
-        'feedback_360': {
-            id: 'feedback_360',
-            title: 'نظرسنجی بازخورد ۳۶۰ درجه',
-            description: 'ارائه بازخورد سازنده به همکاران برای کمک به رشد حرفه‌ای آن‌ها.',
-            requiresTarget: true,
-            questions: [
-                { id: 'q1', text: 'این همکار چقدر در ارتباطات خود شفاف و موثر است؟', type: 'rating_1_5' },
-                { id: 'q2', text: 'این همکار تا چه حد در کار تیمی مشارکت می‌کند و به دیگران کمک می‌کند؟', type: 'rating_1_5' },
-                { id: 'q3', text: 'چه پیشنهادی برای رشد و پیشرفت این همکار دارید؟', type: 'open_text' },
-            ]
-        },
-    };
+  // --- SURVEY TEMPLATES (EXPANDED & COMPLETE) ---
+ 		const surveyTemplates = {
+ 			'engagement': {
+ 				id: 'engagement',
+ 				title: 'نظرسنجی جامع مشارکت کارکنان',
+ 				description: 'سنجش عمیق سطح تعهد، انگیزه و رضایت شغلی کارکنان بر اساس استانداردهای جهانی.',
+ 				categories: {
+ 					alignment: 'هم‌راستایی و اهداف',
+ 					growth: 'رشد و توسعه',
+ 					management: 'مدیریت و راهبری',
+ 					recognition: 'قدردانی و ارزش‌گذاری',
+ 					wellbeing: 'سلامت و تعادل کار و زندگی'
+ 				},
+ 				questions: [
+ 					// Alignment
+ 					{ id: 'q1', category: 'alignment', text: 'من به وضوح می‌دانم که کار من چگونه به اهداف کلی شرکت کمک می‌کند.', type: 'rating_1_5' },
+ 					{ id: 'q2', category: 'alignment', text: 'من به ماموریت و چشم‌انداز شرکت باور دارم.', type: 'rating_1_5' },
+ 					// Growth
+ 					{ id: 'q3', category: 'growth', text: 'در شغل فعلی‌ام فرصت‌های کافی برای یادگیری و رشد حرفه‌ای دارم.', type: 'rating_1_5' },
+ 					{ id: 'q4', category: 'growth', text: 'شرکت در توسعه مهارت‌های من سرمایه‌گذاری می‌کند.', type: 'rating_1_5' },
+ 					// Management
+ 					{ id: 'q5', category: 'management', text: 'مدیر مستقیم من به طور منظم بازخوردهای سازنده و مفیدی به من ارائه می‌دهد.', type: 'rating_1_5' },
+ 					{ id: 'q6', category: 'management', text: 'من برای انجام کارم از استقلال و اختیار کافی برخوردارم.', type: 'rating_1_5' },
+ 					{ id: 'q7', category: 'management', text: 'مدیر من به من به عنوان یک فرد اهمیت می‌دهد.', type: 'rating_1_5' },
+ 					// Recognition
+ 					{ id: 'q8', category: 'recognition', text: 'وقتی کارم را به خوبی انجام می‌دهم، احساس می‌کنم از من قدردانی می‌شود.', type: 'rating_1_5' },
+ 					{ id: 'q9', category: 'recognition', text: 'فرآیندهای ارزیابی و ترفیع در شرکت منصفانه هستند.', type: 'rating_1_5' },
+ 					// Wellbeing
+ 					{ id: 'q10', category: 'wellbeing', text: 'حجم کاری من قابل مدیریت است و باعث فرسودگی شغلی‌ام نمی‌شود.', type: 'rating_1_5' },
+ 					{ id: 'q11', category: 'wellbeing', text: 'من می‌توانم تعادل مناسبی بین کار و زندگی شخصی‌ام برقرار کنم.', type: 'rating_1_5' },
+ 					// Overall
+ 					{ id: 'q12', category: 'overall', text: 'با توجه به همه جوانب، این شرکت را به عنوان یک محیط کاری عالی به دیگران توصیه می‌کنم.', type: 'rating_1_5' },
+ 					{ id: 'q13', category: 'overall', text: 'چه چیزی را در فرهنگ شرکت بیشتر از همه دوست دارید؟', type: 'open_text' },
+ 					{ id: 'q14', category: 'overall', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
+ 				]
+ 			},
+ 			'pulse': {
+ 				id: 'pulse',
+ 				title: 'نظرسنجی پالس هفتگی',
+ 				description: 'یک نظرسنجی سریع برای سنجش نبض سازمان و حال و هوای کارکنان.',
+ 				questions: [
+ 					{ id: 'q1', text: 'در مقیاس ۱ تا ۵، چقدر از هفته کاری خود رضایت داشتید؟ (۱=خیلی کم، ۵=خیلی زیاد)', type: 'rating_1_5' },
+ 					{ id: 'q2', text: 'حجم کاری خود را در این هفته چگونه ارزیابی می‌کنید؟', type: 'choice', options: ['خیلی کم', 'مناسب', 'خیلی زیاد'] },
+ 					{ id: 'q3', text: 'آیا احساس می‌کنید در هفته گذشته به اندازه کافی از شما قدردانی شده است؟', type: 'yes_no' },
+ 					{ id: 'q4', text: 'بزرگترین چالش شما در این هفته چه بود؟', type: 'open_text' },
+ 					{ id: 'q5', text: 'چه چیزی را می‌توانیم برای هفته آینده بهبود دهیم؟', type: 'open_text' },
+ 				]
+ 			},
+ 			'onboarding': {
+ 				id: 'onboarding',
+ 				title: 'نظرسنجی تجربه جذب و آنبوردینگ',
+ 				description: 'جمع‌آوری بازخورد از نیروهای جدید برای بهبود فرآیند ورود به سازمان.',
+ 				questions: [
+ 					{ id: 'q1', text: 'فرآیند مصاحبه و جذب چقدر شفاف و حرفه‌ای بود؟', type: 'rating_1_5' },
+ 					{ id: 'q2', text: 'آیا در هفته اول کاری، تمام ابزارها و دسترسی‌های لازم را در اختیار داشتید؟', type: 'yes_no' },
+ 					{ id: 'q3', text: 'معرفی شما به تیم و همکاران چگونه بود؟', type: 'rating_1_5' },
+ 					{ id: 'q4', text: 'آیا شرح وظایف و انتظارات از شما در ابتدای کار روشن بود؟', type: 'yes_no' },
+ 					{ id: 'q5', text: 'چه پیشنهادی برای بهبود تجربه آنبوردینگ نیروهای جدید دارید؟', type: 'open_text' },
+ 				]
+ 			},
+ 			'feedback_360': {
+ 				id: 'feedback_360',
+ 				title: 'نظرسنجی بازخورد ۳۶۰ درجه',
+ 				description: 'ارائه بازخورد سازنده به همکاران برای کمک به رشد حرفه‌ای آن‌ها.',
+ 				requiresTarget: true,
+ 				questions: [
+ 					{ id: 'q1', text: 'این همکار چقدر در ارتباطات خود شفاف و موثر است؟', type: 'rating_1_5' },
+ 					{ id: 'q2', text: 'این همکار تا چه حد در کار تیمی مشارکت می‌کند و به دیگران کمک می‌کند؟', type: 'rating_1_5' },
+ 					{ id: 'q3', text: 'این همکار در حل مسائل و چالش‌ها چقدر خلاق و کارآمد است؟', type: 'rating_1_5' },
+ 					{ id: 'q4', text: 'یکی از نقاط قوت کلیدی این همکار چیست که باید به آن ادامه دهد؟', type: 'open_text' },
+ 					{ id: 'q5', text: 'چه پیشنهادی برای رشد و پیشرفت این همکار دارید؟', type: 'open_text' },
+ 				]
+ 			},
+ 			'exit': {
+ 				id: 'exit',
+ 				title: 'نظرسنجی خروج از سازمان',
+ 				description: 'درک دلایل ترک سازمان برای بهبود محیط کاری برای کارمندان آینده.',
+ 				questions: [
+ 					{ id: 'q1', text: 'دلیل اصلی شما برای ترک سازمان چیست؟', type: 'open_text' },
+ 					{ id: 'q2', text: 'در مقیاس ۱ تا ۵، از تجربه کاری خود در این شرکت چقدر رضایت داشتید؟', type: 'rating_1_5' },
+ 					{ id: 'q3', text: 'رابطه شما با مدیر مستقیمتان چگونه بود؟', type: 'rating_1_5' },
+ 					{ id: 'q4', text: 'آیا این شرکت را به عنوان یک محیط کاری به دیگران توصیه می‌کنید؟', type: 'yes_no' },
+ 					{ id: 'q5', text: 'اگر می‌توانستید یک چیز را در شرکت تغییر دهید، آن چه بود؟', type: 'open_text' },
+ 				]
+ 			}
+ 		};
 
 
         // --- GLOBAL STATE & CONFIG ---
