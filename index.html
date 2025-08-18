@@ -992,13 +992,33 @@ const calculateAndApplyAnalytics = () => {
         const mainContent = document.getElementById('main-content');
         
      const pages = {
-     dashboard: () => {
+ dashboard: () => {
             calculateDashboardMetrics();
             const metrics = state.dashboardMetrics;
             if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
             
+            const highRiskEmployees = state.employees
+                .filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60)
+                .sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
+
+            const highRiskHtml = highRiskEmployees.length > 0 
+                ? highRiskEmployees.map(emp => {
+                    const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
+                    return `<div class="bg-red-50 p-3 rounded-md">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div>
+                                        <div><p class="text-sm font-semibold text-red-800">${emp.name}</p></div>
+                                    </div>
+                                    <span class="text-lg font-bold text-red-600">${emp.attritionRisk.score}%</span>
+                                </div>
+                                <div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div>
+                            </div>`
+                }).join('') 
+                : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
+
             return `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد</h1>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد استراتژیک</h1>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                     <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
                         <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
@@ -1013,8 +1033,37 @@ const calculateAndApplyAnalytics = () => {
                         <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
                     </div>
                      <div class="card bg-white p-6 rounded-lg shadow-md flex items-center">
-                        <div class="bg-red-100 p-3 rounded-full mr-4"><i data-lucide="heart-pulse" class="text-red-600"></i></div>
-                        <div><p class="text-gray-500 text-sm">امتیاز مشارکت</p><p class="text-2xl font-bold text-gray-800">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</p></div>
+                        <div class="bg-purple-100 p-3 rounded-full mr-4"><i data-lucide="recycle" class="text-purple-600"></i></div>
+                        <div><p class="text-gray-500 text-sm">جابجایی داخلی</p><p class="text-2xl font-bold text-gray-800">${metrics.internalMobilityRate}%</p></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="card bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                        <h3 class="font-semibold mb-4 flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
+                        <div id="remindersList" class="space-y-4 mb-4 max-h-48 overflow-y-auto pr-2">${renderAllReminders()}</div>
+                        ${canEdit() ? `<div class="border-t pt-4">
+                            <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
+                                <input type="text" id="reminderDate" class="p-2 border rounded-md text-sm">
+                                <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                    <div class="space-y-6">
+                        <div class="card bg-white p-6 rounded-lg shadow-md">
+                            <p class="text-gray-500 text-sm flex items-center">امتیاز مشارکت کارکنان <i data-lucide="heart-pulse" class="mr-2 text-green-500"></i></p>
+                            <div class="relative w-40 h-20 mx-auto mt-2">
+                                <canvas id="engagementGaugeDashboard"></canvas>
+                                <div class="absolute inset-0 flex items-center justify-center -bottom-4">
+                                    <span class="text-3xl font-bold text-green-600">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card bg-white p-6 rounded-lg shadow-md">
+                            <p class="text-gray-500 text-sm flex items-center">ریسک خروج استعدادهای کلیدی <i data-lucide="shield-alert" class="mr-2 text-red-500"></i></p>
+                            <div class="mt-3 space-y-2">${highRiskHtml}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1022,7 +1071,7 @@ const calculateAndApplyAnalytics = () => {
                     <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">توزیع دپارتمان‌ها</h3><div class="relative h-64"><canvas id="departmentDistributionChart"></canvas></div></div>
                     <div class="card bg-white p-6 rounded-lg shadow-md"><h3 class="font-semibold mb-4">ترکیب جنسیتی</h3><div class="relative h-64"><canvas id="genderCompositionChart"></canvas></div></div>
                 </div>`;
-        },
+        },,
         talent: () => {
             if(state.employees.length === 0) return `<div class="text-center p-10 card"><i data-lucide="user-plus" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز کارمندی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین کارمند سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-employee-btn-empty" class="mt-6 bg-indigo-500 text-white py-2 px-5 rounded-lg hover:bg-indigo-600 shadow-md transition">افزودن کارمند جدید</button>` : ''}</div>`;
             return `
