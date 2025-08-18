@@ -577,20 +577,29 @@ const toPersianDate = (dateInput) => {
 };
 // --- تابع جدید برای تبدیل تاریخ شمسی ورودی به فرمت میلادی برای ذخیره ---
 const persianToEnglishDate = (persianDateStr) => {
-    if (!persianDateStr || !/^\d{4}\/\d{2}\/\d{2}$/.test(persianDateStr)) {
-        console.error("Invalid Persian date format. Expected YYYY/MM/DD");
-        return null; // Return null for invalid format
-    }
-    try {
-        const [jy, jm, jd] = persianDateStr.split('/').map(Number);
-        const gregorian = jalaali.toGregorian(jy, jm, jd);
-        // Return date in 'YYYY-MM-DD' format, which is universally accepted
-        return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
-    } catch (error) {
-        console.error("Error converting Persian to Gregorian:", error);
-        return null;
-    }
-};
+        // اگر ورودی خالی است، همان لحظه خارج شو
+        if (!persianDateStr) return null;
+
+        // اگر ورودی یک عدد (timestamp) بود، آن را به فرمت صحیح تبدیل کن
+        if (!isNaN(persianDateStr) && typeof persianDateStr !== 'string') {
+            const date = new persianDate(persianDateStr);
+            persianDateStr = date.format('YYYY/MM/DD');
+        }
+
+        // حالا با فرمت صحیح، به میلادی تبدیل کن
+        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(persianDateStr)) {
+            console.error("Invalid Persian date format. Expected YYYY/MM/DD, but got:", persianDateStr);
+            return null;
+        }
+        try {
+            const [jy, jm, jd] = persianDateStr.split('/').map(Number);
+            const gregorian = jalaali.toGregorian(jy, jm, jd);
+            return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
+        } catch (error) {
+            console.error("Error converting Persian to Gregorian:", error);
+            return null;
+        }
+    };
 
 // --- تابع جدید برای فعال‌سازی تقویم شمسی روی یک فیلد ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
