@@ -1177,6 +1177,9 @@ expenses: () => {
                     <td class="px-6 py-4">${log.cardName}</td>
                     <td class="px-6 py-4 font-mono text-green-600 font-semibold">+${log.amount.toLocaleString('fa-IR')}</td>
                     <td class="px-6 py-4 text-xs text-gray-500">${log.chargedBy}</td>
+                    <td class="px-6 py-4">
+                        ${canEdit() ? `<button class="delete-charge-log-btn text-red-600 hover:underline" data-id="${log.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+                    </td>
                 </tr>
             `).join('');
             
@@ -1230,9 +1233,10 @@ expenses: () => {
                                     <th scope="col" class="px-6 py-3">نام کارت</th>
                                     <th scope="col" class="px-6 py-3">مبلغ شارژ (تومان)</th>
                                     <th scope="col" class="px-6 py-3">کاربر</th>
+                                    <th scope="col" class="px-6 py-3">عملیات</th>
                                 </tr>
                             </thead>
-                            <tbody>${chargeHistoryRows || '<tr><td colspan="4" class="text-center p-4">سابقه‌ای برای شارژ کارت‌ها وجود ندارد.</td></tr>'}</tbody>
+                            <tbody>${chargeHistoryRows || '<tr><td colspan="5" class="text-center p-4">سابقه‌ای برای شارژ کارت‌ها وجود ندارد.</td></tr>'}</tbody>
                         </table>
                      </div>
                 </div>
@@ -1726,19 +1730,55 @@ expenses: () => {
         };
         
         // --- [FIX START] ADDED EXPENSES PAGE LISTENERS AND HELPERS ---
-    const setupExpensesPageListeners = () => {
+  const setupExpensesPageListeners = () => {
         document.getElementById('add-card-btn')?.addEventListener('click', () => showPettyCashCardForm());
         document.getElementById('add-expense-btn')?.addEventListener('click', () => showExpenseForm());
 
         mainContent.addEventListener('click', (e) => {
             const deleteCardBtn = e.target.closest('.delete-card-btn');
             const deleteExpenseBtn = e.target.closest('.delete-expense-btn');
-            const chargeCardBtn = e.target.closest('.charge-card-btn'); // <<-- این خط جدید است
+            const chargeCardBtn = e.target.closest('.charge-card-btn');
+            const deleteChargeLogBtn = e.target.closest('.delete-charge-log-btn'); // <<-- خط جدید
 
-            if (chargeCardBtn) { // <<-- این بلوک if جدید است
+            if (chargeCardBtn) {
                 const cardId = chargeCardBtn.dataset.id;
                 const cardName = chargeCardBtn.dataset.name;
                 showChargeCardForm(cardId, cardName);
+            }
+
+            if (deleteChargeLogBtn) { // <<-- بلوک if جدید
+                const logId = deleteChargeLogBtn.dataset.id;
+                showConfirmationModal('حذف سابقه شارژ', 'آیا مطمئن هستید؟ مبلغ شارژ از موجودی کارت کسر خواهد شد.', async () => {
+                    try {
+                        const logToDelete = state.chargeHistory.find(log => log.firestoreId === logId);
+                        if (!logToDelete) {
+                            showToast("سابقه مورد نظر یافت نشد.", "error");
+                            return;
+                        }
+
+                        const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, logToDelete.cardId);
+                        const chargeLogRef = doc(db, `artifacts/${appId}/public/data/chargeHistory`, logId);
+                        
+                        const cardSnap = await getDoc(cardRef);
+                        if (cardSnap.exists()) {
+                            const batch = writeBatch(db);
+                            const currentBalance = cardSnap.data().balance || 0;
+                            // کم کردن مبلغ شارژ از موجودی فعلی
+                            batch.update(cardRef, { balance: currentBalance - logToDelete.amount });
+                            // حذف لاگ شارژ
+                            batch.delete(chargeLogRef);
+                            await batch.commit();
+                            showToast('سابقه شارژ با موفقیت حذف شد.');
+                        } else {
+                             // اگر کارت حذف شده بود، فقط لاگ را پاک کن
+                            await deleteDoc(chargeLogRef);
+                            showToast('سابقه شارژ حذف شد (کارت یافت نشد).');
+                        }
+                    } catch (error) {
+                        console.error("Error deleting charge log:", error);
+                        showToast("خطا در حذف سابقه شارژ.", "error");
+                    }
+                });
             }
 
             if (deleteCardBtn) {
