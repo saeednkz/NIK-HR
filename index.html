@@ -1001,14 +1001,11 @@ organization: () => {
             personnelIds.add(team.leaderId);
         }
         const memberCount = personnelIds.size;
-        
         const engagementScore = team.engagementScore || 0;
-        
         const okrProgress = (team.okrs && team.okrs.length > 0)
             ? Math.round(team.okrs.reduce((sum, okr) => sum + okr.progress, 0) / team.okrs.length)
             : 0;
 
-        // انتخاب رنگ حاشیه از پالت
         const borderColor = teamColorPalette[index % teamColorPalette.length];
 
         return `
@@ -1038,10 +1035,20 @@ organization: () => {
                     </div>
                 </div>
 
-                <div class="px-6 py-4 mt-auto flex justify-center items-center">
-                    <button class="view-team-profile-btn w-full text-sm bg-slate-800 text-white py-2.5 px-5 rounded-lg hover:bg-slate-900 shadow-sm transition" data-team-id="${team.firestoreId}">
-                        مشاهده پروفایل
-                    </button>
+                <div class="px-6 py-4 mt-auto flex justify-between items-center">
+                    <div class="flex -space-x-2 overflow-hidden">
+                        ${(Array.from(personnelIds).slice(0, 4)).map(memberId => {
+                            const member = state.employees.find(e => e.id === memberId);
+                            return member ? `<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : '';
+                        }).join('')}
+                        ${memberCount > 4 ? `<div class="flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 text-slate-600 text-xs font-medium ring-2 ring-white">+${memberCount - 4}</div>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${isAdmin() ? `<button class="delete-team-btn p-2 text-slate-400 hover:text-rose-500 transition-colors" data-team-id="${team.firestoreId}" title="حذف تیم"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
+                        <button class="view-team-profile-btn text-sm bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 shadow-sm transition" data-team-id="${team.firestoreId}">
+                            مشاهده
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
