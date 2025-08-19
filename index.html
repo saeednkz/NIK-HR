@@ -952,15 +952,15 @@ talent: () => {
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-right text-slate-500">
-                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 font-medium">نام</th>
-                            <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
-                            <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
-                            <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
-                            <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
-                        </tr>
-                    </thead>
+                  <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+    <tr>
+        <th scope="col" class="px-6 py-3 font-medium">نام</th>
+        <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
+        <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
+        <th scope="col" class="px-6 py-3 font-medium">وضعیت پروفایل</th> <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
+        <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
+    </tr>
+</thead>
                     
                     <tbody id="employeeTableBody"></tbody>
                     
@@ -1413,7 +1413,11 @@ const viewEmployeeProfile = (employeeId) => {
                                         <p><strong>کد ملی:</strong> ${emp.personalInfo?.nationalId || '-'}</p>
                                         <p><strong>شماره تماس:</strong> ${emp.personalInfo?.phone || '-'}</p>
                                         <p class="md:col-span-2"><strong>آدرس:</strong> ${emp.personalInfo?.address || '-'}</p>
+                                          <p><strong>کد پستی:</strong> ${emp.personalInfo?.postalCode || '-'}</p>
+                                            <p><strong>شماره ثابت:</strong> ${emp.personalInfo?.landline || '-'}</p>
+                                          <p class="md:col-span-2"><strong>مدرک تحصیلی:</strong> ${emp.personalInfo?.education || '-'}</p>
                                         <p><strong>وضعیت نظام وظیفه:</strong> ${emp.personalInfo?.militaryStatus || '-'}</p>
+                                          <p><strong>وضعیت تاهل:</strong> ${emp.personalInfo?.maritalStatus || '-'}</p>
                                         <p><strong>مخاطب اضطراری:</strong> ${emp.personalInfo?.emergencyContactName || '-'}</p>
                                     </div>
                                 </div>
@@ -1956,45 +1960,51 @@ const renderAllReminders = () => {
         }
     });
 };
-     const renderEmployeeTable = () => {
-        const TALENT_PAGE_SIZE = 10; // <<-- تعداد آیتم در هر صفحه
-        const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
-        const departmentFilter = document.getElementById('departmentFilter')?.value || '';
-        const statusFilter = document.getElementById('statusFilter')?.value || '';
-        
-        const filteredEmployees = state.employees.filter(emp =>
-            (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) &&
-            (!departmentFilter || emp.department === departmentFilter) &&
-            (!statusFilter || emp.status === statusFilter)
-        );
+const renderEmployeeTable = () => {
+    const TALENT_PAGE_SIZE = 10;
+    const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const departmentFilter = document.getElementById('departmentFilter')?.value || '';
+    const statusFilter = document.getElementById('statusFilter')?.value || '';
 
-        // منطق جدید برای برش لیست بر اساس صفحه فعلی
-        const startIndex = (state.currentPageTalent - 1) * TALENT_PAGE_SIZE;
-        const endIndex = startIndex + TALENT_PAGE_SIZE;
-        const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
-        
-        const tableBody = document.getElementById('employeeTableBody');
-        if (tableBody) {
-            tableBody.innerHTML = paginatedEmployees.map(emp => `
+    const filteredEmployees = state.employees.filter(emp =>
+        (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) &&
+        (!departmentFilter || emp.department === departmentFilter) &&
+        (!statusFilter || emp.status === statusFilter)
+    );
+
+    const startIndex = (state.currentPageTalent - 1) * TALENT_PAGE_SIZE;
+    const endIndex = startIndex + TALENT_PAGE_SIZE;
+    const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
+
+    const tableBody = document.getElementById('employeeTableBody');
+    if (tableBody) {
+        tableBody.innerHTML = paginatedEmployees.map(emp => {
+            const profileComplete = isProfileComplete(emp);
+            const profileStatusHtml = profileComplete 
+                ? `<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">کامل</span>`
+                : `<span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">ناقص</span>`;
+
+            return `
                 <tr class="bg-white border-b hover:bg-gray-50">
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 flex items-center space-x-3 space-x-reverse">
                         <img src="${emp.avatar}" alt="${emp.name}" class="w-10 h-10 rounded-full object-cover">
+                        <span class="font-medium text-gray-900 whitespace-nowrap">${emp.name}</span>
                     </td>
-                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${emp.name}</td>
                     <td class="px-6 py-4">${emp.id}</td>
                     <td class="px-6 py-4">${emp.department || '-'}</td>
+                    <td class="px-6 py-4">${profileStatusHtml}</td>
                     <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></td>
                     <td class="px-6 py-4 flex items-center gap-4">
                         <button class="view-employee-profile-btn text-blue-600 hover:underline" data-employee-id="${emp.firestoreId}">پروفایل</button>
                         ${canEdit() ? `<button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button>` : ''}
                         ${isAdmin() ? `<button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button>` : ''}
                     </td>
-                </tr>`).join('');
-        }
+                </tr>`;
+        }).join('');
+    }
 
-        // ساخت و نمایش دکمه‌های صفحه‌بندی
-        renderPagination('pagination-container', state.currentPageTalent, filteredEmployees.length, TALENT_PAGE_SIZE);
-    };
+    renderPagination('pagination-container', state.currentPageTalent, filteredEmployees.length, TALENT_PAGE_SIZE);
+};
        const setupTalentPageListeners = () => {
         // ریست کردن صفحه به ۱ هنگام جستجو یا فیلتر
         const resetToFirstPage = () => {
@@ -2560,6 +2570,11 @@ const showExpenseForm = () => {
             if (topSkill || topCompetency) { analysis.strength = { text: `نقاط قوت کلیدی: <strong>${topSkill ? topSkill[0] : ''}</strong> و <strong>${topCompetency ? topCompetency[0] : ''}</strong>.`, icon: 'star', color: 'text-amber-500' }; }
             return analysis;
         };
+        const isProfileComplete = (employee) => {
+    if (!employee.personalInfo) return false;
+    const requiredFields = ['nationalId', 'birthDate', 'phone', 'address', 'email'];
+    return requiredFields.every(field => employee.personalInfo[field]);
+};
 
         const generateTeamSmartAnalysis = (team) => {
             const analysis = {};
@@ -2682,6 +2697,10 @@ const showEmployeeForm = (employeeId = null) => {
                 const batch = writeBatch(db);
                 const docRef = doc(db, `artifacts/${appId}/public/data/employees`, isEditing ? emp.firestoreId : employeeCode);
                 batch.set(docRef, formData, { merge: true });
+                    if (formData.level === 'Manager' && newTeamId) {
+        const teamRef = doc(db, `artifacts/${appId}/public/data/teams`, newTeamId);
+        batch.update(teamRef, { leaderId: employeeCode });
+    }
 
                 if (oldTeamId !== newTeamId) {
                     if (oldTeamId) {
@@ -3205,36 +3224,54 @@ const setupProfileModalListeners = (emp) => {
         };
         // --- [FIX END] ---
 
-        const showEditPersonalInfoForm = (emp) => {
+const showEditPersonalInfoForm = (emp) => {
     modalTitle.innerText = `ویرایش اطلاعات پرسنلی برای ${emp.name}`;
     const info = emp.personalInfo || {};
-    modalContent.innerHTML = `<form id="edit-personal-info-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"><div><label class="block font-medium">کد ملی</label><input type="text" id="nationalId" value="${info.nationalId || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">تاریخ تولد</label><input type="text" id="birthDate" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">جنسیت</label><select id="gender" class="w-full p-2 border rounded-md"><option value="نامشخص" ${emp.gender === 'نامشخص' ? 'selected' : ''}>نامشخص</option><option value="مرد" ${emp.gender === 'مرد' ? 'selected' : ''}>مرد</option><option value="زن" ${emp.gender === 'زن' ? 'selected' : ''}>زن</option></select></div><div><label class="block font-medium">شماره موبایل</label><input type="tel" id="phone" value="${info.phone || ''}" class="w-full p-2 border rounded-md"></div><div class="md:col-span-2"><label class="block font-medium">آدرس</label><input type="text" id="address" value="${info.address || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">وضعیت نظام وظیفه</label><input type="text" id="militaryStatus" value="${info.militaryStatus || ''}" class="w-full p-2 border rounded-md"></div><hr class="md:col-span-2 my-2"><div><label class="block font-medium">نام مخاطب اضطراری</label><input type="text" id="emergencyContactName" value="${info.emergencyContactName || ''}" class="w-full p-2 border rounded-md"></div><div><label class="block font-medium">شماره مخاطب اضطراری</label><input type="tel" id="emergencyContactPhone" value="${info.emergencyContactPhone || ''}" class="w-full p-2 border rounded-md"></div></div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-personal" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
+    modalContent.innerHTML = `<form id="edit-personal-info-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div><label class="block font-medium">ایمیل</label><input type="email" id="email" value="${info.email || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">شماره موبایل</label><input type="tel" id="phone" value="${info.phone || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">شماره ثابت</label><input type="tel" id="landline" value="${info.landline || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">کد ملی</label><input type="text" id="nationalId" value="${info.nationalId || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">تاریخ تولد</label><input type="text" id="birthDate" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">وضعیت تاهل</label><select id="maritalStatus" class="w-full p-2 border rounded-md"><option value="مجرد" ${info.maritalStatus === 'مجرد' ? 'selected' : ''}>مجرد</option><option value="متاهل" ${info.maritalStatus === 'متاهل' ? 'selected' : ''}>متاهل</option></select></div>
+        <div class="md:col-span-2"><label class="block font-medium">مدرک تحصیلی</label><input type="text" id="education" value="${info.education || ''}" class="w-full p-2 border rounded-md"></div>
+        <div class="md:col-span-2"><label class="block font-medium">آدرس</label><input type="text" id="address" value="${info.address || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">کد پستی</label><input type="text" id="postalCode" value="${info.postalCode || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">وضعیت نظام وظیفه</label><input type="text" id="militaryStatus" value="${info.militaryStatus || ''}" class="w-full p-2 border rounded-md"></div>
+        <hr class="md:col-span-2 my-2">
+        <div><label class="block font-medium">نام مخاطب اضطراری</label><input type="text" id="emergencyContactName" value="${info.emergencyContactName || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">شماره مخاطب اضطراری</label><input type="tel" id="emergencyContactPhone" value="${info.emergencyContactPhone || ''}" class="w-full p-2 border rounded-md"></div>
+    </div><div class="pt-6 flex justify-end gap-4"><button type="button" id="back-to-profile-personal" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">بازگشت</button><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div></form>`;
 
-    activatePersianDatePicker('birthDate', info.birthDate); // فعال‌سازی تقویم شمسی
+    activatePersianDatePicker('birthDate', info.birthDate);
 
     document.getElementById('back-to-profile-personal').addEventListener('click', () => viewEmployeeProfile(emp.firestoreId));
-    document.getElementById('edit-personal-info-form').addEventListener('submit', async (e) => { 
-        e.preventDefault(); 
+    document.getElementById('edit-personal-info-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
         const gregorianBirthDate = persianToEnglishDate(document.getElementById('birthDate').value);
-        const updatedInfo = { 
-            nationalId: document.getElementById('nationalId').value, 
-            birthDate: gregorianBirthDate, 
-            phone: document.getElementById('phone').value, 
-            address: document.getElementById('address').value, 
-            militaryStatus: document.getElementById('militaryStatus').value, 
-            emergencyContactName: document.getElementById('emergencyContactName').value, 
-            emergencyContactPhone: document.getElementById('emergencyContactPhone').value, 
-        }; 
-        const gender = document.getElementById('gender').value; 
-        try { 
-            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId); 
-            await updateDoc(docRef, { personalInfo: updatedInfo, gender: gender }); 
-            showToast("اطلاعات پرسنلی به‌روزرسانی شد."); 
-            viewEmployeeProfile(emp.firestoreId); 
-        } catch (error) { 
-            console.error("Error updating personal info:", error); 
-            showToast("خطا در به‌روزرسانی اطلاعات.", "error"); 
-        } 
+        const updatedInfo = {
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            landline: document.getElementById('landline').value,
+            nationalId: document.getElementById('nationalId').value,
+            birthDate: gregorianBirthDate,
+            maritalStatus: document.getElementById('maritalStatus').value,
+            education: document.getElementById('education').value,
+            address: document.getElementById('address').value,
+            postalCode: document.getElementById('postalCode').value,
+            militaryStatus: document.getElementById('militaryStatus').value,
+            emergencyContactName: document.getElementById('emergencyContactName').value,
+            emergencyContactPhone: document.getElementById('emergencyContactPhone').value,
+        };
+        try {
+            const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
+            await updateDoc(docRef, { personalInfo: updatedInfo });
+            showToast("اطلاعات پرسنلی به‌روزرسانی شد.");
+            viewEmployeeProfile(emp.firestoreId);
+        } catch (error) {
+            console.error("Error updating personal info:", error);
+            showToast("خطا در به‌روزرسانی اطلاعات.", "error");
+        }
     });
 };
         
