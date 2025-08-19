@@ -2105,6 +2105,67 @@ const renderEmployeeTable = () => {
 
     renderPagination('pagination-container', state.currentPageTalent, filteredEmployees.length, TALENT_PAGE_SIZE);
 };
+        const exportToCSV = () => {
+    // ۱. همان منطق فیلتر کردن را اجرا می‌کنیم تا لیست فعلی را بگیریم
+    const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const departmentFilter = document.getElementById('departmentFilter')?.value || '';
+    const statusFilter = document.getElementById('statusFilter')?.value || '';
+    
+    const filteredEmployees = state.employees.filter(emp =>
+        (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) &&
+        (!departmentFilter || emp.department === departmentFilter) &&
+        (!statusFilter || emp.status === statusFilter)
+    );
+
+    if (filteredEmployees.length === 0) {
+        showToast("هیچ کارمندی برای خروجی گرفتن یافت نشد.", "error");
+        return;
+    }
+
+    // ۲. سرتیترهای فایل CSV را تعریف می‌کنیم
+    const headers = [
+        "نام", "کد پرسنلی", "عنوان شغلی", "ایمیل", "شماره موبایل",
+        "شماره ثابت", "کد ملی", "تاریخ تولد", "وضعیت تاهل", "مدرک تحصیلی",
+        "آدرس", "کد پستی"
+    ];
+    
+    // ۳. هر کارمند را به یک ردیف از داده‌ها تبدیل می‌کنیم
+    const rows = filteredEmployees.map(emp => {
+        const info = emp.personalInfo || {};
+        // برای جلوگیری از به هم ریختن CSV با کاراکترهای خاص، هر مقدار را داخل "" قرار می‌دهیم
+        const cleanValue = (val) => `"${(val || '').toString().replace(/"/g, '""')}"`;
+
+        return [
+            cleanValue(emp.name),
+            cleanValue(emp.id),
+            cleanValue(emp.jobTitle),
+            cleanValue(info.email),
+            cleanValue(info.phone),
+            cleanValue(info.landline),
+            cleanValue(info.nationalId),
+            info.birthDate ? cleanValue(toPersianDate(info.birthDate)) : '""',
+            cleanValue(info.maritalStatus),
+            cleanValue(info.education),
+            cleanValue(info.address), 
+            cleanValue(info.postalCode)
+        ].join(','); // ستون‌ها را با ویرگول جدا می‌کنیم
+    });
+
+    // ۴. محتوای کامل فایل CSV را می‌سازیم
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" // \uFEFF برای پشتیبانی از زبان فارسی در اکسل
+        + headers.join(',') + '\n'
+        + rows.join('\n');
+
+    // ۵. فایل را برای دانلود آماده می‌کنیم
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "employees_export.csv");
+    document.body.appendChild(link);
+
+    link.click(); // دانلود فایل
+    document.body.removeChild(link);
+};
 const setupTalentPageListeners = () => {
     // ریست کردن صفحه به ۱ هنگام جستجو یا فیلتر
     const resetToFirstPage = () => {
