@@ -1805,7 +1805,7 @@ const renderAllReminders = () => {
     now.setHours(0, 0, 0, 0); 
     const oneDay = 1000 * 60 * 60 * 24;
 
-    // 1. یادآورهای دستی و فیلتر شده
+    // --- بخش ۱: یادآورهای دستی و فیلتر شده ---
     state.reminders.forEach(reminder => {
         const eventDate = new Date(reminder.date);
         eventDate.setHours(0, 0, 0, 0);
@@ -1826,12 +1826,12 @@ const renderAllReminders = () => {
         }
     });
 
-    // 2. رویدادهای خودکار (بدون تغییر باقی می‌ماند)
+    // --- بخش ۲: رویدادهای هوشمند و خودکار ---
     const reminderWindowDays = 30;
     state.employees.forEach(emp => {
         if (emp.status !== 'فعال') return;
 
-        // ... تمام منطق مربوط به قرارداد، تولد، سالگرد و ... بدون تغییر باقی می‌ماند
+        // رویداد: اتمام قرارداد (در ۹۰ روز آینده)
         if (emp.contractEndDate) {
             const endDate = new Date(emp.contractEndDate);
             const daysUntilEnd = Math.round((endDate - now) / oneDay);
@@ -1845,10 +1845,82 @@ const renderAllReminders = () => {
                 });
             }
         }
-        // ... بقیه رویدادهای خودکار ...
+
+        // رویداد: تولد (در ۳ روز آینده)
+        if (emp.personalInfo?.birthDate) {
+            const birthDate = new Date(emp.personalInfo.birthDate);
+            const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+            if (nextBirthday < now) {
+                nextBirthday.setFullYear(now.getFullYear() + 1);
+            }
+            const daysUntilBirthday = Math.round((nextBirthday - now) / oneDay);
+            if (daysUntilBirthday >= 0 && daysUntilBirthday <= 3) {
+                allReminders.push({
+                    date: nextBirthday,
+                    text: `تولد: ${emp.name}`,
+                    subtext: `تاریخ تولد: ${toPersianDate(nextBirthday)}`,
+                    icon: 'cake',
+                    color: 'pink'
+                });
+            }
+        }
+
+        // رویداد: سالگرد استخدام (در ۳۰ روز آینده)
+        if (emp.startDate) {
+            const startDate = new Date(emp.startDate);
+            const yearsOfWork = now.getFullYear() - startDate.getFullYear();
+            const nextAnniversary = new Date(now.getFullYear(), startDate.getMonth(), startDate.getDate());
+            if (nextAnniversary < now) {
+                nextAnniversary.setFullYear(now.getFullYear() + 1);
+            }
+            const daysUntilAnniversary = Math.round((nextAnniversary - now) / oneDay);
+            if (daysUntilAnniversary >= 0 && daysUntilAnniversary <= reminderWindowDays && yearsOfWork > 0) {
+                allReminders.push({
+                    date: nextAnniversary,
+                    text: `${yearsOfWork + 1}مین سالگرد استخدام: ${emp.name}`,
+                    subtext: `تاریخ استخدام: ${toPersianDate(emp.startDate)}`,
+                    icon: 'award',
+                    color: 'blue'
+                });
+            }
+        }
+
+        // رویداد: ارزیابی عملکرد معوق (بیش از ۶ ماه گذشته)
+        if (emp.performanceHistory && emp.performanceHistory.length > 0) {
+            const lastReviewDate = new Date(emp.performanceHistory.slice(-1)[0].reviewDate);
+            const monthsSinceReview = (now - lastReviewDate) / (oneDay * 30.44);
+            if (monthsSinceReview > 6) {
+                allReminders.push({
+                    date: new Date(now.getTime() + oneDay), // تاریخ را برای مرتب‌سازی فردا در نظر می‌گیرد
+                    text: `ارزیابی عملکرد معوق: ${emp.name}`,
+                    subtext: `آخرین ارزیابی: ${toPersianDate(lastReviewDate)}`,
+                    icon: 'clipboard-x',
+                    color: 'teal'
+                });
+            }
+        }
+        
+        // رویداد: پیگیری تذکر انضباطی
+        if (emp.disciplinaryHistory && emp.disciplinaryHistory.length > 0) {
+            const lastAction = emp.disciplinaryHistory.slice(-1)[0];
+            if (lastAction.type === 'تذکر') {
+                const actionDate = new Date(lastAction.date);
+                const followupDate = new Date(actionDate.setDate(actionDate.getDate() + 30));
+                const daysUntilFollowup = (followupDate - now) / oneDay;
+                if (daysUntilFollowup >= 0 && daysUntilFollowup <= reminderWindowDays) {
+                    allReminders.push({
+                        date: followupDate,
+                        text: `پیگیری تذکر انضباطی: ${emp.name}`,
+                        subtext: `تاریخ پیگیری: ${toPersianDate(followupDate)}`,
+                        icon: 'message-square-plus',
+                        color: 'gray'
+                    });
+                }
+            }
+        }
     });
 
-    // مرتب‌سازی نهایی و نمایش
+    // --- بخش ۳: مرتب‌سازی و نمایش نهایی ---
     allReminders.sort((a, b) => a.date - b.date);
 
     if (allReminders.length === 0) {
