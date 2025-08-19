@@ -2105,51 +2105,54 @@ const renderEmployeeTable = () => {
 
     renderPagination('pagination-container', state.currentPageTalent, filteredEmployees.length, TALENT_PAGE_SIZE);
 };
-       const setupTalentPageListeners = () => {
-        // ریست کردن صفحه به ۱ هنگام جستجو یا فیلتر
-        const resetToFirstPage = () => {
-            state.currentPageTalent = 1;
-            renderEmployeeTable();
-        };
-
-        document.getElementById('searchInput')?.addEventListener('input', resetToFirstPage);
-        document.getElementById('departmentFilter')?.addEventListener('change', resetToFirstPage);
-        document.getElementById('statusFilter')?.addEventListener('change', resetToFirstPage);
-        
-        document.getElementById('add-employee-btn')?.addEventListener('click', () => showEmployeeForm());
-        document.getElementById('add-employee-btn-empty')?.addEventListener('click', () => showEmployeeForm());
-
-        const mainContentArea = document.getElementById('main-content');
-        
-        mainContentArea.addEventListener('click', (e) => {
-            const viewEmpBtn = e.target.closest('.view-employee-profile-btn');
-            const editEmpBtn = e.target.closest('.edit-employee-btn');
-            const deleteEmpBtn = e.target.closest('.delete-employee-btn');
-            const paginationBtn = e.target.closest('.pagination-btn');
-
-            // منطق جدید برای دکمه‌های صفحه‌بندی
-            if (paginationBtn && !paginationBtn.disabled) {
-                state.currentPageTalent = Number(paginationBtn.dataset.page);
-                renderEmployeeTable();
-            }
-
-            if (viewEmpBtn) {
-               viewEmployeeProfile(viewEmpBtn.dataset.employeeId); 
-            } else if (editEmpBtn) {
-                showEmployeeForm(editEmpBtn.dataset.employeeId);
-            } else if (deleteEmpBtn) {
-                showConfirmationModal("حذف کارمند", "آیا از حذف این کارمند مطمئن هستید؟", async () => {
-                    try {
-                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/employees`, deleteEmpBtn.dataset.employeeId));
-                        showToast("کارمند با موفقیت حذف شد.");
-                    } catch (error) {
-                        console.error("Error deleting employee:", error);
-                        showToast("خطا در حذف کارمند.", "error");
-                    }
-                });
-            }
-        });
+const setupTalentPageListeners = () => {
+    // ریست کردن صفحه به ۱ هنگام جستجو یا فیلتر
+    const resetToFirstPage = () => {
+        state.currentPageTalent = 1;
+        renderEmployeeTable();
     };
+
+    document.getElementById('searchInput')?.addEventListener('input', resetToFirstPage);
+    document.getElementById('departmentFilter')?.addEventListener('change', resetToFirstPage);
+    document.getElementById('statusFilter')?.addEventListener('change', resetToFirstPage);
+    
+    // اتصال دکمه افزودن کارمند به تابع مربوطه
+    document.getElementById('add-employee-btn')?.addEventListener('click', () => showEmployeeForm());
+    
+    // اتصال دکمه خروجی CSV به تابع مربوطه
+    document.getElementById('export-csv-btn')?.addEventListener('click', exportToCSV);
+
+    // مدیریت کلیک روی کارت‌ها (مشاهده، ویرایش، حذف)
+    const mainContentArea = document.getElementById('main-content');
+    
+    mainContentArea.addEventListener('click', (e) => {
+        const viewEmpBtn = e.target.closest('.view-employee-profile-btn');
+        const editEmpBtn = e.target.closest('.edit-employee-btn');
+        const deleteEmpBtn = e.target.closest('.delete-employee-btn');
+        const paginationBtn = e.target.closest('.pagination-btn');
+
+        if (paginationBtn && !paginationBtn.disabled) {
+            state.currentPageTalent = Number(paginationBtn.dataset.page);
+            renderEmployeeTable();
+        }
+
+        if (viewEmpBtn) {
+            viewEmployeeProfile(viewEmpBtn.dataset.employeeId);
+        } else if (editEmpBtn) {
+            showEmployeeForm(editEmpBtn.dataset.employeeId);
+        } else if (deleteEmpBtn) {
+            showConfirmationModal("حذف کارمند", "آیا از حذف این کارمند مطمئن هستید؟", async () => {
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/employees`, deleteEmpBtn.dataset.employeeId));
+                    showToast("کارمند با موفقیت حذف شد.");
+                } catch (error) {
+                    console.error("Error deleting employee:", error);
+                    showToast("خطا در حذف کارمند.", "error");
+                }
+            });
+        }
+    });
+};
 // کل این تابع را با نسخه جدید جایگزین کنید
 const setupOrganizationPageListeners = () => {
     document.getElementById('add-team-btn')?.addEventListener('click', () => showTeamForm());
