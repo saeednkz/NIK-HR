@@ -2528,45 +2528,47 @@ const showExpenseForm = () => {
         const imageUploadInput = document.getElementById('image-upload-input');
         let onImageResizedCallback = null;
 
-        if (imageUploadInput) {
-            imageUploadInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (!file || !onImageResizedCallback) return;
+if (imageUploadInput) {
+    imageUploadInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file || !onImageResizedCallback) return;
 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_DIMENSION = 256;
-                        let { width, height } = img;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_DIMENSION = 256;
+                let { width, height } = img;
 
-                        if (width > height) {
-                            if (width > MAX_DIMENSION) {
-                                height *= MAX_DIMENSION / width;
-                                width = MAX_DIMENSION;
-                            }
-                        } else {
-                            if (height > MAX_DIMENSION) {
-                                width *= MAX_DIMENSION / height;
-                                height = MAX_DIMENSION;
-                            }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                        if (onImageResizedCallback) {
-                            onImageResizedCallback(dataUrl);
-                        }
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-                event.target.value = '';
-            });
-        }
+                if (width > height) {
+                    if (width > MAX_DIMENSION) {
+                        height *= MAX_DIMENSION / width;
+                        width = MAX_DIMENSION;
+                    }
+                } else {
+                    if (height > MAX_DIMENSION) {
+                        width *= MAX_DIMENSION / height;
+                        height = MAX_DIMENSION;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (onImageResizedCallback) {
+                        onImageResizedCallback(blob);
+                    }
+                }, 'image/jpeg', 0.9);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+    });
+}
 
         function handleAvatarChange(updateFunction) {
             onImageResizedCallback = (newAvatarUrl) => {
@@ -2951,30 +2953,32 @@ const setupProfileModalListeners = (emp) => {
         lucide.createIcons();
     }, 100);
 
-    if (canEdit()) {
-        // از اینجا به بعد اصلاح شده است
+    if(canEdit()) {
         const modalContentArea = document.getElementById('modalContent');
         if (!modalContentArea) return;
 
-        // فقط یک Event Listener به والد اضافه می‌کنیم
         modalContentArea.addEventListener('click', (e) => {
-            const target = e.target.closest('button'); // پیدا کردن نزدیک‌ترین دکمه کلیک‌شده
-            if (!target) return; // اگر روی دکمه کلیک نشده بود، خارج شو
+            const target = e.target.closest('button');
+            if (!target) return;
 
             const id = target.id;
-            const classList = target.classList;
 
-            // بر اساس ID یا کلاس دکمه، کار مربوطه را انجام می‌دهیم
             if (id === 'change-avatar-btn') {
-                handleAvatarChange(async (newAvatarUrl) => {
+                handleAvatarChange(async (imageBlob) => {
+                    if (!imageBlob) return;
+                    showToast("در حال آپلود عکس...", "success");
                     try {
+                        const filePath = `avatars/${emp.firestoreId}/${Date.now()}.jpg`;
+                        const storageRef = ref(storage, filePath);
+                        const snapshot = await uploadBytes(storageRef, imageBlob);
+                        const downloadURL = await getDownloadURL(snapshot.ref);
                         const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
-                        await updateDoc(docRef, { avatar: newAvatarUrl });
+                        await updateDoc(docRef, { avatar: downloadURL });
                         showToast("عکس پروفایل با موفقیت به‌روزرسانی شد.");
-                        pages.viewEmployeeProfile(emp.firestoreId); // رفرش کردن پروفایل
+                        viewEmployeeProfile(emp.firestoreId);
                     } catch (error) {
-                        console.error("Error updating avatar:", error);
-                        showToast("خطا در به‌روزرسانی عکس پروفایل.", "error");
+                        console.error("Error uploading avatar:", error);
+                        showToast("خطا در آپلود عکس پروفایل.", "error");
                     }
                 });
             } else if (id === 'delete-avatar-btn') {
@@ -2984,7 +2988,7 @@ const setupProfileModalListeners = (emp) => {
                         const defaultAvatar = `https://placehold.co/100x100/E2E8F0/4A5568?text=${emp.name.substring(0,2)}`;
                         await updateDoc(docRef, { avatar: defaultAvatar });
                         showToast("عکس پروفایل حذف شد.");
-                        pages.viewEmployeeProfile(emp.firestoreId);
+                        viewEmployeeProfile(emp.firestoreId);
                     } catch (error) {
                         console.error("Error deleting avatar:", error);
                         showToast("خطا در حذف عکس پروفایل.", "error");
@@ -3006,21 +3010,21 @@ const setupProfileModalListeners = (emp) => {
                 showContractForm(emp);
             } else if (id === 'add-document-btn') {
                 showDocumentForm(emp);
-            } else if (classList.contains('edit-performance-btn')) {
+            } else if (target.classList.contains('edit-performance-btn')) {
                 showPerformanceForm(emp, parseInt(target.dataset.index));
-            } else if (classList.contains('delete-performance-btn')) {
+            } else if (target.classList.contains('delete-performance-btn')) {
                 deletePerformanceReview(emp, parseInt(target.dataset.index));
-            } else if (classList.contains('delete-disciplinary-btn')) {
+            } else if (target.classList.contains('delete-disciplinary-btn')) {
                 deleteDisciplinaryRecord(emp, parseInt(target.dataset.index));
-            } else if (classList.contains('delete-career-path-btn')) {
+            } else if (target.classList.contains('delete-career-path-btn')) {
                 deleteCareerPathEntry(emp, parseInt(target.dataset.index));
-            } else if (classList.contains('edit-contract-btn')) {
+            } else if (target.classList.contains('edit-contract-btn')) {
                 showContractForm(emp, parseInt(target.dataset.index));
-            } else if (classList.contains('delete-contract-btn')) {
+            } else if (target.classList.contains('delete-contract-btn')) {
                 deleteContract(emp, parseInt(target.dataset.index));
-            } else if (classList.contains('edit-document-btn')) {
+            } else if (target.classList.contains('edit-document-btn')) {
                 showDocumentForm(emp, parseInt(target.dataset.index));
-            } else if (classList.contains('delete-document-btn')) {
+            } else if (target.classList.contains('delete-document-btn')) {
                 deleteDocument(emp, parseInt(target.dataset.index));
             }
         });
