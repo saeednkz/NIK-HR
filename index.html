@@ -2018,7 +2018,7 @@ const renderAllReminders = () => {
             }
 
             if (viewEmpBtn) {
-                viewEmployeeProfile(viewEmpBtn.dataset.employeeId);
+               pages.viewEmployeeProfile(viewEmpBtn.dataset.employeeId); 
             } else if (editEmpBtn) {
                 showEmployeeForm(editEmpBtn.dataset.employeeId);
             } else if (deleteEmpBtn) {
@@ -2045,7 +2045,7 @@ const renderAllReminders = () => {
                     const editTeamBtn = e.target.closest('.edit-team-btn');
                     const deleteTeamBtn = e.target.closest('.delete-team-btn');
 
-                    if (viewTeamBtn) viewTeamProfile(viewTeamBtn.dataset.teamId);
+                     if (viewTeamBtn) pages.viewTeamProfile(viewTeamBtn.dataset.teamId);
                     else if (editTeamBtn) showTeamForm(editTeamBtn.dataset.teamId);
                     else if (deleteTeamBtn) {
                         showConfirmationModal("حذف تیم", "آیا از حذف این تیم مطمئن هستید؟", async () => { 
