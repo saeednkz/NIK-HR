@@ -1006,48 +1006,47 @@ organization: () => {
             ? Math.round(team.okrs.reduce((sum, okr) => sum + okr.progress, 0) / team.okrs.length)
             : 0;
 
-        // انتخاب رنگ از پالت جدید
+        // انتخاب رنگ از پالت برای استفاده در هدر
         const color = teamColorPalette[index % teamColorPalette.length];
+        // تبدیل رنگ پس‌زمینه به یک کلاس رنگی واضح‌تر برای هدر
+        const headerBgColor = color.bg.replace('-50', '-700'); 
 
         return `
-            <div class="card bg-white p-0 flex flex-col overflow-hidden border-l-4 ${color.border} transform hover:shadow-xl transition-all duration-300">
-                <div class="p-5 flex justify-between items-start">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-800">${team.name}</h3>
-                        <p class="text-sm text-slate-500">رهبر تیم: ${leader ? leader.name : 'نامشخص'}</p>
-                    </div>
-                    <div class="flex -space-x-3 overflow-hidden">
-                        ${(Array.from(personnelIds).slice(0, 5)).map(memberId => {
-                            const member = state.employees.find(e => e.id === memberId);
-                            return member ? `<img class="inline-block h-10 w-10 rounded-full ring-2 ring-white object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : '';
-                        }).join('')}
-                        ${memberCount > 5 ? `<div class="flex items-center justify-center h-10 w-10 rounded-full bg-slate-200 text-slate-600 text-xs font-medium ring-2 ring-white">+${memberCount - 5}</div>` : ''}
-                    </div>
+            <div class="card bg-white p-0 flex flex-col overflow-hidden transform hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+                <div class="p-4 ${headerBgColor} text-white">
+                    <h3 class="text-lg font-bold">${team.name}</h3>
+                    <p class="text-sm opacity-80">رهبر تیم: ${leader ? leader.name : 'نامشخص'}</p>
                 </div>
-                
-                <div class="mt-auto pt-4 px-5 grid grid-cols-3 gap-4 text-center">
+
+                <div class="p-5 space-y-5 flex-grow">
                     <div>
-                        <p class="text-2xl font-bold flex items-center justify-center gap-1.5">
-                            <i data-lucide="users" class="w-5 h-5 text-slate-400"></i>
-                            ${memberCount}
-                        </p>
-                        <p class="text-xs text-slate-500 font-medium">اعضا</p>
+                        <p class="text-xs text-slate-500 font-medium mb-2">اعضای تیم (${memberCount})</p>
+                        <div class="flex -space-x-2 overflow-hidden">
+                            ${(Array.from(personnelIds).slice(0, 8)).map(memberId => {
+                                const member = state.employees.find(e => e.id === memberId);
+                                return member ? `<img class="inline-block h-9 w-9 rounded-full ring-2 ring-white object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : '';
+                            }).join('')}
+                            ${memberCount > 8 ? `<div class="flex items-center justify-center h-9 w-9 rounded-full bg-slate-200 text-slate-600 text-xs font-medium ring-2 ring-white">+${memberCount - 8}</div>` : ''}
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-2xl font-bold ${color.text}">${engagementScore}%</p>
-                        <p class="text-xs text-slate-500 font-medium">مشارکت</p>
-                    </div>
-                    <div>
-                        <p class="text-2xl font-bold ${color.text}">${okrProgress}%</p>
-                        <p class="text-xs text-slate-500 font-medium">اهداف</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <p class="text-2xl font-bold ${color.text}">${engagementScore}%</p>
+                            <p class="text-xs text-slate-500 font-medium">مشارکت</p>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold ${color.text}">${okrProgress}%</p>
+                            <p class="text-xs text-slate-500 font-medium">پیشرفت اهداف</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-50/70 px-5 py-3 mt-5 flex justify-end items-center">
-                    <div class="flex items-center gap-2">
-                         ${isAdmin() ? `<button class="delete-team-btn p-2 text-slate-400 hover:text-rose-500 transition-colors" data-team-id="${team.firestoreId}" title="حذف تیم"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
-                         <button class="view-team-profile-btn text-sm bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-sm transition" data-team-id="${team.firestoreId}">مشاهده پروفایل</button>
-                    </div>
+                <div class="mt-auto bg-slate-50 px-5 py-3 flex justify-between items-center">
+                     <button class="view-team-profile-btn text-sm font-semibold text-slate-700 hover:text-blue-600 transition" data-team-id="${team.firestoreId}">
+                        مشاهده پروفایل
+                     </button>
+                    ${isAdmin() ? `<button class="delete-team-btn p-2 text-slate-400 hover:text-rose-500 transition-colors" data-team-id="${team.firestoreId}" title="حذف تیم"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
                 </div>
             </div>
         `;
@@ -1055,7 +1054,7 @@ organization: () => {
 
     return `
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">ساختار سازمان</h1>
+            <h1 class="text-3xl font-bold text-slate-800">تیم‌های سازمان</h1>
             ${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="teams-container">
