@@ -284,6 +284,13 @@ const teamColorPalette = [
     'border-pink-500',
     'border-teal-500'
 ];
+        const surveyVisualsPalette = [
+    { icon: 'clipboard-list', color: 'text-sky-500', bg: 'bg-sky-100' },
+    { icon: 'zap', color: 'text-amber-500', bg: 'bg-amber-100' },
+    { icon: 'rocket', color: 'text-rose-500', bg: 'bg-rose-100' },
+    { icon: 'users', color: 'text-green-500', bg: 'bg-green-100' },
+    { icon: 'log-out', color: 'text-slate-500', bg: 'bg-slate-100' }
+];
         // این پالت رنگی را جایگزین پالت قبلی کنید
 const teamVisualsPalette = [
     { icon: 'users', color: 'text-sky-500', bg: 'bg-sky-100' },
@@ -1059,22 +1066,40 @@ organization: () => {
         </div>
     `;
 },
-    surveys: () => {
+surveys: () => {
+    // هر قالب نظرسنجی را به یک کارت مدرن تبدیل می‌کنیم
+    const surveyCardsHtml = Object.values(surveyTemplates).map((survey, index) => {
+        // انتخاب آیکون و رنگ از پالت به صورت چرخشی
+        const visual = surveyVisualsPalette[index % surveyVisualsPalette.length];
+        
         return `
-            <h1 class="text-3xl font-bold text-slate-800 mb-8">مدیریت نظرسنجی‌ها</h1>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                ${Object.values(surveyTemplates).map(survey => `
-                    <div class="card p-6 flex flex-col">
-                        <h3 class="text-xl font-bold text-blue-700 mb-2">${survey.title}</h3>
-                        <p class="text-slate-600 mb-4 text-sm flex-grow">${survey.description}</p>
-                        <button class="create-survey-link-btn mt-auto w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2" data-survey-id="${survey.id}">
-                            <i data-lucide="link"></i>ایجاد لینک
-                        </button>
-                    </div>
-                `).join('')}
+            <div class="card bg-white p-6 flex flex-col items-center text-center rounded-xl shadow-lg transform hover:-translate-y-1.5 transition-transform duration-300">
+                <div class="w-16 h-16 rounded-full ${visual.bg} flex items-center justify-center mb-4">
+                    <i data-lucide="${visual.icon}" class="w-8 h-8 ${visual.color}"></i>
+                </div>
+                
+                <h3 class="text-lg font-bold text-slate-800">${survey.title}</h3>
+                <p class="text-sm text-slate-500 mt-2 flex-grow min-h-[60px]">${survey.description}</p>
+                
+                <button class="create-survey-link-btn mt-auto w-full text-sm bg-slate-800 text-white py-2.5 px-4 rounded-lg hover:bg-slate-900 transition-colors" data-survey-id="${survey.id}">
+                    ایجاد لینک نظرسنجی
+                </button>
             </div>
         `;
-    },
+    }).join('');
+
+    return `
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">نظرسنجی‌ها و بازخوردها</h1>
+                <p class="text-sm text-slate-500 mt-1">یک قالب را برای شروع انتخاب کنید</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            ${surveyCardsHtml}
+        </div>
+    `;
+},
     expenses: () => {
         const cardsHtml = state.pettyCashCards.map(card => `
             <div class="card p-4">
