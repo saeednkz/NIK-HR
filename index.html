@@ -1177,7 +1177,10 @@ talent: () => {
             </div>
         `;
     },
-    viewEmployeeProfile: (employeeId) => {
+
+    // توابع دیگر ...
+};
+       viewEmployeeProfile: (employeeId) => {
         const emp = state.employees.find(e => e.firestoreId === employeeId);
         if (!emp) return;
         const analysis = generateSmartAnalysis(emp);
@@ -1488,10 +1491,7 @@ talent: () => {
                 </div>
             </div>
         `;
-    },
-    // توابع دیگر ...
-};
-        
+    },     
 
         // --- NAVIGATION & ROUTING ---
         const navigateTo = (pageName) => {
@@ -2018,7 +2018,7 @@ const renderAllReminders = () => {
             }
 
             if (viewEmpBtn) {
-               pages.viewEmployeeProfile(viewEmpBtn.dataset.employeeId); 
+               viewEmployeeProfile(viewEmpBtn.dataset.employeeId); 
             } else if (editEmpBtn) {
                 showEmployeeForm(editEmpBtn.dataset.employeeId);
             } else if (deleteEmpBtn) {
@@ -2045,7 +2045,7 @@ const renderAllReminders = () => {
                     const editTeamBtn = e.target.closest('.edit-team-btn');
                     const deleteTeamBtn = e.target.closest('.delete-team-btn');
 
-                     if (viewTeamBtn) pages.viewTeamProfile(viewTeamBtn.dataset.teamId);
+                     if (viewTeamBtn) viewTeamProfile(viewTeamBtn.dataset.teamId);
                     else if (editTeamBtn) showTeamForm(editTeamBtn.dataset.teamId);
                     else if (deleteTeamBtn) {
                         showConfirmationModal("حذف تیم", "آیا از حذف این تیم مطمئن هستید؟", async () => { 
