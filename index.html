@@ -1410,9 +1410,10 @@ const viewEmployeeProfile = (employeeId) => {
                                 <div class="card p-4 bg-white rounded-xl border border-slate-200">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
                                         <p><strong>جنسیت:</strong> ${emp.gender || '-'}</p>
+                                         <p><strong>ایمیل:</strong> ${emp.personalInfo?.email || '-'}</p>
+                                         <p><strong>شماره تماس:</strong> ${emp.personalInfo?.phone || '-'}</p>
                                         <p><strong>تاریخ تولد:</strong> ${emp.personalInfo?.birthDate ? toPersianDate(emp.personalInfo.birthDate) : '-'}</p>
                                         <p><strong>کد ملی:</strong> ${emp.personalInfo?.nationalId || '-'}</p>
-                                        <p><strong>شماره تماس:</strong> ${emp.personalInfo?.phone || '-'}</p>
                                         <p class="md:col-span-2"><strong>آدرس:</strong> ${emp.personalInfo?.address || '-'}</p>
                                           <p><strong>کد پستی:</strong> ${emp.personalInfo?.postalCode || '-'}</p>
                                             <p><strong>شماره ثابت:</strong> ${emp.personalInfo?.landline || '-'}</p>
