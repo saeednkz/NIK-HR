@@ -983,6 +983,11 @@ organization: () => {
     if (state.teams.length === 0) return `<div class="text-center p-10 card"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-md transition">افزودن تیم جدید</button>` : ''}</div>`;
 
     const teamCardsHtml = state.teams.map((team, index) => {
+            console.log("--- شروع بررسی تیم ---");
+    console.log("نام تیم:", team.name);
+    console.log("داده خام memberIds:", team.memberIds);
+    console.log("نوع داده memberIds:", typeof team.memberIds);
+    console.log("شناسه رهبر تیم:", team.leaderId);
         const leader = state.employees.find(e => e.id === team.leaderId);
         
         // --- بلوک کد اصلاح شده برای شمارش صحیح اعضا ---
@@ -1000,6 +1005,7 @@ organization: () => {
             personnelIds.add(team.leaderId);
         }
         const memberCount = personnelIds.size;
+        console.log("تعداد نهایی محاسبه شده:", memberCount);
         // --- پایان بلوک کد اصلاح شده ---
 
         const engagementScore = team.engagementScore || 0;
