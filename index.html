@@ -1100,70 +1100,100 @@ surveys: () => {
         </div>
     `;
 },
-    expenses: () => {
-        const cardsHtml = state.pettyCashCards.map(card => `
-            <div class="card p-4">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-blue-700">${card.name}</p>
-                        <p class="text-sm text-slate-600 font-mono">${(card.balance || 0).toLocaleString('fa-IR')} تومان</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                            ${canEdit() ? `<button class="charge-card-btn text-green-600 hover:text-green-800" data-id="${card.firestoreId}" data-name="${card.name}" title="شارژ کارت"><i data-lucide="plus-circle"></i></button>` : ''}
-                            ${isAdmin() ? `<button class="delete-card-btn text-rose-500 hover:text-rose-700" data-id="${card.firestoreId}" title="حذف کارت"><i data-lucide="trash-2"></i></button>` : ''}
-                    </div>
-                </div>
-            </div>
-        `).join('');
+expenses: () => {
+    // --- بخش ۱: محاسبات اولیه ---
+    const totalBalance = state.pettyCashCards.reduce((sum, card) => sum + (card.balance || 0), 0);
+    const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
-        const expensesRows = state.expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).map(exp => `
-            <tr class="border-b border-slate-200 hover:bg-slate-50">
-                <td class="px-6 py-4">${toPersianDate(exp.date)}</td>
-                <td class="px-6 py-4">${exp.item}</td>
-                <td class="px-6 py-4">${state.pettyCashCards.find(c => c.firestoreId === exp.cardId)?.name || 'نامشخص'}</td>
-                <td class="px-6 py-4 font-mono">${exp.amount.toLocaleString('fa-IR')}</td>
-                <td class="px-6 py-4">
-                    ${exp.invoiceUrl ? `<a href="${exp.invoiceUrl}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4"></i> مشاهده</a>` : '-'}
-                </td>
-                    <td class="px-6 py-4">
-                        ${canEdit() ? `<button class="delete-expense-btn text-rose-600 hover:text-rose-800" data-id="${exp.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+    // لیست هزینه‌ها و شارژها را ترکیب و مرتب می‌کنیم
+    const expensesWithDetails = state.expenses.map(exp => ({ ...exp, type: 'expense' }));
+    const chargesWithDetails = state.chargeHistory.map(chg => ({ ...chg, type: 'charge', date: chg.chargedAt?.toDate() }));
+    
+    const allTransactions = [...expensesWithDetails, ...chargesWithDetails]
+        .filter(t => t.date) // فقط آیتم‌هایی که تاریخ معتبر دارند
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // --- بخش ۲: ساخت HTML ---
+    const transactionsHtml = allTransactions.map(t => {
+        if (t.type === 'expense') {
+            const cardName = state.pettyCashCards.find(c => c.firestoreId === t.cardId)?.name || 'نامشخص';
+            return `
+                <tr class="border-b border-slate-200">
+                    <td class="p-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                            <i data-lucide="arrow-down" class="w-5 h-5 text-red-500"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-800">${t.item}</p>
+                            <p class="text-xs text-slate-500">${toPersianDate(t.date)} - کارت: ${cardName}</p>
+                        </div>
                     </td>
-            </tr>
-        `).join('');
-        
-        const chargeHistoryRows = state.chargeHistory.sort((a,b) => b.chargedAt?.toDate() - a.chargedAt?.toDate()).map(log => `
-                <tr class="border-b border-slate-200 hover:bg-slate-50">
-                    <td class="px-6 py-4">${toPersianDate(log.chargedAt)}</td>
-                    <td class="px-6 py-4">${log.cardName}</td>
-                    <td class="px-6 py-4 font-mono text-green-600 font-semibold">+${log.amount.toLocaleString('fa-IR')}</td>
-                    <td class="px-6 py-4 text-xs text-slate-500">${log.chargedBy}</td>
-                    <td class="px-6 py-4">
-                        ${canEdit() ? `<button class="delete-charge-log-btn text-rose-600 hover:text-rose-800" data-id="${log.firestoreId}"><i data-lucide="trash-2"></i></button>` : ''}
+                    <td class="p-4 text-left font-mono font-semibold text-red-600">
+                        -${t.amount.toLocaleString('fa-IR')}
                     </td>
                 </tr>
-        `).join('');
-        
-        const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            `;
+        } else { // type === 'charge'
+            return `
+                <tr class="border-b border-slate-200">
+                    <td class="p-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <i data-lucide="arrow-up" class="w-5 h-5 text-green-500"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-800">شارژ کارت ${t.cardName}</p>
+                            <p class="text-xs text-slate-500">${toPersianDate(t.date)} - توسط: ${t.chargedBy}</p>
+                        </div>
+                    </td>
+                    <td class="p-4 text-left font-mono font-semibold text-green-600">
+                        +${t.amount.toLocaleString('fa-IR')}
+                    </td>
+                </tr>
+            `;
+        }
+    }).join('');
 
-        return `
-            <div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">مدیریت هزینه‌ها</h1></div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div class="lg:col-span-1 card">
-                    <h3 class="font-semibold mb-4">کارت‌های تنخواه</h3>
-                    <div class="space-y-3 mb-4" id="cards-list">${cardsHtml || '<p class="text-sm text-slate-500">کارتی ثبت نشده است.</p>'}</div>
-                    ${isAdmin() ? `<button id="add-card-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md">افزودن کارت جدید</button>` : ''}
-                </div>
-                <div class="lg:col-span-2 card">
-                        <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">لیست هزینه‌ها</h3>${canEdit() ? `<button id="add-expense-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md">افزودن هزینه</button>` : ''}</div>
-                        <div class="overflow-x-auto max-h-96"><table class="w-full text-sm text-right text-slate-500"><thead class="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0"><tr><th scope="col" class="px-6 py-3">تاریخ</th><th scope="col" class="px-6 py-3">مورد</th><th scope="col" class="px-6 py-3">کارت</th><th scope="col" class="px-6 py-3">مبلغ (تومان)</th><th scope="col" class="px-6 py-3">فاکتور</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody>${expensesRows || '<tr><td colspan="6" class="text-center p-4">هزینه‌ای ثبت نشده است.</td></tr>'}</tbody><tfoot class="bg-slate-100 font-semibold sticky bottom-0"><tr><td colspan="3" class="px-6 py-3 text-left">جمع کل هزینه‌ها:</td><td colspan="3" class="px-6 py-3 font-mono">${totalExpenses.toLocaleString('fa-IR')} تومان</td></tr></tfoot></table></div>
-                </div>
+    return `
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">مدیریت هزینه‌ها</h1>
+                <p class="text-sm text-slate-500 mt-1">بررسی و ثبت تراکنش‌های تنخواه</p>
             </div>
-            <div class="card">
-                    <h3 class="font-semibold mb-4">تاریخچه شارژ کارت‌ها</h3>
-                    <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-right text-slate-500"><thead class="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0"><tr><th scope="col" class="px-6 py-3">تاریخ شارژ</th><th scope="col" class="px-6 py-3">نام کارت</th><th scope="col" class="px-6 py-3">مبلغ شارژ (تومان)</th><th scope="col" class="px-6 py-3">کاربر</th><th scope="col" class="px-6 py-3">عملیات</th></tr></thead><tbody>${chargeHistoryRows || '<tr><td colspan="5" class="text-center p-4">سابقه‌ای برای شارژ کارت‌ها وجود ندارد.</td></tr>'}</tbody></table></div>
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                ${isAdmin() ? `<button id="add-card-btn" class="bg-slate-200 text-slate-800 py-2 px-4 rounded-lg hover:bg-slate-300 transition flex items-center gap-2 w-full md:w-auto"><i data-lucide="credit-card"></i> مدیریت کارت‌ها</button>` : ''}
+                ${canEdit() ? `<button id="add-expense-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2 w-full md:w-auto"><i data-lucide="plus"></i> افزودن هزینه</button>` : ''}
             </div>
-        `;
-    },
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="card bg-white p-6">
+                <p class="text-slate-500 flex items-center gap-2"><i data-lucide="wallet" class="w-4 h-4"></i>موجودی کل تنخواه</p>
+                <p class="text-3xl font-bold text-slate-800 mt-2 font-mono">${totalBalance.toLocaleString('fa-IR')} <span class="text-lg font-sans">تومان</span></p>
+            </div>
+            <div class="card bg-white p-6">
+                <p class="text-slate-500 flex items-center gap-2"><i data-lucide="trending-down" class="w-4 h-4"></i>جمع کل هزینه‌ها</p>
+                <p class="text-3xl font-bold text-red-600 mt-2 font-mono">${totalExpenses.toLocaleString('fa-IR')} <span class="text-lg font-sans">تومان</span></p>
+            </div>
+        </div>
+
+        <h3 class="text-xl font-bold text-slate-700 mb-4">آخرین تراکنش‌ها</h3>
+        <div class="card p-0 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-50 text-slate-600 text-sm">
+                        <tr>
+                            <th class="p-4 text-right font-semibold">شرح تراکنش</th>
+                            <th class="p-4 text-left font-semibold">مبلغ (تومان)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${transactionsHtml.length > 0 ? transactionsHtml : `<tr><td colspan="2" class="text-center p-8 text-slate-500">هیچ تراکنشی برای نمایش وجود ندارد.</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+},
     analytics: () => {
         const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
             ?.sort((a, b) => b.score - a.score)
