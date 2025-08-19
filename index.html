@@ -1044,9 +1044,9 @@ organization: () => {
             <h1 class="text-3xl font-bold text-slate-800">ساختار سازمان</h1>
             ${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}
         </div>
-        <div class="space-y-4">
-            ${teamCardsHtml}
-        </div>
+<div id="teams-container" class="space-y-4">
+        ${teamCardsHtml}
+    </div>
     `;
 },
     surveys: () => {
@@ -2125,33 +2125,34 @@ const renderEmployeeTable = () => {
             }
         });
     };
-        const setupOrganizationPageListeners = () => {
-            document.getElementById('add-team-btn')?.addEventListener('click', () => showTeamForm());
-            document.getElementById('add-team-btn-empty')?.addEventListener('click', () => showTeamForm());
-            
-            const teamGrid = mainContent.querySelector('.grid');
-            if(teamGrid) {
-                teamGrid.addEventListener('click', (e) => {
-                    const viewTeamBtn = e.target.closest('.view-team-profile-btn');
-                    const editTeamBtn = e.target.closest('.edit-team-btn');
-                    const deleteTeamBtn = e.target.closest('.delete-team-btn');
+// کل این تابع را با نسخه جدید جایگزین کنید
+const setupOrganizationPageListeners = () => {
+    document.getElementById('add-team-btn')?.addEventListener('click', () => showTeamForm());
+    document.getElementById('add-team-btn-empty')?.addEventListener('click', () => showTeamForm());
 
-                     if (viewTeamBtn) viewTeamProfile(viewTeamBtn.dataset.teamId);
-                    else if (editTeamBtn) showTeamForm(editTeamBtn.dataset.teamId);
-                    else if (deleteTeamBtn) {
-                        showConfirmationModal("حذف تیم", "آیا از حذف این تیم مطمئن هستید؟", async () => { 
-                            try { 
-                                await deleteDoc(doc(db, `artifacts/${appId}/public/data/teams`, deleteTeamBtn.dataset.teamId)); 
-                                showToast("تیم با موفقیت حذف شد."); 
-                            } catch (error) { 
-                                console.error("Error deleting team:", error); 
-                                showToast("خطا در حذف تیم.", "error"); 
-                            } 
-                        });
-                    }
+    // از شناسه جدید برای پیدا کردن کانتینر استفاده می‌کنیم
+    const teamsContainer = document.getElementById('teams-container');
+    if(teamsContainer) {
+        teamsContainer.addEventListener('click', (e) => {
+            const viewTeamBtn = e.target.closest('.view-team-profile-btn');
+            const deleteTeamBtn = e.target.closest('.delete-team-btn');
+
+            if (viewTeamBtn) {
+                viewTeamProfile(viewTeamBtn.dataset.teamId);
+            } else if (deleteTeamBtn) {
+                showConfirmationModal("حذف تیم", "آیا از حذف این تیم مطمئن هستید؟", async () => { 
+                    try { 
+                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/teams`, deleteTeamBtn.dataset.teamId)); 
+                        showToast("تیم با موفقیت حذف شد."); 
+                    } catch (error) { 
+                        console.error("Error deleting team:", error); 
+                        showToast("خطا در حذف تیم.", "error"); 
+                    } 
                 });
             }
-        };
+        });
+    }
+};
         const setupSettingsPageListeners = () => {
             document.getElementById('add-user-btn')?.addEventListener('click', showAddUserForm);
             // Role management
