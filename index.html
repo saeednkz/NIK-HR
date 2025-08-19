@@ -924,78 +924,69 @@ const pages = {
             </div>
         `;
     },
-talent: () => {
-    const TALENT_PAGE_SIZE = 10;
-    const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
-    const departmentFilter = document.getElementById('departmentFilter')?.value || '';
-    const statusFilter = document.getElementById('statusFilter')?.value || '';
-    
-    const filteredEmployees = state.employees.filter(emp =>
-        (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) &&
-        (!departmentFilter || emp.department === departmentFilter) &&
-        (!statusFilter || emp.status === statusFilter)
-    );
+    talent: () => {
+        const TALENT_PAGE_SIZE = 10;
+        const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        const departmentFilter = document.getElementById('departmentFilter')?.value || '';
+        const statusFilter = document.getElementById('statusFilter')?.value || '';
+        
+        const filteredEmployees = state.employees.filter(emp =>
+            (emp.name.toLowerCase().includes(searchInput) || emp.id.toLowerCase().includes(searchInput)) &&
+            (!departmentFilter || emp.department === departmentFilter) &&
+            (!statusFilter || emp.status === statusFilter)
+        );
 
-    const startIndex = (state.currentPageTalent - 1) * TALENT_PAGE_SIZE;
-    const paginatedEmployees = filteredEmployees.slice(startIndex, startIndex + TALENT_PAGE_SIZE);
+        const startIndex = (state.currentPageTalent - 1) * TALENT_PAGE_SIZE;
+        const paginatedEmployees = filteredEmployees.slice(startIndex, startIndex + TALENT_PAGE_SIZE);
 
-    const tableBody = paginatedEmployees.map(emp => `
-        <tr class="bg-white border-b border-slate-200 hover:bg-slate-50 transition">
-            <td class="px-6 py-4 flex items-center space-x-3 space-x-reverse">
-                <img src="${emp.avatar}" alt="${emp.name}" class="w-10 h-10 rounded-full object-cover shadow-sm">
-                <span class="font-medium text-gray-900 whitespace-nowrap">${emp.name}</span>
-            </td>
-            <td class="px-6 py-4">${emp.id}</td>
-            <td class="px-6 py-4">${emp.department || '-'}</td>
-            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></td>
-            <td class="px-6 py-4 flex items-center gap-4">
-                <button class="view-employee-profile-btn text-blue-600 hover:underline" data-employee-id="${emp.firestoreId}">پروفایل</button>
-                ${canEdit() ? `<button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button>` : ''}
-                ${isAdmin() ? `<button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button>` : ''}
-            </td>
-        </tr>
-    `).join('');
+        const tableBody = paginatedEmployees.map(emp => `
+            <tr class="bg-white border-b border-slate-200 hover:bg-slate-50 transition">
+                <td class="px-6 py-4 flex items-center space-x-3 space-x-reverse">
+                    <img src="${emp.avatar}" alt="${emp.name}" class="w-10 h-10 rounded-full object-cover shadow-sm">
+                    <span class="font-medium text-gray-900 whitespace-nowrap">${emp.name}</span>
+                </td>
+                <td class="px-6 py-4">${emp.id}</td>
+                <td class="px-6 py-4">${emp.department || '-'}</td>
+                <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></td>
+                <td class="px-6 py-4 flex items-center gap-4">
+                    <button class="view-employee-profile-btn text-blue-600 hover:underline" data-employee-id="${emp.firestoreId}">پروفایل</button>
+                    ${canEdit() ? `<button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button>` : ''}
+                    ${isAdmin() ? `<button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button>` : ''}
+                </td>
+            </tr>
+        `).join('');
 
-    return `
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">مدیریت استعدادها</h1>
-            ${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}
-        </div>
-        <div class="card p-6">
-            <div class="flex flex-col md:flex-row justify-between items-center pb-4 gap-4 border-b border-slate-200 mb-6">
-                <div class="w-full md:w-1/2 lg:w-1/3 relative">
-                    <input type="text" id="searchInput" placeholder="جستجو بر اساس نام یا کد پرسنلی..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                </div>
-                <div class="w-full md:w-auto flex flex-wrap gap-2">
-                    <select id="departmentFilter" class="p-2 border border-slate-300 rounded-lg">
-                        <option value="">همه دپارتمان‌ها</option>
-                        ${[...new Set(state.employees.map(e => e.department))].filter(Boolean).map(d => `<option value="${d}">${d}</option>`).join('')}
-                    </select>
-                    <select id="statusFilter" class="p-2 border border-slate-300 rounded-lg">
-                        <option value="">همه وضعیت‌ها</option>
-                        <option value="فعال">فعال</option>
-                        <option value="غیرفعال">غیرفعال</option>
-                    </select>
-                </div>
+        return `
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">مدیریت استعدادها</h1>
+                ${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>`: ''}
             </div>
-            <div class="overflow-x-auto rounded-lg border border-slate-200">
-                <table class="w-full text-sm text-right text-slate-500">
-                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 font-medium">نام</th>
-                            <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
-                            <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
-                            <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
-                            <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employeeTableBody">${tableBody}</tbody>
-                </table>
-            </div>
-            <div id="pagination-container" class="p-4 flex justify-center mt-6"></div>
-        </div>`;
-}
+            <div class="card p-6">
+                <div class="flex flex-col md:flex-row justify-between items-center pb-4 gap-4 border-b border-slate-200 mb-6">
+                    <div class="w-full md:w-1/2 lg:w-1/3 relative">
+                        <input type="text" id="searchInput" placeholder="جستجو بر اساس نام یا کد پرسنلی..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"><i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                    <div class="w-full md:w-auto flex flex-wrap gap-2">
+                        <select id="departmentFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه دپارتمان‌ها</option>${[...new Set(state.employees.map(e => e.department))].filter(Boolean).map(d => `<option value="${d}">${d}</option>`).join('')}</select><select id="statusFilter" class="p-2 border border-slate-300 rounded-lg"><option value="">همه وضعیت‌ها</option><option value="فعال">فعال</option><option value="غیرفعال">غیرفعال</option></select>
+                    </div>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="w-full text-sm text-right text-slate-500">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 font-medium">نام</th>
+                                <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
+                                <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
+                                <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
+                                <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTableBody">${tableBody}</tbody>
+                    </table>
+                </div>
+                <div id="pagination-container" class="p-4 flex justify-center mt-6"></div>
+            </div>`;
+    },
     organization: () => {
         if (state.teams.length === 0) return `<div class="text-center p-10 card"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-md transition">افزودن تیم جدید</button>` : ''}</div>`;
         return `<div class="flex justify-between items-center mb-8"><h1 class="text-3xl font-bold text-slate-800">مدیریت تیم‌ها</h1>${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}</div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${state.teams.map(team => {
@@ -1278,6 +1269,18 @@ talent: () => {
                                             ${renderCompetencyBars(emp.competencies)}
                                         </div>
                                     </div>
+                                    <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <h4 class="font-semibold text-slate-700">
+                                                <i data-lucide="bar-chart-2" class="ml-2 w-5 h-5 text-blue-500"></i>
+                                                نمودار مهارت‌ها
+                                            </h4>
+                                            ${canEdit() ? `<button id="edit-skills-btn" class="text-sm bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600">ویرایش</button>` : ''}
+                                        </div>
+                                        <div class="relative h-64">
+                                            <canvas id="skillRadarChart"></canvas>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div id="tab-performance" class="profile-tab-content">
@@ -1447,75 +1450,13 @@ talent: () => {
                 </div>
             </div>
         `;
-    },
-    viewTeamProfile: (teamId) => {
-        const team = state.teams.find(t => t.firestoreId === teamId);
-        if (!team) return;
-        const leader = state.employees.find(e => e.id === team.leaderId);
-        const members = state.employees.filter(e => team.memberIds?.includes(e.id));
-        const basicAnalysis = generateTeamSmartAnalysis(team);
-        const advancedAnalysis = analyzeTeamData(team, members);
-
-        const highRiskNames = advancedAnalysis.highRiskMembers.map(e => e.name).join('، ');
-        if(highRiskNames) {
-            basicAnalysis.risk = { text: `اعضای پرریسک: <strong>${highRiskNames}</strong>`, icon: 'shield-alert', color: 'text-purple-600' };
+        openModal(mainModal, mainModalContainer);
+        if (emp.engagementScore != null) {
+            renderEngagementGauge('engagementGaugeProfile', emp.engagementScore);
         }
-
-        modalTitle.innerText = 'پروفایل تیم: ' + team.name;
-        modalContent.innerHTML = `
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-1 space-y-6">
-                    <div class="card p-6 bg-gray-50 rounded-xl text-center relative group">
-                        <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
-                            <img src="${team.avatar}" alt="${team.name}" class="w-full h-full object-cover">
-                        </div>
-                        ${canEdit() ? `<button id="change-team-avatar-btn" class="absolute top-4 left-4 bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-blue-600"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
-                        <h2 class="text-2xl font-bold text-gray-800">${team.name}</h2>
-                        <p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p>
-                    </div>
-                    <div class="card p-6 bg-gray-50 rounded-xl">
-                        <h4 class="font-semibold mb-4 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
-                        <div class="text-sm space-y-3">${Object.keys(basicAnalysis).length > 0 ? Object.values(basicAnalysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div>
-                    </div>
-                </div>
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-white rounded-xl shadow-md">
-                        <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="team-overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="team-health" class="profile-tab shrink-0">سلامت تیم</button><button data-tab="team-talent" class="profile-tab shrink-0">ماتریس استعداد</button></nav></div>
-                        <div class="p-4">
-                            <div id="tab-team-overview" class="profile-tab-content active">
-                                <div class="space-y-4">
-                                    <div class="card p-4 bg-white rounded-xl border border-slate-200">
-                                        <div class="flex justify-between items-center mb-3">
-                                            <h4 class="font-semibold text-gray-700">اعضای تیم (${members.length} نفر)</h4>
-                                            <button id="edit-team-members-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">ویرایش</button>
-                                        </div>
-                                        <div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img src="${m.avatar}" class="w-full h-full object-cover"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div>
-                                    </div>
-                                    <div class="card p-4 bg-white rounded-xl border border-slate-200">
-                                        <div class="flex justify-between items-center mb-3">
-                                            <h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>
-                                            ${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">افزودن/ویرایش</button>`:''}
-                                        </div>
-                                        <div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="tab-team-health" class="profile-tab-content">
-                                ${renderTeamHealthMetrics(team)}
-                            </div>
-                            <div id="tab-team-talent" class="profile-tab-content">
-                                <div class="card p-6 bg-white rounded-xl border border-slate-200">
-                                    <h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4>
-                                    <div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        setupProfileModalListeners(emp);
     },
-    // توابع دیگر ...
+    // ... سایر توابع
 };
         
 
