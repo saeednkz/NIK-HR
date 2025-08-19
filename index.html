@@ -2751,28 +2751,66 @@ const showEmployeeForm = (employeeId = null) => {
             return html;
         };
 
-        const setupTeamProfileModalListeners = (team) => {
-             const tabs = document.querySelectorAll('#profile-tabs .profile-tab');
-             const tabContents = document.querySelectorAll('.profile-tab-content');
-             tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
-            if(canEdit()) {
-                document.getElementById('edit-team-okrs-btn')?.addEventListener('click', () => showEditTeamOkrsForm(team));
-                document.getElementById('edit-team-health-btn')?.addEventListener('click', () => showTeamHealthForm(team));
-                document.getElementById('change-team-avatar-btn')?.addEventListener('click', () => {
+const setupTeamProfileModalListeners = (team) => {
+    // 1. مدیریت تب‌ها (نمای کلی، سلامت تیم و ...)
+    const tabs = document.querySelectorAll('#profile-tabs .profile-tab');
+    const tabContents = document.querySelectorAll('.profile-tab-content');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const target = tab.getAttribute('data-tab');
+            tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${target}`);
+            });
+        });
+    });
+
+    // 2. مدیریت دکمه‌های ویرایش (فقط برای ادمین و ویرایشگر)
+    if (canEdit()) {
+        const modalContentArea = document.getElementById('modalContent');
+        if (!modalContentArea) return;
+
+        // استفاده از Event Delegation: یک listener برای کل محتوای مودال
+        modalContentArea.addEventListener('click', (e) => {
+            const target = e.target.closest('button'); // پیدا کردن نزدیک‌ترین دکمه‌ای که روی آن کلیک شده
+            if (!target) return; // اگر روی دکمه کلیک نشده، کاری نکن
+
+            const id = target.id;
+
+            // بر اساس ID دکمه، تابع مربوطه را فراخوانی کن
+            switch (id) {
+                case 'edit-team-members-btn':
+                    showTeamForm(team.firestoreId); // <-- منطق دکمه ویرایش اعضا
+                    break;
+                case 'edit-team-okrs-btn':
+                    showEditTeamOkrsForm(team);
+                    break;
+                case 'edit-team-health-btn':
+                    showTeamHealthForm(team);
+                    break;
+                case 'change-team-avatar-btn':
                     handleAvatarChange(async (newAvatarUrl) => {
                         try {
                             const docRef = doc(db, `artifacts/${appId}/public/data/teams`, team.firestoreId);
                             await updateDoc(docRef, { avatar: newAvatarUrl });
                             showToast("عکس تیم با موفقیت به‌روزرسانی شد.");
+                            pages.viewTeamProfile(team.firestoreId); // رفرش کردن پروفایل تیم
                         } catch (error) {
                             console.error("Error updating team avatar:", error);
                             showToast("خطا در به‌روزرسانی عکس تیم.", "error");
                         }
                     });
-                });
+                    break;
             }
-            setTimeout(() => { lucide.createIcons(); }, 100);
-        };
+        });
+    }
+
+    // 3. اجرای Lucide برای نمایش آیکون‌ها
+    setTimeout(() => {
+        lucide.createIcons();
+    }, 100);
+};
 
         const openModal = (modal, container) => { modal.classList.remove('hidden'); modal.classList.add('flex'); setTimeout(() => container.classList.remove('scale-95', 'opacity-0'), 50); };
         const closeModal = (modal, container) => { container.classList.add('scale-95', 'opacity-0'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); destroyCharts(); }, 300); };
@@ -2844,80 +2882,101 @@ const showEmployeeForm = (employeeId = null) => {
             
             window.addEventListener('hashchange', router);
         };
+// کل تابع فعلی را با این کد جایگزین کنید
 const setupProfileModalListeners = (emp) => {
-        const tabs = document.querySelectorAll('#profile-tabs .profile-tab');
-        const tabContents = document.querySelectorAll('.profile-tab-content');
-        tabs.forEach(tab => { tab.addEventListener('click', () => { tabs.forEach(t => t.classList.remove('active')); tab.classList.add('active'); const target = tab.getAttribute('data-tab'); tabContents.forEach(content => { content.classList.toggle('active', content.id === `tab-${target}`); }); }); });
-        
-        setTimeout(() => {
-            renderSkillRadarChart('skillRadarChart', emp.skills || {});
-            lucide.createIcons();
-        }, 100);
-        
-        if(canEdit()) {
-            // منطق کامل دکمه آپلود عکس
-            document.getElementById('change-avatar-btn')?.addEventListener('click', () => {
+    const tabs = document.querySelectorAll('#profile-tabs .profile-tab');
+    const tabContents = document.querySelectorAll('.profile-tab-content');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const target = tab.getAttribute('data-tab');
+            tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${target}`);
+            });
+        });
+    });
+
+    setTimeout(() => {
+        renderSkillRadarChart('skillRadarChart', emp.skills || {});
+        lucide.createIcons();
+    }, 100);
+
+    if (canEdit()) {
+        // از اینجا به بعد اصلاح شده است
+        const modalContentArea = document.getElementById('modalContent');
+        if (!modalContentArea) return;
+
+        // فقط یک Event Listener به والد اضافه می‌کنیم
+        modalContentArea.addEventListener('click', (e) => {
+            const target = e.target.closest('button'); // پیدا کردن نزدیک‌ترین دکمه کلیک‌شده
+            if (!target) return; // اگر روی دکمه کلیک نشده بود، خارج شو
+
+            const id = target.id;
+            const classList = target.classList;
+
+            // بر اساس ID یا کلاس دکمه، کار مربوطه را انجام می‌دهیم
+            if (id === 'change-avatar-btn') {
                 handleAvatarChange(async (newAvatarUrl) => {
                     try {
                         const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
                         await updateDoc(docRef, { avatar: newAvatarUrl });
                         showToast("عکس پروفایل با موفقیت به‌روزرسانی شد.");
-                        viewEmployeeProfile(emp.firestoreId); // رفرش کردن پروفایل برای نمایش عکس جدید
+                        pages.viewEmployeeProfile(emp.firestoreId); // رفرش کردن پروفایل
                     } catch (error) {
                         console.error("Error updating avatar:", error);
                         showToast("خطا در به‌روزرسانی عکس پروفایل.", "error");
                     }
                 });
-            });
-
-            // منطق کامل دکمه حذف عکس
-            document.getElementById('delete-avatar-btn')?.addEventListener('click', () => {
+            } else if (id === 'delete-avatar-btn') {
                 showConfirmationModal('حذف عکس پروفایل', 'آیا از حذف عکس پروفایل مطمئن هستید؟', async () => {
                     try {
                         const docRef = doc(db, `artifacts/${appId}/public/data/employees`, emp.firestoreId);
                         const defaultAvatar = `https://placehold.co/100x100/E2E8F0/4A5568?text=${emp.name.substring(0,2)}`;
                         await updateDoc(docRef, { avatar: defaultAvatar });
                         showToast("عکس پروفایل حذف شد.");
-                        viewEmployeeProfile(emp.firestoreId); // رفرش کردن پروفایل
+                        pages.viewEmployeeProfile(emp.firestoreId);
                     } catch (error) {
-                         console.error("Error deleting avatar:", error);
-                         showToast("خطا در حذف عکس پروفایل.", "error");
+                        console.error("Error deleting avatar:", error);
+                        showToast("خطا در حذف عکس پروفایل.", "error");
                     }
                 });
-            });
-
-            document.getElementById('main-edit-employee-btn')?.addEventListener('click', () => showEmployeeForm(emp.firestoreId));
-            document.getElementById('edit-okrs-btn')?.addEventListener('click', () => showEditOkrsForm(emp));
-            document.getElementById('edit-skills-btn')?.addEventListener('click', () => showEditSkillsForm(emp));
-            document.getElementById('edit-competencies-btn')?.addEventListener('click', () => showEditCompetenciesForm(emp));
-            document.getElementById('edit-personal-info-btn')?.addEventListener('click', () => showEditPersonalInfoForm(emp));
-            document.getElementById('add-disciplinary-btn')?.addEventListener('click', () => showDisciplinaryForm(emp));
-            document.getElementById('add-contract-btn')?.addEventListener('click', () => showContractForm(emp));
-            document.getElementById('add-performance-btn')?.addEventListener('click', () => showPerformanceForm(emp));
-            document.getElementById('add-career-path-btn')?.addEventListener('click', () => showCareerPathForm(emp));
-            document.getElementById('add-document-btn')?.addEventListener('click', () => showDocumentForm(emp));
-
-            modalContent.addEventListener('click', (e) => {
-                const editPerfBtn = e.target.closest('.edit-performance-btn');
-                const deletePerfBtn = e.target.closest('.delete-performance-btn');
-                const deleteDisciplinaryBtn = e.target.closest('.delete-disciplinary-btn');
-                const deleteCareerBtn = e.target.closest('.delete-career-path-btn');
-                const editContractBtn = e.target.closest('.edit-contract-btn');
-                const deleteContractBtn = e.target.closest('.delete-contract-btn');
-                const editDocBtn = e.target.closest('.edit-document-btn');
-                const deleteDocBtn = e.target.closest('.delete-document-btn');
-
-                if (editPerfBtn) showPerformanceForm(emp, parseInt(editPerfBtn.dataset.index));
-                if (deletePerfBtn) deletePerformanceReview(emp, parseInt(deletePerfBtn.dataset.index));
-                if (deleteDisciplinaryBtn) deleteDisciplinaryRecord(emp, parseInt(deleteDisciplinaryBtn.dataset.index));
-                if (deleteCareerBtn) deleteCareerPathEntry(emp, parseInt(deleteCareerBtn.dataset.index));
-                if (editContractBtn) showContractForm(emp, parseInt(editContractBtn.dataset.index));
-                if (deleteContractBtn) deleteContract(emp, parseInt(deleteContractBtn.dataset.index));
-                if (editDocBtn) showDocumentForm(emp, parseInt(editDocBtn.dataset.index));
-                if (deleteDocBtn) deleteDocument(emp, parseInt(deleteDocBtn.dataset.index));
-            });
-        }
-    };
+            } else if (id === 'main-edit-employee-btn') {
+                showEmployeeForm(emp.firestoreId);
+            } else if (id === 'edit-competencies-btn') {
+                showEditCompetenciesForm(emp);
+            } else if (id === 'edit-personal-info-btn') {
+                showEditPersonalInfoForm(emp);
+            } else if (id === 'add-performance-btn') {
+                showPerformanceForm(emp);
+            } else if (id === 'add-career-path-btn') {
+                showCareerPathForm(emp);
+            } else if (id === 'add-disciplinary-btn') {
+                showDisciplinaryForm(emp);
+            } else if (id === 'add-contract-btn') {
+                showContractForm(emp);
+            } else if (id === 'add-document-btn') {
+                showDocumentForm(emp);
+            } else if (classList.contains('edit-performance-btn')) {
+                showPerformanceForm(emp, parseInt(target.dataset.index));
+            } else if (classList.contains('delete-performance-btn')) {
+                deletePerformanceReview(emp, parseInt(target.dataset.index));
+            } else if (classList.contains('delete-disciplinary-btn')) {
+                deleteDisciplinaryRecord(emp, parseInt(target.dataset.index));
+            } else if (classList.contains('delete-career-path-btn')) {
+                deleteCareerPathEntry(emp, parseInt(target.dataset.index));
+            } else if (classList.contains('edit-contract-btn')) {
+                showContractForm(emp, parseInt(target.dataset.index));
+            } else if (classList.contains('delete-contract-btn')) {
+                deleteContract(emp, parseInt(target.dataset.index));
+            } else if (classList.contains('edit-document-btn')) {
+                showDocumentForm(emp, parseInt(target.dataset.index));
+            } else if (classList.contains('delete-document-btn')) {
+                deleteDocument(emp, parseInt(target.dataset.index));
+            }
+        });
+    }
+};
         
         // --- EDIT FORM FUNCTIONS ---
         const showAddUserForm = () => {
