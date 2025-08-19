@@ -273,7 +273,15 @@
 
         const state = { employees: [], teams: [], reminders: [], surveyResponses: [], users: [], competencies: [], expenses: [], pettyCashCards: [], chargeHistory: [], dashboardMetrics: {}, orgAnalytics: {}, currentPage: 'dashboard', currentPageTalent: 1, currentUser: null, };
         let charts = {};
-        
+        // این کد را نزدیک به تعریف state قرار دهید
+const teamColorPalette = [
+    { bg: 'bg-sky-50', hoverBorder: 'hover:border-sky-200' },
+    { bg: 'bg-teal-50', hoverBorder: 'hover:border-teal-200' },
+    { bg: 'bg-fuchsia-50', hoverBorder: 'hover:border-fuchsia-200' },
+    { bg: 'bg-amber-50', hoverBorder: 'hover:border-amber-200' },
+    { bg: 'bg-rose-50', hoverBorder: 'hover:border-rose-200' },
+    { bg: 'bg-indigo-50', hoverBorder: 'hover:border-indigo-200' }
+];
         const appId = 'hr-nik-prod';
         const firebaseConfig = { apiKey: "AIzaSyCCfPmxQy1uAKu0lPGSe3bc-P15iLYLHJo", authDomain: "nik-hr.firebaseapp.com", projectId: "nik-hr", storageBucket: "nik-hr.firebasestorage.app", messagingSenderId: "731265316127", appId: "1:731265316127:web:6fda02cb2c7d4adfc92c2a" };
         let app, auth, db, storage;
@@ -972,73 +980,71 @@ talent: () => {
     `;
 },
 organization: () => {
-    // اگر هیچ تیمی وجود ندارد، پیام اولیه را نمایش بده
     if (state.teams.length === 0) return `<div class="text-center p-10 card"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-md transition">افزودن تیم جدید</button>` : ''}</div>`;
 
-    // 1. برای هر تیم، یک کارت هوشمند جدید می‌سازیم
-    const teamCardsHtml = state.teams.map(team => {
+    const teamCardsHtml = state.teams.map((team, index) => { // <-- دریافت ایندکس برای انتخاب رنگ
         const leader = state.employees.find(e => e.id === team.leaderId);
         const memberCount = team.memberIds?.length || 0;
         const engagementScore = team.engagementScore || 0;
-        
+
         const okrProgress = (team.okrs && team.okrs.length > 0)
             ? Math.round(team.okrs.reduce((sum, okr) => sum + okr.progress, 0) / team.okrs.length)
             : 0;
 
+        // انتخاب رنگ از پالت به صورت چرخشی
+        const color = teamColorPalette[index % teamColorPalette.length];
+
         return `
-            <div class="card p-0 flex flex-col overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
-                <div class="p-5 flex-grow">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <h3 class="text-lg font-bold text-slate-800">${team.name}</h3>
-                            <p class="text-sm text-slate-500">رهبر تیم: ${leader ? leader.name : 'نامشخص'}</p>
-                        </div>
-                        <img src="${team.avatar}" alt="${team.name}" class="w-12 h-12 rounded-lg object-cover border-2 border-white shadow-sm">
-                    </div>
-                    
-                    <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-3 gap-2 text-center">
-                        <div>
-                            <p class="text-xs text-slate-500">اعضا</p>
-                            <p class="text-base font-bold flex items-center justify-center gap-1">
-                                <i data-lucide="users" class="w-4 h-4"></i>
-                                ${memberCount}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500">مشارکت</p>
-                            <p class="text-base font-bold text-green-600">${engagementScore}%</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500">اهداف (OKR)</p>
-                            <p class="text-base font-bold text-blue-600">${okrProgress}%</p>
-                        </div>
+            <div class="card flex flex-col md:flex-row items-center gap-4 p-5 transform hover:shadow-lg ${color.hoverBorder} transition-all duration-300 ${color.bg}">
+                <div class="flex items-center gap-4 w-full md:w-1/4">
+                    <img src="${team.avatar}" alt="${team.name}" class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">${team.name}</h3>
+                        <p class="text-sm text-slate-500">${leader ? leader.name : 'بدون رهبر'}</p>
                     </div>
                 </div>
-                
-                <div class="bg-slate-50 px-5 py-3 flex justify-between items-center mt-auto">
-                    <div class="flex -space-x-2 overflow-hidden">
-                        ${(team.memberIds || []).slice(0, 5).map(memberId => {
-                            const member = state.employees.find(e => e.id === memberId);
-                            return member ? `<img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : '';
-                        }).join('')}
-                        ${memberCount > 5 ? `<div class="flex items-center justify-center h-8 w-8 rounded-full bg-slate-200 text-slate-600 text-xs font-medium ring-2 ring-white">+${memberCount - 5}</div>` : ''}
+
+                <div class="flex-grow grid grid-cols-3 gap-4 text-center w-full md:w-1/2 border-t md:border-t-0 md:border-x border-slate-200 py-4 md:py-0 px-4">
+                    <div>
+                        <p class="text-2xl font-bold flex items-center justify-center gap-1.5">
+                            <i data-lucide="users" class="w-5 h-5 text-slate-400"></i>
+                            ${memberCount}
+                        </p>
+                        <p class="text-xs text-slate-500">اعضا</p>
                     </div>
-                    <div class="flex gap-2">
-                        ${isAdmin() ? `<button class="delete-team-btn p-2 text-slate-400 hover:text-rose-500 transition-colors" data-team-id="${team.firestoreId}" title="حذف تیم"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
-                        <button class="view-team-profile-btn text-sm bg-blue-600 text-white py-1.5 px-4 rounded-lg hover:bg-blue-700 shadow-sm transition" data-team-id="${team.firestoreId}">مشاهده</button>
+                    <div>
+                        <p class="text-2xl font-bold text-green-600">${engagementScore}%</p>
+                        <p class="text-xs text-slate-500">مشارکت</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-blue-600">${okrProgress}%</p>
+                        <p class="text-xs text-slate-500">اهداف</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between md:justify-end gap-4 w-full md:w-1/4">
+                    <div class="flex -space-x-3 overflow-hidden">
+                        ${(team.memberIds || []).slice(0, 4).map(memberId => {
+                            const member = state.employees.find(e => e.id === memberId);
+                            return member ? `<img class="inline-block h-9 w-9 rounded-full ring-2 ring-white object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : '';
+                        }).join('')}
+                        ${memberCount > 4 ? `<div class="flex items-center justify-center h-9 w-9 rounded-full bg-slate-200 text-slate-600 text-xs font-medium ring-2 ring-white">+${memberCount - 4}</div>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="view-team-profile-btn text-sm bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-sm transition" data-team-id="${team.firestoreId}">مشاهده</button>
+                        ${isAdmin() ? `<button class="delete-team-btn p-2 text-slate-400 hover:text-rose-500 transition-colors" data-team-id="${team.firestoreId}" title="حذف تیم"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
                     </div>
                 </div>
             </div>
         `;
     }).join('');
 
-    // 2. کد نهایی را به همراه ساختار گرید برمی‌گردانیم
     return `
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold text-slate-800">ساختار سازمان</h1>
             ${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="space-y-4">
             ${teamCardsHtml}
         </div>
     `;
