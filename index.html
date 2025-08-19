@@ -982,16 +982,32 @@ talent: () => {
 organization: () => {
     if (state.teams.length === 0) return `<div class="text-center p-10 card"><i data-lucide="users-2" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">هنوز تیمی ثبت نشده است</h2><p class="mt-2 text-slate-500">برای شروع، اولین تیم سازمان را از طریق دکمه زیر اضافه کنید.</p>${canEdit() ? `<button id="add-team-btn-empty" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-md transition">افزودن تیم جدید</button>` : ''}</div>`;
 
-    const teamCardsHtml = state.teams.map((team, index) => { // <-- دریافت ایندکس برای انتخاب رنگ
+    const teamCardsHtml = state.teams.map((team, index) => {
         const leader = state.employees.find(e => e.id === team.leaderId);
-        const memberCount = team.memberIds?.length || 0;
-        const engagementScore = team.engagementScore || 0;
+        
+        // --- بلوک کد اصلاح شده برای شمارش صحیح اعضا ---
+        let memberIdArray = [];
+        if (Array.isArray(team.memberIds)) {
+            // حالت صحیح: اگر داده به صورت آرایه بود
+            memberIdArray = team.memberIds;
+        } else if (typeof team.memberIds === 'string' && team.memberIds.length > 0) {
+            // حالت اشتباه: اگر داده به صورت رشته متنی بود، آن را به آرایه تبدیل می‌کنیم
+            memberIdArray = team.memberIds.split(',').map(id => id.trim());
+        }
 
+        const personnelIds = new Set(memberIdArray);
+        if (team.leaderId) {
+            personnelIds.add(team.leaderId);
+        }
+        const memberCount = personnelIds.size;
+        // --- پایان بلوک کد اصلاح شده ---
+
+        const engagementScore = team.engagementScore || 0;
+        
         const okrProgress = (team.okrs && team.okrs.length > 0)
             ? Math.round(team.okrs.reduce((sum, okr) => sum + okr.progress, 0) / team.okrs.length)
             : 0;
 
-        // انتخاب رنگ از پالت به صورت چرخشی
         const color = teamColorPalette[index % teamColorPalette.length];
 
         return `
@@ -1024,7 +1040,7 @@ organization: () => {
 
                 <div class="flex items-center justify-between md:justify-end gap-4 w-full md:w-1/4">
                     <div class="flex -space-x-3 overflow-hidden">
-                        ${(team.memberIds || []).slice(0, 4).map(memberId => {
+                        ${(Array.from(personnelIds).slice(0, 4)).map(memberId => {
                             const member = state.employees.find(e => e.id === memberId);
                             return member ? `<img class="inline-block h-9 w-9 rounded-full ring-2 ring-white object-cover" src="${member.avatar}" alt="${member.name}" title="${member.name}">` : '';
                         }).join('')}
@@ -1044,9 +1060,9 @@ organization: () => {
             <h1 class="text-3xl font-bold text-slate-800">ساختار سازمان</h1>
             ${canEdit() ? `<button id="add-team-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن تیم جدید</button>` : ''}
         </div>
-<div id="teams-container" class="space-y-4">
-        ${teamCardsHtml}
-    </div>
+        <div class="space-y-4" id="teams-container">
+            ${teamCardsHtml}
+        </div>
     `;
 },
     surveys: () => {
