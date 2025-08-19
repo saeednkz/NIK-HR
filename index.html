@@ -1527,6 +1527,75 @@ const pages = {
     },
 };
 
+const viewTeamProfile = (teamId) => {
+    const team = state.teams.find(t => t.firestoreId === teamId);
+    if (!team) return;
+    const leader = state.employees.find(e => e.id === team.leaderId);
+    const members = state.employees.filter(e => team.memberIds?.includes(e.id));
+    const basicAnalysis = generateTeamSmartAnalysis(team);
+    const advancedAnalysis = analyzeTeamData(team, members);
+
+    const highRiskNames = advancedAnalysis.highRiskMembers.map(e => e.name).join('، ');
+    if(highRiskNames) {
+        basicAnalysis.risk = { text: `اعضای پرریسک: <strong>${highRiskNames}</strong>`, icon: 'shield-alert', color: 'text-red-600' };
+    }
+
+    modalTitle.innerText = 'پروفایل تیم: ' + team.name;
+    modalContent.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 space-y-6">
+                <div class="card p-6 bg-gray-50 rounded-xl text-center relative group">
+                    <div class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
+                        <img src="${team.avatar}" alt="${team.name}" class="w-full h-full object-cover">
+                    </div>
+                    ${canEdit() ? `<button id="change-team-avatar-btn" class="absolute top-4 left-4 bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-blue-600"><i data-lucide="camera" class="w-4 h-4"></i></button>` : ''}
+                    <h2 class="text-2xl font-bold text-gray-800">${team.name}</h2>
+                    <p class="text-gray-500">رهبر تیم: ${leader?.name || 'نامشخص'}</p>
+                </div>
+                <div class="card p-6 bg-gray-50 rounded-xl">
+                    <h4 class="font-semibold mb-4 text-gray-700 flex items-center"><i data-lucide="brain-circuit" class="ml-2 w-5 h-5 text-purple-500"></i>تحلیل هوشمند</h4>
+                    <div class="text-sm space-y-3">${Object.keys(basicAnalysis).length > 0 ? Object.values(basicAnalysis).map(item => `<div class="flex items-start"><i data-lucide="${item.icon}" class="w-4 h-4 mt-1 ml-2 flex-shrink-0 ${item.color}"></i><div class="${item.color}">${item.text}</div></div>`).join('') : '<p class="text-sm text-gray-500">داده کافی برای تحلیل وجود ندارد.</p>'}</div>
+                </div>
+            </div>
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl shadow-md">
+                    <div class="border-b border-gray-200"><nav id="profile-tabs" class="flex -mb-px overflow-x-auto"><button data-tab="team-overview" class="profile-tab active shrink-0">نمای کلی</button><button data-tab="team-health" class="profile-tab shrink-0">سلامت تیم</button><button data-tab="team-talent" class="profile-tab shrink-0">ماتریس استعداد</button></nav></div>
+                    <div class="p-4">
+                        <div id="tab-team-overview" class="profile-tab-content active">
+                            <div class="space-y-4">
+                                <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h4 class="font-semibold text-gray-700">اعضای تیم (${members.length} نفر)</h4>
+                                        <button id="edit-team-members-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">ویرایش</button>
+                                    </div>
+                                    <div class="flex flex-wrap gap-4">${members.map(m => `<div class="text-center" title="${m.name}"><div class="w-12 h-12 rounded-full mx-auto overflow-hidden bg-gray-200"><img class="w-full h-full object-cover" src="${m.avatar}"></div><p class="text-xs mt-1 truncate w-16">${m.name}</p></div>`).join('')}</div>
+                                </div>
+                                <div class="card p-4 bg-white rounded-xl border border-slate-200">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h4 class="font-semibold text-gray-700">اهداف تیم (OKRs)</h4>
+                                        ${canEdit() ? `<button id="edit-team-okrs-btn" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">افزودن/ویرایش</button>`:''}
+                                    </div>
+                                    <div class="space-y-3">${(team.okrs || []).length > 0 ? (team.okrs || []).map(okr => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="text-gray-600">${okr.title}</span><span class="font-medium text-blue-600">${okr.progress}%</span></div><div class="progress-bar w-full"><div class="progress-bar-fill" style="width: ${okr.progress}%;"></div></div></div>`).join('') : '<p class="text-sm text-gray-500">هدفی برای این تیم ثبت نشده است.</p>'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="tab-team-health" class="profile-tab-content">
+                            ${renderTeamHealthMetrics(team)}
+                        </div>
+                        <div id="tab-team-talent" class="profile-tab-content">
+                            <div class="card p-6 bg-white rounded-xl border border-slate-200">
+                                <h4 class="font-semibold mb-3 text-gray-700">توزیع استعداد در تیم</h4>
+                                <div class="grid grid-cols-3 gap-1 text-center text-xs border-t-2 border-l-2 border-gray-300 mt-4 bg-white">${ generateTeamNineBoxGrid(members) }</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    openModal(mainModal, mainModalContainer);
+    setupTeamProfileModalListeners(team);
+};
+
         // --- NAVIGATION & ROUTING ---
         const navigateTo = (pageName) => {
             state.currentPage = pageName;
