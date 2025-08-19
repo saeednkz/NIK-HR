@@ -945,49 +945,39 @@ ${canEdit() ? `<div class="border-t pt-4 mt-auto">
         `;
     },
 talent: () => {
-    // این تابع دیگر هیچ منطق جاوااسکریپتی برای ساخت ردیف‌های جدول ندارد.
-    // وظیفه آن فقط ساختن ساختار کلی (اسکلت) صفحه است.
     return `
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">مدیریت استعدادها</h1>
-            ${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i data-lucide="plus"></i> افزودن کارمند جدید</button>` : ''}
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">استعدادهای سازمان</h1>
+                <p class="text-sm text-slate-500 mt-1">مدیریت و مشاهده پروفایل کارمندان</p>
+            </div>
+            ${canEdit() ? `<button id="add-employee-btn" class="bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2 w-full md:w-auto"><i data-lucide="plus"></i> افزودن کارمند جدید</button>` : ''}
         </div>
-        <div class="card">
-            <div class="flex flex-col md:flex-row justify-between items-center p-4 gap-4 border-b border-slate-200">
-                <div class="w-full md:w-1/2 lg:w-1/3 relative">
-                    <input type="text" id="searchInput" placeholder="جستجو بر اساس نام یا کد پرسنلی..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+
+        <div class="card mb-6 p-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="w-full md:w-1/3 relative">
+                    <input type="text" id="searchInput" placeholder="جستجوی کارمند..." class="w-full p-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                 </div>
-                <div class="w-full md:w-auto flex flex-wrap gap-2">
-                    <select id="departmentFilter" class="p-2 border border-slate-300 rounded-lg">
+                <div class="w-full md:w-auto flex flex-wrap gap-2 justify-end">
+                    <select id="departmentFilter" class="p-2 border border-slate-300 rounded-lg bg-white">
                         <option value="">همه دپارتمان‌ها</option>
                         ${[...new Set(state.employees.map(e => e.department))].filter(Boolean).map(d => `<option value="${d}">${d}</option>`).join('')}
                     </select>
-                    <select id="statusFilter" class="p-2 border border-slate-300 rounded-lg">
+                    <select id="statusFilter" class="p-2 border border-slate-300 rounded-lg bg-white">
                         <option value="">همه وضعیت‌ها</option>
                         <option value="فعال">فعال</option>
                         <option value="غیرفعال">غیرفعال</option>
                     </select>
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-right text-slate-500">
-                  <thead class="text-xs text-slate-700 uppercase bg-slate-50">
-    <tr>
-        <th scope="col" class="px-6 py-3 font-medium">نام</th>
-        <th scope="col" class="px-6 py-3 font-medium">کد پرسنلی</th>
-        <th scope="col" class="px-6 py-3 font-medium">دپارتمان</th>
-        <th scope="col" class="px-6 py-3 font-medium">وضعیت پروفایل</th> <th scope="col" class="px-6 py-3 font-medium">وضعیت</th>
-        <th scope="col" class="px-6 py-3 font-medium">عملیات</th>
-    </tr>
-</thead>
-                    
-                    <tbody id="employeeTableBody"></tbody>
-                    
-                </table>
-            </div>
-            <div id="pagination-container" class="p-4 flex justify-center border-t border-slate-200"></div>
         </div>
+
+        <div id="employee-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+
+        <div id="pagination-container" class="p-4 flex justify-center mt-6"></div>
     `;
 },
 organization: () => {
@@ -2051,7 +2041,7 @@ document.getElementById('addReminderBtn')?.addEventListener('click', async () =>
 });
 };
 const renderEmployeeTable = () => {
-    const TALENT_PAGE_SIZE = 10;
+    const TALENT_PAGE_SIZE = 12; // می‌توانیم تعداد بیشتری در هر صفحه نشان دهیم
     const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
     const departmentFilter = document.getElementById('departmentFilter')?.value || '';
     const statusFilter = document.getElementById('statusFilter')?.value || '';
@@ -2066,31 +2056,44 @@ const renderEmployeeTable = () => {
     const endIndex = startIndex + TALENT_PAGE_SIZE;
     const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
 
-    const tableBody = document.getElementById('employeeTableBody');
-    if (tableBody) {
-        tableBody.innerHTML = paginatedEmployees.map(emp => {
-            const profileComplete = isProfileComplete(emp);
-            const profileStatusHtml = profileComplete 
-                ? `<span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">کامل</span>`
-                : `<span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">ناقص</span>`;
+    const container = document.getElementById('employee-cards-container');
+    if (container) {
+        if (paginatedEmployees.length === 0) {
+            container.innerHTML = `<div class="col-span-full text-center py-10"><i data-lucide="user-x" class="mx-auto w-12 h-12 text-slate-400"></i><p class="mt-2 text-slate-500">هیچ کارمندی با این مشخصات یافت نشد.</p></div>`;
+            lucide.createIcons();
+        } else {
+            container.innerHTML = paginatedEmployees.map(emp => {
+                const isComplete = isProfileComplete(emp);
+                const riskScore = emp.attritionRisk?.score || 0;
+                let riskColorClass = 'bg-green-500';
+                if (riskScore > 70) riskColorClass = 'bg-red-500';
+                else if (riskScore > 40) riskColorClass = 'bg-yellow-500';
 
-            return `
-                <tr class="bg-white border-b hover:bg-gray-50">
-                    <td class="px-6 py-4 flex items-center space-x-3 space-x-reverse">
-                        <img src="${emp.avatar}" alt="${emp.name}" class="w-10 h-10 rounded-full object-cover">
-                        <span class="font-medium text-gray-900 whitespace-nowrap">${emp.name}</span>
-                    </td>
-                    <td class="px-6 py-4">${emp.id}</td>
-                    <td class="px-6 py-4">${emp.department || '-'}</td>
-                    <td class="px-6 py-4">${profileStatusHtml}</td>
-                    <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span></td>
-                    <td class="px-6 py-4 flex items-center gap-4">
-                        <button class="view-employee-profile-btn text-blue-600 hover:underline" data-employee-id="${emp.firestoreId}">پروفایل</button>
-                        ${canEdit() ? `<button class="edit-employee-btn text-yellow-600 hover:underline" data-employee-id="${emp.firestoreId}">ویرایش</button>` : ''}
-                        ${isAdmin() ? `<button class="delete-employee-btn text-red-600 hover:underline" data-employee-id="${emp.firestoreId}">حذف</button>` : ''}
-                    </td>
-                </tr>`;
-        }).join('');
+                return `
+                    <div class="card bg-white p-4 flex flex-col text-center items-center rounded-xl shadow-lg transform hover:-translate-y-1 transition-transform duration-300">
+                        <div class="absolute top-3 right-3 w-3 h-3 rounded-full ${riskColorClass}" title="ریسک خروج: ${riskScore}%"></div>
+
+                        <img src="${emp.avatar}" alt="${emp.name}" class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 mt-4">
+
+                        <h3 class="font-bold text-lg mt-3 text-slate-800">${emp.name}</h3>
+                        <p class="text-sm text-slate-500">${emp.jobTitle || 'بدون عنوان شغلی'}</p>
+
+                        <div class="mt-4 flex items-center gap-2 text-xs">
+                            <span class="px-2 py-1 font-medium rounded-full ${emp.status === 'فعال' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${emp.status}</span>
+                            <span class="px-2 py-1 font-medium rounded-full ${isComplete ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'}">
+                                ${isComplete ? 'پروفایل کامل' : 'پروفایل ناقص'}
+                            </span>
+                        </div>
+
+                        <div class="mt-auto pt-4 w-full">
+                            <button class="view-employee-profile-btn w-full text-sm bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 transition" data-employee-id="${emp.firestoreId}">
+                                مشاهده پروفایل
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
     }
 
     renderPagination('pagination-container', state.currentPageTalent, filteredEmployees.length, TALENT_PAGE_SIZE);
