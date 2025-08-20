@@ -488,38 +488,40 @@ const persianToEnglishDate = (persianDateStr) => {
         return null;
     }
 };
-// --- نسخه نهایی و بهینه شده برای کتابخانه babakhani/pwt.datepicker ---
-// --- نسخه نهایی و قطعی با تنظیم مقدار به صورت رشته متنی ---
+// --- نسخه نهایی با استراتژی Lazy Initialization (ساخت تقویم فقط در زمان کلیک) ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = $(`#${elementId}`);
     if (!input.length) return;
 
-    // اگر نمونه‌ای از قبل وجود داشت، آن را از بین می‌بریم
-    if (input.data('datepicker')) {
-        input.persianDatepicker('destroy');
-    }
+    // ۱. هر نمونه‌ی قبلی را برای اطمینان ۱۰۰٪ پاک می‌کنیم
+    try {
+        if (input.data('datepicker')) {
+            input.persianDatepicker('destroy');
+        }
+    } catch (e) { /* Ignore */ }
+    // هر event listener کلیک قبلی را هم حذف می‌کنیم
+    input.off('click');
 
-    // فیلد را فقط خواندنی کرده و مقدار قبلی را پاک می‌کنیم
+    // ۲. فیلد را فقط خواندنی کرده و مقدار صحیح را مثل یک متن ساده در آن قرار می‌دهیم
     input.attr('readonly', true).css('background-color', '#fff').val('');
-
-    // اگر تاریخ اولیه‌ای وجود داشت
     if (initialValue) {
-        // ۱. *** تغییر کلیدی اینجاست ***
-        // تاریخ اولیه (میلادی) را با تابع خودمان به یک رشته شمسی تبدیل می‌کنیم
         const persianDateString = toPersianDate(initialValue);
-        
-        // ۲. اگر رشته شمسی معتبر بود، آن را به عنوان مقدار فیلد قرار می‌دهیم
         if (persianDateString && persianDateString !== 'نامشخص' && persianDateString !== 'تاریخ نامعتبر') {
             input.val(persianDateString);
         }
     }
-
-    // ۳. حالا تقویم را روی فیلدی که مقدار صحیح دارد، اجرا می‌کنیم
-    // کتابخانه به صورت خودکار مقدار موجود در فیلد را می‌خواند
-    input.persianDatepicker({
-        format: 'YYYY/MM/DD',
-        autoClose: true,
-        observer: false // این همچنان برای جلوگیری از رفتارهای ناخواسته مهم است
+    
+    // ۳. *** تغییر نهایی و حیاتی: تقویم را الان نمی‌سازیم! ***
+    // به جای آن، منتظر می‌مانیم تا کاربر روی فیلد کلیک کند.
+    // از .one() استفاده می‌کنیم تا این کد فقط "یک بار" برای هر فیلد اجرا شود.
+    input.one('click', function() {
+        // در لحظه کلیک، تقویم ساخته و بلافاصله باز می‌شود
+        $(this).persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            observer: false,
+            // کتابخانه مقدار اولیه را از خود فیلد می‌خواند که ما قبلاً درست تنظیم کردیم
+        }).pdp.show(); 
     });
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
