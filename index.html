@@ -3202,7 +3202,7 @@ const setupTeamProfileModalListeners = (team) => {
             // بر اساس ID دکمه، تابع مربوطه را فراخوانی کن
             switch (id) {
                 case 'edit-team-members-btn':
-                    showTeamForm(team.firestoreId); // <-- منطق دکمه ویرایش اعضا
+                    showTeamForm(team.firestoreId);
                     break;
                 case 'edit-team-okrs-btn':
                     showEditTeamOkrsForm(team);
@@ -3211,17 +3211,33 @@ const setupTeamProfileModalListeners = (team) => {
                     showTeamHealthForm(team);
                     break;
                 case 'change-team-avatar-btn':
-                    handleAvatarChange(async (newAvatarUrl) => {
+                    // --- START: کد اصلاح شده برای آپلود آواتار تیم ---
+                    handleAvatarChange(async (imageBlob) => {
+                        if (!imageBlob) return;
+                        showToast("در حال آپلود عکس تیم...", "success");
                         try {
+                            // ۱. یک مسیر منحصر به فرد در Storage برای فایل ایجاد می‌کنیم
+                            const filePath = `team-avatars/${team.firestoreId}/${Date.now()}.jpg`;
+                            const storageRef = ref(storage, filePath);
+                            
+                            // ۲. فایل Blob را در Storage آپلود می‌کنیم
+                            const snapshot = await uploadBytes(storageRef, imageBlob);
+                            
+                            // ۳. لینک دانلود فایل آپلود شده را می‌گیریم
+                            const downloadURL = await getDownloadURL(snapshot.ref);
+                            
+                            // ۴. حالا لینک (که یک متن است) را در Firestore ذخیره می‌کنیم
                             const docRef = doc(db, `artifacts/${appId}/public/data/teams`, team.firestoreId);
-                            await updateDoc(docRef, { avatar: newAvatarUrl });
+                            await updateDoc(docRef, { avatar: downloadURL });
+                            
                             showToast("عکس تیم با موفقیت به‌روزرسانی شد.");
-                            pages.viewTeamProfile(team.firestoreId); // رفرش کردن پروفایل تیم
+                            viewTeamProfile(team.firestoreId); // رفرش کردن پروفایل تیم برای نمایش عکس جدید
                         } catch (error) {
                             console.error("Error updating team avatar:", error);
                             showToast("خطا در به‌روزرسانی عکس تیم.", "error");
                         }
                     });
+                    // --- END: کد اصلاح شده ---
                     break;
             }
         });
