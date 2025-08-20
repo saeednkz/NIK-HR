@@ -478,52 +478,62 @@ const persianToEnglishDate = (persianDateStr) => {
     }
 };
 
-// --- نسخه اصلاح شده و نهایی برای جلوگیری از آپدیت خودکار ---
+// --- نسخه نهایی و ضد خطا برای فعال‌سازی تقویم شمسی ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
-    const input = document.getElementById(elementId);
-    if (!input) return;
+    // برای اطمینان از سازگاری کامل، از سلکتور jQuery استفاده می‌کنیم
+    const input = $(`#${elementId}`);
+    if (!input.length) {
+        console.error(`المان تقویم با آیدی "${elementId}" پیدا نشد.`);
+        return;
+    }
 
-    // ۱. هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
+    // ۱. هر نمونه‌ی قبلی تقویم را به طور کامل از بین می‌بریم تا تداخل ایجاد نشود
     try {
-        $(input).pDatepicker('destroy');
-    } catch (e) {
-        // مشکلی نیست اگر از قبل وجود نداشته باشد
-    }
+        input.pDatepicker('destroy');
+    } catch(e) { /* اگر از قبل ساخته نشده بود، مشکلی نیست */ }
 
-    // ۲. ورودی را غیرقابل ویرایش مستقیم می‌کنیم
-    input.setAttribute('readonly', true);
-    input.setAttribute('placeholder', 'انتخاب از تقویم...');
-    input.style.backgroundColor = '#fff';
+    // ۲. ورودی را فقط خواندنی می‌کنیم تا کاربر مجبور به استفاده از تقویم شود
+    input.attr('readonly', true).css('background-color', '#fff');
 
-    // ۳. مقدار اولیه را قبل از ساخت تقویم آماده می‌کنیم
-    let initialTimestamp = null;
-    if (initialValue) {
-        let dateObject;
-        if (initialValue.toDate) { // حالت فایربیس Timestamp
-            dateObject = initialValue.toDate();
-        } else if (typeof initialValue === 'string' || typeof initialValue === 'number') {
-            dateObject = new Date(initialValue);
-        }
-        
-        if (dateObject && !isNaN(dateObject.getTime())) {
-            initialTimestamp = dateObject.getTime();
-        }
-    }
-
-    // ۴. تقویم را با تنظیمات و مقدار اولیه (در صورت وجود) می‌سازیم
-    const options = {
+    // ۳. تقویم را با تنظیمات اصلی و مهم‌تر از همه، بدون مقدار اولیه می‌سازیم
+    // با initialValue: false به کتابخانه می‌گوییم که حق ندارد تاریخ امروز را انتخاب کند!
+    input.pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
-        observer: false, // این گزینه مهم است تا تغییرات ناخواسته اعمال نشود
-        initialValue: initialTimestamp, // <<--- مقدار اولیه مستقیما اینجا قرار می‌گیرد
-        calendar: {
-            persian: { locale: 'fa' }
-        }
-    };
-    
-    $(input).pDatepicker(options);
+        observer: false, // این گزینه حیاتی است تا تقویم خودسرانه مقدار را عوض نکند
+        initialValue: false // <<<--- این کلید حل مشکل است!
+    });
 
-    // ۵. دیگر نیازی به setDate بعد از ساخت نیست چون در initialValue تنظیم شده
+    // ۴. حالا که تقویم "خام" ساخته شد، خودمان به صورت دستی مقدار اولیه را ست می‌کنیم
+    if (initialValue) {
+        let dateObject;
+        // ورودی می‌تواند Timestamp فایربیس یا یک رشته تاریخ میلادی باشد
+        if (initialValue.toDate) {
+            dateObject = initialValue.toDate();
+        } else if (typeof initialValue === 'string' && initialValue.trim() !== '') {
+            // new Date() با رشته YYYY-MM-DD به درستی کار می‌کند
+            dateObject = new Date(initialValue);
+        }
+
+        // فقط در صورتی که یک تاریخ معتبر ساخته شد، آن را در تقویم تنظیم می‌کنیم
+        if (dateObject && !isNaN(dateObject.getTime())) {
+            // یک تأخیر بسیار کوتاه می‌دهیم تا مطمئن شویم تقویم کاملاً آماده است
+            setTimeout(() => {
+                try {
+                    // متد setDate کتابخانه یک timestamp عددی (میلی‌ثانیه) می‌خواهد
+                    input.pDatepicker('setDate', dateObject.getTime());
+                } catch(e) {
+                    console.error("خطا در تنظیم تاریخ اولیه برای تقویم:", e);
+                }
+            }, 50); // 50 میلی‌ثانیه تأخیر امن‌تری است
+        } else {
+             // اگر initialValue معتبر نبود، فیلد را خالی می‌کنیم
+             input.val('');
+        }
+    } else {
+        // اگر تاریخ اولیه‌ای وجود نداشت (مثلا در فرم "افزودن جدید")، فیلد را خالی می‌کنیم
+        input.val('');
+    }
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
