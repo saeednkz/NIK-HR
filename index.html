@@ -125,6 +125,27 @@
     .toast.error { background: linear-gradient(to right, #f43f5e, #e11d48); }
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeOutToast { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
+    .tab-button {
+        padding: 0.75rem 1rem;
+        border-bottom: 3px solid transparent;
+        color: var(--color-text-secondary);
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .tab-button:hover {
+        background-color: #f8fafc;
+        color: var(--color-text-primary);
+    }
+    .tab-button.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
 </style>
 <body class="bg-slate-50">
 
@@ -872,12 +893,19 @@ dashboard: () => {
                     <div class="metric-card"><div class="bg-yellow-100 p-3 rounded-2xl mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div><div><p class="text-slate-500 text-sm">میانگین سابقه</p><p class="text-2xl font-bold text-slate-800">${metrics.averageTenure} <span class="text-base font-normal">سال</span></p></div></div>
                     <div class="metric-card"><div class="bg-purple-100 p-3 rounded-2xl mr-4"><i data-lucide="heart-pulse" class="text-purple-600"></i></div><div><p class="text-slate-500 text-sm">مشارکت کل</p><p class="text-2xl font-bold text-slate-800">${metrics.engagementScore}%</p></div></div>
                 </div>
+                
                 <div class="card p-0">
-                    <div class="p-6 border-b border-slate-100">
-                        <h3 class="font-semibold text-lg text-slate-800">تحلیل سلامت تیم‌ها</h3>
+                    <div class="px-6 border-b border-slate-100">
+                        <nav id="dashboard-tabs" class="flex -mx-6">
+                            <button data-tab="health" class="tab-button active">سلامت تیم‌ها</button>
+                            <button data-tab="engagement" class="tab-button">مشارکت کارکنان</button>
+                            <button data-tab="structure" class="tab-button">ساختار سازمان</button>
+                        </nav>
                     </div>
                     <div class="p-6">
-                        <div class="relative h-80"><canvas id="teamHealthBarChart"></canvas></div>
+                        <div id="tab-health" class="tab-content active"><div class="relative h-80"><canvas id="teamHealthBarChart"></canvas></div></div>
+                        <div id="tab-engagement" class="tab-content"><div class="relative h-80"><canvas id="engagementBreakdownChart"></canvas></div></div>
+                        <div id="tab-structure" class="tab-content"><div class="relative h-80"><canvas id="departmentBarChart"></canvas></div></div>
                     </div>
                 </div>
             </div>
@@ -887,7 +915,7 @@ dashboard: () => {
                     <div class="p-6 border-b border-slate-100">
                          <h3 class="font-semibold text-lg text-slate-800">رویدادهای مهم</h3>
                     </div>
-                    <div id="activityFeed" class="divide-y divide-slate-100">
+                    <div id="activityFeed" class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
                         ${renderAllReminders(5)}
                     </div>
                 </div>
@@ -1758,69 +1786,60 @@ const renderDashboardCharts = () => {
 
     const vibrantPalette = ['#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#facc15'];
 
-    // Chart 1: Team Health (Main Bar Chart)
+    // Chart for Tab 1: Team Health
     const teamHealthCtx = document.getElementById('teamHealthBarChart')?.getContext('2d');
     if (teamHealthCtx) {
-        const teamData = state.teams.map(team => ({
-            name: team.name,
-            score: team.engagementScore || 0
-        })).sort((a, b) => b.score - a.score);
-
+        const teamData = state.teams.map(team => ({ name: team.name, score: team.engagementScore || 0 })).sort((a, b) => b.score - a.score);
         charts.teamHealth = new Chart(teamHealthCtx, {
             type: 'bar',
             data: {
                 labels: teamData.map(t => t.name),
-                datasets: [{
-                    label: 'امتیاز مشارکت',
-                    data: teamData.map(t => t.score),
-                    backgroundColor: vibrantPalette,
-                    borderRadius: 8,
-                    borderSkipped: false,
-                }]
+                datasets: [{ label: 'امتیاز مشارکت', data: teamData.map(t => t.score), backgroundColor: vibrantPalette[0], borderRadius: 8 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
         });
     }
 
-    // Chart 2: Talent Distribution (Doughnut Chart)
+    // Chart for Tab 2: Engagement Breakdown
+    const engagementCtx = document.getElementById('engagementBreakdownChart')?.getContext('2d');
+    if (engagementCtx && state.orgAnalytics?.engagementBreakdown) {
+        const engagementData = state.orgAnalytics.engagementBreakdown;
+        charts.engagement = new Chart(engagementCtx, {
+            type: 'bar',
+            data: {
+                labels: engagementData.map(d => d.name),
+                datasets: [{ label: 'امتیاز', data: engagementData.map(d => d.score), backgroundColor: vibrantPalette[1], borderRadius: 8 }]
+            },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } }, y: { grid: { display: false } } } }
+        });
+    }
+    
+    // Chart for Tab 3: Department Headcount
+    const departmentCtx = document.getElementById('departmentBarChart')?.getContext('2d');
+    if (departmentCtx && metrics.departmentDistribution) {
+        charts.department = new Chart(departmentCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(metrics.departmentDistribution),
+                datasets: [{ label: 'تعداد', data: Object.values(metrics.departmentDistribution), backgroundColor: vibrantPalette[2], borderRadius: 8 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+        });
+    }
+
+    // Chart for Sidebar: Talent Distribution
     const talentCtx = document.getElementById('talentDistributionDoughnut')?.getContext('2d');
     if (talentCtx && metrics.nineBoxDistribution) {
-        const nineBoxLabels = Object.keys(metrics.nineBoxDistribution);
-        const nineBoxData = Object.values(metrics.nineBoxDistribution);
         charts.talent = new Chart(talentCtx, {
             type: 'doughnut',
             data: {
-                labels: nineBoxLabels,
-                datasets: [{
-                    data: nineBoxData,
-                    backgroundColor: vibrantPalette,
-                    hoverOffset: 8,
-                    borderWidth: 0,
-                }]
+                labels: Object.keys(metrics.nineBoxDistribution),
+                datasets: [{ data: Object.values(metrics.nineBoxDistribution), backgroundColor: vibrantPalette, hoverOffset: 8, borderWidth: 0 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '75%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { padding: 15, boxWidth: 12, font: { family: 'Vazirmatn' } }
-                    }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { padding: 15, boxWidth: 12, font: { family: 'Vazirmatn' } } } } }
         });
     }
 };
-
 const renderAllReminders = (limit = 0) => {
     const allEvents = [];
     const now = new Date();
@@ -1881,42 +1900,22 @@ const renderAllReminders = (limit = 0) => {
         </div>`;
     }).join('');
 };
-        const setupDashboardListeners = () => {
-    // فعال کردن تقویم شمسی برای فیلد یادآور در داشبورد
-    activatePersianDatePicker('reminderDate');
+const setupDashboardListeners = () => {
+    // Tab switching logic
+    const tabs = document.querySelectorAll('#dashboard-tabs .tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
 
-document.getElementById('addReminderBtn')?.addEventListener('click', async () => {
-    const textInput = document.getElementById('reminderText');
-    const dateInput = document.getElementById('reminderDate');
-    const daysBeforeInput = document.getElementById('reminderDaysBefore');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(item => item.classList.remove('active'));
+            tab.classList.add('active');
 
-    if (textInput.value && dateInput.value) {
-        try {
-            const gregorianDate = persianToEnglishDate(dateInput.value);
-            if (!gregorianDate) {
-                showToast("فرمت تاریخ شمسی صحیح نیست.", "error");
-                return;
-            }
-
-            // مقدار روز را از فیلد جدید می‌خوانیم
-            const daysBefore = parseInt(daysBeforeInput.value) || 7; // مقدار پیش‌فرض ۷ روز است
-
-            await addDoc(collection(db, `artifacts/${appId}/public/data/reminders`), {
-                text: textInput.value,
-                date: gregorianDate,
-                daysBefore: daysBefore // فیلد جدید را ذخیره می‌کنیم
+            const targetTab = tab.dataset.tab;
+            tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${targetTab}`);
             });
-
-            textInput.value = '';
-            dateInput.value = '';
-            daysBeforeInput.value = '7'; // ریست کردن به مقدار پیش‌فرض
-            showToast("یادآور با موفقیت اضافه شد.");
-        } catch (error) {
-            console.error("Error adding reminder:", error);
-            showToast("خطا در افزودن یادآور.", "error");
-        }
-    }
-});
+        });
+    });
 };
 const renderEmployeeTable = () => {
     const TALENT_PAGE_SIZE = 12;
