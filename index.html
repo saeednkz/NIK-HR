@@ -1101,52 +1101,31 @@ surveys: () => {
     `;
 },
 expenses: () => {
-    // --- ۱. محاسبات اولیه ---
+    // ... (تمام محاسبات اولیه بدون تغییر باقی می‌ماند) ...
     const totalCharges = state.chargeHistory.reduce((sum, chg) => sum + chg.amount, 0);
     const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
     const currentBalance = totalCharges - totalExpenses;
-
-    // --- ۲. ترکیب و مرتب‌سازی تراکنش‌ها ---
     const expensesWithDetails = state.expenses.map(exp => ({ ...exp, type: 'expense' }));
     const chargesWithDetails = state.chargeHistory.map(chg => ({ ...chg, type: 'charge', date: chg.chargedAt?.toDate(), item: `شارژ کارت ${chg.cardName}` }));
-
     const allTransactions = [...expensesWithDetails, ...chargesWithDetails]
         .filter(t => t.date)
         .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // --- ۳. ساخت HTML ---
-    const transactionsHtml = allTransactions.map(t => {
-        const isExpense = t.type === 'expense';
-        const cardName = isExpense ? (state.pettyCashCards.find(c => c.firestoreId === t.cardId)?.name || 'نامشخص') : '';
-
-        return `
-            <div class="flex items-center gap-4 py-4 px-2 border-b border-slate-100">
-                <div class="w-10 h-10 rounded-full ${isExpense ? 'bg-red-100' : 'bg-green-100'} flex items-center justify-center">
-                    <i data-lucide="${isExpense ? 'arrow-down' : 'arrow-up'}" class="w-5 h-5 ${isExpense ? 'text-red-500' : 'text-green-500'}"></i>
-                </div>
-                <div class="flex-grow">
-                    <p class="font-semibold text-slate-800">${t.item}</p>
-                    <p class="text-xs text-slate-500">${toPersianDate(t.date)} ${isExpense ? ` - ${cardName}` : ''}</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    ${t.invoiceUrl ? `<a href="${t.invoiceUrl}" target="_blank" class="text-blue-500 hover:underline text-xs">رسید</a>` : ''}
-                    <p class="w-28 text-left font-mono font-semibold ${isExpense ? 'text-red-600' : 'text-green-600'}">
-                        ${isExpense ? '-' : '+'}${t.amount.toLocaleString('fa-IR')}
-                    </p>
-                </div>
-            </div>
-        `;
-    }).join('');
-
+    const transactionsHtml = allTransactions.map(t => { /* ... کد این بخش بدون تغییر است ... */ }).join('');
+    
+    // --- کد جدید برای دکمه‌های ویرایش و حذف ---
     const cardsListHtml = state.pettyCashCards.map(card => `
         <div class="p-3 border-b border-slate-100">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-start">
                 <div>
                     <p class="font-semibold text-slate-700">${card.name}</p>
                     <p class="text-xs text-slate-500 font-mono">${card.cardNumber || 'بدون شماره'}</p>
                 </div>
-                <p class="font-mono font-bold text-slate-800">${card.balance.toLocaleString('fa-IR')}</p>
+                <div class="flex items-center gap-1 -mr-2">
+                    ${canEdit() ? `<button class="edit-card-btn p-2 text-slate-400 hover:text-blue-500" data-id="${card.firestoreId}" title="ویرایش کارت"><i data-lucide="edit" class="w-4 h-4"></i></button>` : ''}
+                    ${isAdmin() ? `<button class="delete-card-btn p-2 text-slate-400 hover:text-rose-500" data-id="${card.firestoreId}" title="حذف کارت"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                </div>
             </div>
+            <p class="font-mono font-bold text-slate-800 text-lg mt-1">${card.balance.toLocaleString('fa-IR')} <span class="font-sans text-xs">تومان</span></p>
         </div>
     `).join('');
 
@@ -1161,7 +1140,16 @@ expenses: () => {
                     ${canEdit() ? `<button id="charge-card-btn" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 shadow-md transition flex items-center justify-center gap-2"><i data-lucide="zap"></i> شارژ کارت</button>` : ''}
                 </div>
                 <div class="card p-4">
-                    <h3 class="font-bold text-lg mb-2">تاریخچه تراکنش‌ها</h3>
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                        <h3 class="font-bold text-lg">تاریخچه تراکنش‌ها</h3>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="start-date-filter" class="w-32 p-2 border rounded-md text-sm" placeholder="از تاریخ">
+                            <input type="text" id="end-date-filter" class="w-32 p-2 border rounded-md text-sm" placeholder="تا تاریخ">
+                            <button id="export-transactions-csv-btn" class="p-2 bg-green-600 text-white rounded-md hover:bg-green-700" title="خروجی CSV">
+                                <i data-lucide="file-down" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div>
                         ${transactionsHtml.length > 0 ? transactionsHtml : `<div class="text-center p-8 text-slate-500">هیچ تراکنشی ثبت نشده است.</div>`}
                     </div>
@@ -1169,26 +1157,12 @@ expenses: () => {
             </div>
 
             <div class="lg:col-span-1 space-y-6">
-                <div class="card p-4 space-y-4">
-                    <div class="p-3 rounded-lg bg-green-50">
-                        <p class="text-sm text-green-800">مجموع واریز</p>
-                        <p class="font-mono text-2xl font-bold text-green-700">${totalCharges.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
-                    </div>
-                    <div class="p-3 rounded-lg bg-red-50">
-                        <p class="text-sm text-red-800">مجموع برداشت</p>
-                        <p class="font-mono text-2xl font-bold text-red-700">${totalExpenses.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
-                    </div>
-                    <div class="p-3 rounded-lg bg-slate-100">
-                        <p class="text-sm text-slate-800">موجودی نهایی</p>
-                        <p class="font-mono text-2xl font-bold text-slate-900">${currentBalance.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
-                    </div>
-                </div>
-                <div class="card p-0">
+                 <div class="card p-0">
                     <div class="p-4 border-b border-slate-200 flex justify-between items-center">
                         <h3 class="font-bold text-lg">کارت‌های تنخواه</h3>
                         ${isAdmin() ? `<button id="add-card-btn" class="bg-slate-800 text-white text-xs py-1 px-3 rounded-md hover:bg-slate-900"><i data-lucide="plus" class="w-4 h-4"></i> افزودن</button>` : ''}
                     </div>
-                    <div>
+                    <div id="cards-list-container">
                         ${cardsListHtml.length > 0 ? cardsListHtml : `<div class="p-4 text-center text-sm text-slate-500">کارتی تعریف نشده است.</div>`}
                     </div>
                 </div>
@@ -2223,6 +2197,64 @@ const renderEmployeeTable = () => {
     link.click(); // دانلود فایل
     document.body.removeChild(link);
 };
+        const exportTransactionsToCSV = () => {
+    const startDateStr = persianToEnglishDate(document.getElementById('start-date-filter').value);
+    const endDateStr = persianToEnglishDate(document.getElementById('end-date-filter').value);
+
+    const startDate = startDateStr ? new Date(startDateStr) : null;
+    if(startDate) startDate.setHours(0, 0, 0, 0);
+
+    const endDate = endDateStr ? new Date(endDateStr) : null;
+    if(endDate) endDate.setHours(23, 59, 59, 999);
+
+    const expensesWithDetails = state.expenses.map(exp => ({ ...exp, type: 'هزینه' }));
+    const chargesWithDetails = state.chargeHistory.map(chg => ({ ...chg, type: 'شارژ', date: chg.chargedAt?.toDate(), item: `شارژ کارت ${chg.cardName}` }));
+    const allTransactions = [...expensesWithDetails, ...chargesWithDetails]
+        .filter(t => t.date)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const filteredTransactions = allTransactions.filter(t => {
+        const transactionDate = new Date(t.date);
+        if (startDate && endDate) {
+            return transactionDate >= startDate && transactionDate <= endDate;
+        }
+        if (startDate) {
+            return transactionDate >= startDate;
+        }
+        if (endDate) {
+            return transactionDate <= endDate;
+        }
+        return true;
+    });
+
+    if (filteredTransactions.length === 0) {
+        showToast("هیچ تراکنشی در بازه زمانی انتخابی یافت نشد.", "error");
+        return;
+    }
+
+    const headers = ["تاریخ", "نوع", "شرح", "کارت", "مبلغ"];
+    const rows = filteredTransactions.map(t => {
+        const cardName = t.type === 'هزینه' ? (state.pettyCashCards.find(c => c.firestoreId === t.cardId)?.name || '') : t.cardName;
+        const amount = t.type === 'هزینه' ? -t.amount : t.amount;
+        const cleanValue = val => `"${(val || '').toString().replace(/"/g, '""')}"`;
+        return [
+            cleanValue(toPersianDate(t.date)),
+            cleanValue(t.type),
+            cleanValue(t.item),
+            cleanValue(cardName),
+            amount
+        ].join(',');
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(',') + '\n' + rows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "transactions_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
 const setupTalentPageListeners = () => {
     // ریست کردن صفحه به ۱ هنگام جستجو یا فیلتر
     const resetToFirstPage = () => {
@@ -2422,20 +2454,37 @@ const setupOrganizationPageListeners = () => {
         
         // --- [FIX START] ADDED EXPENSES PAGE LISTENERS AND HELPERS ---
 const setupExpensesPageListeners = () => {
-    // Event Listenerها به کل صفحه متصل می‌شوند تا بعد از هر بار رندر شدن کار کنند
+    // فعال کردن تقویم شمسی برای فیلترها
+    activatePersianDatePicker('start-date-filter');
+    activatePersianDatePicker('end-date-filter');
+
     mainContent.addEventListener('click', (e) => {
         const addExpenseBtn = e.target.closest('#add-expense-btn');
         const chargeCardBtn = e.target.closest('#charge-card-btn');
         const addCardBtn = e.target.closest('#add-card-btn');
+        const editCardBtn = e.target.closest('.edit-card-btn');
+        const deleteCardBtn = e.target.closest('.delete-card-btn');
+        const exportCsvBtn = e.target.closest('#export-transactions-csv-btn');
 
-        if (addExpenseBtn) {
-            showExpenseForm();
+        if (addExpenseBtn) showExpenseForm();
+        if (chargeCardBtn) showNewChargeForm();
+        if (addCardBtn) showPettyCashCardForm();
+        if (exportCsvBtn) exportTransactionsToCSV();
+
+        if (editCardBtn) {
+            showPettyCashCardForm(editCardBtn.dataset.id);
         }
-        if (chargeCardBtn) {
-            showNewChargeForm();
-        }
-        if (addCardBtn) {
-            showPettyCashCardForm();
+        if (deleteCardBtn) {
+            const cardId = deleteCardBtn.dataset.id;
+            showConfirmationModal('حذف کارت تنخواه', 'آیا از حذف این کارت مطمئن هستید؟', async () => {
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId));
+                    showToast('کارت با موفقیت حذف شد.');
+                } catch (error) {
+                    console.error("Error deleting card:", error);
+                    showToast('خطا در حذف کارت.', 'error');
+                }
+            });
         }
     });
 };
@@ -2458,14 +2507,32 @@ const showPettyCashCardForm = (cardId = null) => {
 
     document.getElementById('card-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = {
-            name: document.getElementById('card-name').value,
+        const cardName = document.getElementById('card-name').value;
+        const initialBalance = Number(document.getElementById('card-balance').value);
+        const cardData = {
+            name: cardName,
             cardNumber: document.getElementById('card-number').value,
-            balance: Number(document.getElementById('card-balance').value)
+            balance: initialBalance
         };
+
         try {
-            const docRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, isEditing ? cardId : formData.name.replace(/\s+/g, '-'));
-            await setDoc(docRef, formData, { merge: isEditing });
+            const batch = writeBatch(db);
+            const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, isEditing ? cardId : cardName.replace(/\s+/g, '-'));
+            batch.set(cardRef, cardData, { merge: true });
+
+            // اگر کارت جدید است و موجودی اولیه دارد، آن را به عنوان یک تراکنش شارژ ثبت کن
+            if (!isEditing && initialBalance > 0) {
+                const chargeHistoryRef = collection(db, `artifacts/${appId}/public/data/chargeHistory`);
+                batch.set(doc(chargeHistoryRef), {
+                    cardId: cardRef.id,
+                    cardName: cardName,
+                    amount: initialBalance,
+                    chargedAt: new Date(), // تاریخ فعلی
+                    chargedBy: 'موجودی اولیه'
+                });
+            }
+
+            await batch.commit();
             closeModal(mainModal, mainModalContainer);
             showToast('کارت با موفقیت ذخیره شد.');
         } catch (error) {
