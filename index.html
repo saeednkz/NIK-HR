@@ -879,55 +879,60 @@ dashboard: () => {
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
-            <div class="card p-5 text-center flex flex-col justify-center items-center" style="background-color: var(--color-primary-light);">
-                 <p class="text-sm font-semibold mb-2" style="color: var(--color-primary);">امتیاز مشارکت</p>
-                 <p class="text-4xl font-bold" style="color: var(--color-primary);">${metrics.engagementScore || 0}%</p>
-            </div>
-
-            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-blue-100 p-3 rounded-xl mr-4"><i data-lucide="users" class="text-blue-600"></i></div><div><p class="text-slate-500 text-sm">پرسنل فعال</p><p class="text-2xl font-bold text-slate-800">${metrics.totalEmployees}</p></div></div></div>
             
-            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-red-100 p-3 rounded-xl mr-4"><i data-lucide="shield-alert" class="text-red-600"></i></div><div><p class="text-slate-500 text-sm">استعدادهای پرخطر</p><p class="text-2xl font-bold text-slate-800">${highRiskEmployees.length} نفر</p></div></div></div>
+            <div class="lg:col-span-1 space-y-8">
+                <div class="card p-6 text-center">
+                    <h3 class="font-semibold text-lg mb-2">امتیاز مشارکت</h3>
+                    <p class="text-5xl font-bold" style="color: var(--color-primary);">${metrics.engagementScore || 0}<span class="text-3xl">%</span></p>
+                    <p class="text-xs text-slate-500 mt-2">میانگین مشارکت کل کارکنان</p>
+                </div>
 
-            <div class="lg:col-span-2 card p-6">
-                 <h3 class="font-semibold text-lg mb-4 flex items-center">تحلیل نیروی کار</h3>
-                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
-                    <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع دپارتمان‌ها</p><div class="relative h-52"><canvas id="departmentDistributionChart"></canvas></div></div>
-                    <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">ترکیب جنسیتی</p><div class="relative h-52"><canvas id="genderCompositionChart"></canvas></div></div>
+                <div class="card p-6">
+                    <h3 class="font-semibold text-lg mb-4 flex items-center">استعدادهای پرخطر</h3>
+                    <div class="mt-2 space-y-2">${highRiskHtml}</div>
+                </div>
+
+                <div class="card p-6">
+                    <h3 class="font-semibold text-lg mb-4 flex items-center">یادآور هوشمند</h3>
+                    <div id="remindersList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">${renderAllReminders()}</div>
+                     ${canEdit() ? `<div class="border-t pt-4 mt-auto">
+                        <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
+                        <form id="add-reminder-form" class="space-y-3">
+                            <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
+                            <div class="flex gap-2">
+                                <input type="text" id="reminderDate" class="w-full p-2 border rounded-md text-sm" placeholder="تاریخ">
+                                <input type="number" id="reminderDaysBefore" title="از چند روز قبل نمایش داده شود؟" value="7" class="w-24 p-2 border rounded-md text-sm">
+                            </div>
+                            <button type="submit" id="addReminderBtn" class="w-full bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 transition text-sm">افزودن</button>
+                        </form>
+                    </div>` : ''}
                 </div>
             </div>
 
-            <div class="card p-6">
-                <h3 class="font-semibold text-lg mb-4 flex items-center">یادآور هوشمند</h3>
-                <div id="remindersList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">${renderAllReminders()}</div>
-                ${canEdit() ? `<div class="border-t pt-4 mt-auto">
-                    <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
-                    <form id="add-reminder-form" class="space-y-3">
-                        <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
-                        <div class="flex gap-2">
-                            <input type="text" id="reminderDate" class="w-full p-2 border rounded-md text-sm" placeholder="تاریخ">
-                            <input type="number" id="reminderDaysBefore" title="از چند روز قبل نمایش داده شود؟" value="7" class="w-24 p-2 border rounded-md text-sm">
-                        </div>
-                        <button type="submit" id="addReminderBtn" class="w-full bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 transition text-sm">افزودن</button>
-                    </form>
-                </div>` : ''}
-            </div>
+            <div class="lg:col-span-2 space-y-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <div class="metric-card p-5"><div class="flex items-center"><div class="bg-blue-100 p-3 rounded-xl mr-4"><i data-lucide="users" class="text-blue-600"></i></div><div><p class="text-slate-500 text-sm">پرسنل فعال</p><p class="text-2xl font-bold text-slate-800">${metrics.totalEmployees}</p></div></div></div>
+                    <div class="metric-card p-5"><div class="flex items-center"><div class="bg-green-100 p-3 rounded-xl mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div><div><p class="text-slate-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-slate-800">${metrics.retentionRate}%</p></div></div></div>
+                </div>
 
-            <div class="lg:col-span-2 card p-6">
-                 <h3 class="font-semibold text-lg mb-4 flex items-center">تحلیل‌های تکمیلی</h3>
-                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
-                    <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">سابقه کار</p><div class="relative h-52"><canvas id="tenureDistributionChart"></canvas></div></div>
-                    <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع سنی</p><div class="relative h-52"><canvas id="ageDistributionChart"></canvas></div></div>
-                    <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع استعدادها</Ta></p><div class="relative h-52"><canvas id="nineBoxChart"></canvas></div></div>
-                    <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">شایستگی تیم‌ها</p><div class="relative h-52"><canvas id="teamCompetencyRadarChart"></canvas></div></div>
-                 </div>
+                <div class="card p-6">
+                    <h3 class="font-semibold text-lg mb-4">تحلیل نیروی کار</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
+                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع دپارتمان‌ها</p><div class="relative h-52"><canvas id="departmentDistributionChart"></canvas></div></div>
+                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">ترکیب جنسیتی</p><div class="relative h-52"><canvas id="genderCompositionChart"></canvas></div></div>
+                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع سنی</p><div class="relative h-52"><canvas id="ageDistributionChart"></canvas></div></div>
+                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">سابقه کار</p><div class="relative h-52"><canvas id="tenureDistributionChart"></canvas></div></div>
+                    </div>
+                </div>
+                
+                 <div class="card p-6">
+                    <h3 class="font-semibold text-lg mb-4">تحلیل استعدادها و شایستگی‌ها</h3>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
+                         <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع استعدادها (9-Box)</p><div class="relative h-52"><canvas id="nineBoxChart"></canvas></div></div>
+                         <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">میانگین شایستگی تیم‌ها</p><div class="relative h-52"><canvas id="teamCompetencyRadarChart"></canvas></div></div>
+                     </div>
+                </div>
             </div>
-
-            <div class="card p-6">
-                <h3 class="font-semibold text-lg mb-4 flex items-center">استعدادهای پرخطر</h3>
-                <div class="mt-2 space-y-2">${highRiskHtml}</div>
-            </div>
-            
         </div>
     `;
 },
