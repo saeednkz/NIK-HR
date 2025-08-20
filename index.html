@@ -1316,52 +1316,89 @@ analytics: () => {
         </div>
     `;
 },
-    settings: () => {
-        if (!isAdmin()) {
-            return `<div class="text-center p-10 card"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">دسترسی غیر مجاز</h2><p class="mt-2 text-slate-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
-        }
-        const usersHtml = state.users.map(user => `
-            <tr class="border-b border-slate-200">
-                <td class="px-6 py-4">${user.email}</td>
-                <td class="px-6 py-4">${toPersianDate(user.createdAt)}</td>
-                <td class="px-6 py-4">
-                    <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-slate-50" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
-                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-                        <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>Editor</option>
-                        <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>Viewer</option>
-                    </select>
-                </td>
-            </tr>
-        `).join('');
-        const competenciesHtml = state.competencies.map(c => `
-            <div class="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                <span>${c.name}</span>
-                <button class="delete-competency-btn text-rose-500 hover:text-rose-700" data-id="${c.firestoreId}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-            </div>
-        `).join('');
+settings: () => {
+    if (!isAdmin()) {
+        return `<div class="text-center p-10 card"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">دسترسی غیر مجاز</h2><p class="mt-2 text-slate-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
+    }
+
+    // آماده‌سازی لیست کاربران با طراحی جدید
+    const usersHtml = state.users.map(user => {
+        const userInitial = user.email.substring(0, 2).toUpperCase();
         return `
-            <h1 class="text-3xl font-bold text-slate-800 mb-8">تنظیمات سیستم</h1>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="card">
-                        <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">مدیریت کاربران</h3><button id="add-user-btn" class="bg-blue-600 text-white py-1 px-3 rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1"><i data-lucide="plus" class="w-4 h-4"></i> افزودن</button></div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-right text-slate-500">
-                            <thead class="text-xs text-slate-700 uppercase bg-slate-50"><tr><th scope="col" class="px-6 py-3">ایمیل کاربر</th><th scope="col" class="px-6 py-3">تاریخ عضویت</th><th scope="col" class="px-6 py-3">سطح دسترسی</th></tr></thead>
-                            <tbody>${usersHtml}</tbody>
-                        </table>
+            <div class="flex items-center justify-between p-4 border-b border-slate-100 last:border-b-0">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm ml-4 shrink-0">
+                        ${userInitial}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-sm text-slate-800">${user.email}</p>
+                        <p class="text-xs text-slate-500">عضویت در: ${toPersianDate(user.createdAt)}</p>
                     </div>
                 </div>
-                <div class="card">
-                    <h3 class="font-semibold mb-4">مدیریت شایستگی‌های سازمان</h3>
-                    <div id="competencies-list" class="space-y-2 mb-4 max-h-60 overflow-y-auto">${competenciesHtml || '<p class="text-sm text-slate-500">هنوز شایستگی‌ای تعریف نشده است.</p>'}</div>
-                    <form id="add-competency-form" class="flex gap-2">
-                        <input type="text" id="new-competency-name" placeholder="نام شایستگی جدید..." class="w-full p-2 border border-slate-300 rounded-lg text-sm" required>
-                        <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">افزودن</button>
-                    </form>
+                <div class="flex items-center gap-4">
+                    <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-white text-sm" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
+                        <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>مشاهده‌گر (Viewer)</option>
+                        <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>ویرایشگر (Editor)</option>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>مدیر (Admin)</option>
+                    </select>
                 </div>
             </div>
         `;
-    }
+    }).join('');
+
+    // آماده‌سازی لیست شایستگی‌ها با طراحی جدید
+    const competenciesHtml = state.competencies.map(c => `
+        <div class="inline-flex items-center bg-slate-100 text-slate-700 text-sm font-medium px-3 py-1.5 rounded-full">
+            <span>${c.name}</span>
+            <button class="delete-competency-btn text-slate-400 hover:text-red-500 mr-2" data-id="${c.firestoreId}">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+    `).join('') || '<p class="text-sm text-slate-500">هنوز شایستگی‌ای تعریف نشده است.</p>';
+
+    return `
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">تنظیمات سیستم</h1>
+                <p class="text-sm text-slate-500 mt-1">مدیریت کاربران، دسترسی‌ها و پیکربندی‌های اصلی سازمان</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div class="card p-0">
+                <div class="flex justify-between items-center p-5 border-b border-slate-200">
+                    <h3 class="font-semibold text-lg flex items-center"><i data-lucide="users" class="ml-2 text-indigo-500"></i>مدیریت کاربران</h3>
+                    <button id="add-user-btn" class="bg-blue-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> کاربر جدید
+                    </button>
+                </div>
+                <div id="users-list-container">
+                    ${usersHtml}
+                </div>
+            </div>
+
+            <div class="card p-6 space-y-8">
+                <div>
+                    <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="star" class="ml-2 text-amber-500"></i>مدیریت شایستگی‌ها</h3>
+                    <div id="competencies-list" class="flex flex-wrap gap-2 mb-4">
+                        ${competenciesHtml}
+                    </div>
+                    <form id="add-competency-form" class="flex gap-2">
+                        <input type="text" id="new-competency-name" placeholder="نام شایستگی جدید..." class="w-full p-2 border border-slate-300 rounded-lg text-sm" required>
+                        <button type="submit" class="bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 shrink-0">افزودن</button>
+                    </form>
+                </div>
+
+                <hr>
+
+                <div>
+                     <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="settings-2" class="ml-2 text-slate-500"></i>تنظیمات عمومی</h3>
+                     <p class="text-sm text-slate-500">در این بخش می‌توانید تنظیمات عمومی مربوط به کل سیستم را در آینده مدیریت کنید.</p>
+                     </div>
+            </div>
+        </div>
+    `;
+}
 }; // <<--- آبجکت pages اینجا تمام می‌شود
 
 
