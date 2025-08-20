@@ -468,27 +468,43 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
-    // ۱. نمونه قبلی تقویم را به طور کامل از بین می‌بریم
+    // ۱. ابتدا هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
     try {
         $(input).pDatepicker('destroy');
-    } catch (e) { /* مشکلی نیست */ }
+    } catch (e) {
+        // اگر تقویمی از قبل وجود نداشته باشد، مشکلی نیست.
+    }
     
+    // ۲. تمام مقادیر و تنظیمات قبلی را پاک می‌کنیم
     input.setAttribute('type', 'text');
     input.setAttribute('placeholder', 'مثال: ۱۴۰۳/۰۵/۲۸');
     input.setAttribute('autocomplete', 'off');
-    input.value = ''; // فیلد را کاملاً خالی می‌کنیم
+    input.value = ''; // فیلد را به صورت دستی کاملاً خالی می‌کنیم
 
-    // ۲. تقویم را بدون هیچ مقدار اولیه‌ای می‌سازیم
+    // ۳. تقویم را بدون هیچ مقدار اولیه‌ای و به صورت خالی می‌سازیم
     $(input).pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
+        // گزینه initialValue را حذف می‌کنیم تا به کتابخانه اجازه پیش‌فرض‌گذاری ندهیم
         observer: true,
-        calendar: { persian: { locale: 'fa' } },
-        navigator: { enabled: true, scroll: { enabled: false } },
-        timePicker: { enabled: false }
+        calendar: {
+            persian: {
+                locale: 'fa'
+            }
+        },
+        navigator: {
+            enabled: true,
+            scroll: {
+                enabled: false
+            }
+        },
+        timePicker: {
+            enabled: false
+        }
     });
 
-    // ۳. فقط و فقط اگر تاریخ اولیه‌ای وجود داشت، آن را با استفاده از متد خود کتابخانه تنظیم می‌کنیم
+    // ۴. فقط و فقط اگر تاریخ اولیه‌ای از قبل وجود داشت،
+    // آن را با استفاده از متد رسمی خود کتابخانه تنظیم می‌کنیم.
     if (initialValue) {
         // تاریخ میلادی را به فرمت timestamp (میلی‌ثانیه) تبدیل می‌کنیم
         const initialTimestamp = new Date(initialValue).getTime();
