@@ -482,50 +482,65 @@ const persianToEnglishDate = (persianDateStr) => {
 // --- نسخه نهایی و قطعی با Readonly و متد setDate ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
-    if (!input) return;
-
-    // ۱. هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
-    try {
-        $(input).pDatepicker('destroy');
-    } catch (e) {
-        // مشکلی نیست اگر از قبل وجود نداشته باشد
+    if (!input) {
+        console.error(`فیلد ورودی تقویم با شناسه "${elementId}" پیدا نشد.`);
+        return;
     }
 
-    // ۲. ورودی را غیرقابل ویرایش مستقیم می‌کنیم
-    input.setAttribute('readonly', true);
-    input.setAttribute('placeholder', 'انتخاب از تقویم...');
-    input.style.backgroundColor = '#fff'; // برای اینکه ظاهرش شبیه فیلد غیرفعال نشود
+    // ۱. هر نمونه قبلی تقویم را از بین می‌بریم تا از تداخل جلوگیری شود
+    try {
+        $(input).pDatepicker('destroy');
+    } catch (e) { /* اگر نمونه‌ای از قبل وجود نداشته باشد، مشکلی نیست */ }
 
-    // ۳. تقویم را بدون هیچ مقدار اولیه‌ای راه‌اندازی می‌کنیم
-    const options = {
-        format: 'YYYY/MM/DD',
-        autoClose: true,
-        // observer را هم برای اطمینان false نگه می‌داریم
-        observer: false, 
-        calendar: {
-            persian: { locale: 'fa' }
-        }
-    };
-    $(input).pDatepicker(options);
-
-    // ۴. فقط اگر تاریخ اولیه معتبر بود، آن را به صورت دستوری تنظیم می‌کنیم
+    // ۲. مقدار اولیه تاریخ را به فرمت Unix timestamp (میلی‌ثانیه) آماده می‌کنیم
+    let initialTimestamp = null;
     if (initialValue) {
         let dateObject;
+        // مدیریت آبجکت Timestamp فایربیس
         if (initialValue.toDate) {
-            // حالت فایربیس Timestamp
             dateObject = initialValue.toDate();
-        } else if (typeof initialValue === 'string' || typeof initialValue === 'number') {
-            // حالت رشته یا عدد
+        }
+        // مدیریت رشته‌های تاریخ میلادی 'YYYY-MM-DD' به صورت امن (بدون تأثیرپذیری از منطقه زمانی)
+        else if (typeof initialValue === 'string' && initialValue.includes('-')) {
+            const parts = initialValue.split('T')[0].split('-'); // برای مدیریت رشته‌های ISO مثل '...T00:00:00.000Z'
+            if (parts.length === 3) {
+                // استفاده از Date.UTC برای ساخت تاریخ بدون تأثیر منطقه زمانی کاربر
+                dateObject = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+            }
+        }
+        // مدیریت سایر رشته‌های تاریخ معتبر یا timestamp عددی
+        else if (typeof initialValue === 'string' || typeof initialValue === 'number') {
             dateObject = new Date(initialValue);
         }
 
-        // اگر تاریخ معتبر است، با متد setDate آن را تنظیم کن
+        // بررسی نهایی برای اطمینان از اینکه یک تاریخ معتبر داریم
         if (dateObject && !isNaN(dateObject.getTime())) {
-            // یک تأخیر بسیار کوتاه (۱۰ میلی‌ثانیه) می‌دهیم تا مطمئن شویم تقویم کاملا ساخته شده
-            setTimeout(() => {
-                $(input).pDatepicker('setDate', dateObject.getTime());
-            }, 10);
+            initialTimestamp = dateObject.getTime();
+        } else {
+             console.warn(`مقدار اولیه نامعتبر برای تقویم "${elementId}":`, initialValue);
         }
+    }
+
+    // ۳. فیلد ورودی را فقط خواندنی می‌کنیم تا کاربر مجبور به استفاده از تقویم شود
+    input.setAttribute('readonly', true);
+    input.setAttribute('placeholder', 'انتخاب از تقویم...');
+    input.style.backgroundColor = '#fff';
+
+    // ۴. تقویم را با تمام تنظیمات لازم به صورت یکجا مقداردهی اولیه می‌کنیم
+    const options = {
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        observer: false, // جلوگیری از آپدیت‌های ناخواسته
+        // این بخش کلیدی‌ترین تغییر است: تاریخ را مستقیماً در لحظه ساخت به تقویم می‌دهیم
+        ...(initialTimestamp && { unixDate: initialTimestamp })
+    };
+
+    $(input).pDatepicker(options);
+    
+    // اگر هیچ تاریخ معتبری وجود نداشت، مطمئن می‌شویم که فیلد خالی باقی می‌ماند
+    // این خط کد از نمایش تاریخ امروز در فیلدهای خالی جلوگیری می‌کند
+    if (!initialTimestamp) {
+        $(input).pDatepicker('clear');
     }
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
