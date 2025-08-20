@@ -468,19 +468,21 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
-    // Change input type to text to allow custom format
     input.setAttribute('type', 'text');
     input.setAttribute('placeholder', 'مثال: 1403/05/28');
     input.setAttribute('autocomplete', 'off');
 
+    // تغییر کلیدی: اگر مقدار اولیه وجود نداشت، مقدار input را خالی می‌کنیم
     if (initialValue) {
         input.value = toPersianDate(initialValue);
+    } else {
+        input.value = '';
     }
 
     $(input).pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
-        initialValue: !!initialValue, // Set to true only if there is an initial value
+        initialValue: !!initialValue,
         observer: true,
         calendar: {
             persian: {
@@ -2894,10 +2896,19 @@ if (imageUploadInput) {
             if (topSkill || topCompetency) { analysis.strength = { text: `نقاط قوت کلیدی: <strong>${topSkill ? topSkill[0] : ''}</strong> و <strong>${topCompetency ? topCompetency[0] : ''}</strong>.`, icon: 'star', color: 'text-amber-500' }; }
             return analysis;
         };
-        const isProfileComplete = (employee) => {
+const isProfileComplete = (employee) => {
     if (!employee.personalInfo) return false;
-    const requiredFields = ['nationalId', 'birthDate', 'phone', 'address', 'email'];
-    return requiredFields.every(field => employee.personalInfo[field]);
+    // لیست فیلدهایی که برای کامل بودن پروفایل ضروری هستند
+    const requiredFields = [
+        'nationalId', 'birthDate', 'phone', 'address', 'email',
+        'maritalStatus', 'education'
+    ];
+
+    // چک می‌کنیم که همه فیلدهای ضروری وجود داشته باشند و خالی نباشند
+    return requiredFields.every(field => {
+        const value = employee.personalInfo[field];
+        return value && value.toString().trim() !== '';
+    });
 };
 
         const generateTeamSmartAnalysis = (team) => {
@@ -3591,7 +3602,7 @@ const showEditPersonalInfoForm = (emp) => {
     modalTitle.innerText = `ویرایش اطلاعات پرسنلی برای ${emp.name}`;
     const info = emp.personalInfo || {};
     modalContent.innerHTML = `<form id="edit-personal-info-form" class="space-y-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        <div><label class="block font-medium">ایمیل</label><input type="email" id="email" value="${info.email || ''}" class="w-full p-2 border rounded-md"></div>
+        <div><label class="block font-medium">ایمیل</label><input type="email" id="personal-info-email" value="${info.email || ''}" class="w-full p-2 border rounded-md"></div>
         <div><label class="block font-medium">شماره موبایل</label><input type="tel" id="phone" value="${info.phone || ''}" class="w-full p-2 border rounded-md"></div>
         <div><label class="block font-medium">شماره ثابت</label><input type="tel" id="landline" value="${info.landline || ''}" class="w-full p-2 border rounded-md"></div>
         <div><label class="block font-medium">کد ملی</label><input type="text" id="nationalId" value="${info.nationalId || ''}" class="w-full p-2 border rounded-md"></div>
@@ -3613,7 +3624,7 @@ const showEditPersonalInfoForm = (emp) => {
         e.preventDefault();
         const gregorianBirthDate = persianToEnglishDate(document.getElementById('birthDate').value);
         const updatedInfo = {
-            email: document.getElementById('email').value,
+            email: document.getElementById('personal-info-email').value, // <-- اینجا هم اصلاح شد
             phone: document.getElementById('phone').value,
             landline: document.getElementById('landline').value,
             nationalId: document.getElementById('nationalId').value,
@@ -3636,8 +3647,7 @@ const showEditPersonalInfoForm = (emp) => {
             showToast("خطا در به‌روزرسانی اطلاعات.", "error");
         }
     });
-};
-        
+};    
 const showDisciplinaryForm = (emp) => {
         modalTitle.innerText = `ثبت مورد انضباطی برای ${emp.name}`;
         modalContent.innerHTML = `
