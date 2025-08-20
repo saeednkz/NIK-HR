@@ -13,9 +13,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/fa.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr-jalali-calendar"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jalali-flatpickr/dist/jalali-flatpickr.min.js"></script>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
@@ -461,31 +459,30 @@ const persianToEnglishDate = (persianDateStr) => {
     }
 };
 
-// --- تابع جدید و نهایی برای راه‌اندازی تقویم مدرن flatpickr ---
+// --- نسخه نهایی با پلاگین جدید و مطمئن jalali-flatpickr ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
     let defaultValue = null;
-    // تاریخ اولیه را به فرمت قابل فهم برای کتابخانه جدید آماده می‌کنیم
     if (initialValue) {
+        // تاریخ اولیه را به فرمت استاندارد جاوااسکریپت تبدیل می‌کنیم
         const dateObject = initialValue.toDate ? initialValue.toDate() : new Date(initialValue);
         if (dateObject && !isNaN(dateObject.getTime())) {
             defaultValue = dateObject;
         }
     }
 
-    // اگر نمونه قبلی از این تقویم روی فیلد وجود دارد، آن را از بین می‌بریم
+    // اگر نمونه قبلی از تقویم وجود دارد، آن را از بین می‌بریم
     if (input._flatpickr) {
         input._flatpickr.destroy();
     }
     
-    // راه‌اندازی تقویم جدید با تنظیمات شمسی و فارسی
+    // راه‌اندازی تقویم بسیار ساده است. فقط کافیست زبان فارسی را انتخاب کنیم!
     flatpickr(input, {
-        calendar: jalali_calendar,
-        locale: 'fa',
+        locale: 'fa', // این پلاگین به صورت خودکار تقویم را شمسی می‌کند
         dateFormat: "Y/m/d",
-        defaultDate: defaultValue // تاریخ اولیه را به سادگی اینجا تنظیم می‌کنیم
+        defaultDate: defaultValue
     });
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
@@ -4250,29 +4247,11 @@ const showDocumentForm = (emp, docIndex = null) => {
         
         // --- INITIALIZATION ---
     // --- INITIALIZATION (نسخه نهایی و ایمن) ---
+// --- INITIALIZATION (نسخه ساده و صحیح) ---
 document.addEventListener('DOMContentLoaded', () => {
-    // یک تابع چک‌کننده که منتظر می‌ماند تا کتابخانه تقویم بارگذاری شود
-    const waitForCalendarPlugin = setInterval(() => {
-        // آیا متغیر jalali_calendar در سطح کلی برنامه تعریف شده است؟
-        if (typeof window.jalali_calendar !== 'undefined') {
-            // اگر تعریف شده بود:
-            clearInterval(waitForCalendarPlugin); // چک کردن را متوقف کن
-            console.log("کتابخانه تقویم شمسی با موفقیت بارگذاری شد. شروع به کار برنامه...");
-            
-            // حالا که همه چیز آماده است، برنامه اصلی را اجرا کن
-            initializeApp(); 
-        } else {
-            // اگر هنوز تعریف نشده بود، در کنسول یک پیام انتظار نمایش بده
-            console.log("در حال انتظار برای بارگذاری کتابخانه تقویم شمسی...");
-        }
-    }, 100); // هر ۱۰۰ میلی‌ثانیه چک کن
-
-    // تمام منطق شروع برنامه را در این تابع قرار می‌دهیم
-    function initializeApp() {
-        initializeFirebase();
-        setupEventListeners();
-        lucide.createIcons();
-    }
+    initializeFirebase();
+    setupEventListeners();
+    lucide.createIcons();
 });
 
     </script>
