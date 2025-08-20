@@ -1101,18 +1101,43 @@ surveys: () => {
     `;
 },
 expenses: () => {
-    // ... (تمام محاسبات اولیه بدون تغییر باقی می‌ماند) ...
+    // --- ۱. محاسبات اولیه ---
     const totalCharges = state.chargeHistory.reduce((sum, chg) => sum + chg.amount, 0);
     const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
     const currentBalance = totalCharges - totalExpenses;
+
+    // --- ۲. ترکیب و مرتب‌سازی تراکنش‌ها ---
     const expensesWithDetails = state.expenses.map(exp => ({ ...exp, type: 'expense' }));
     const chargesWithDetails = state.chargeHistory.map(chg => ({ ...chg, type: 'charge', date: chg.chargedAt?.toDate(), item: `شارژ کارت ${chg.cardName}` }));
+    
     const allTransactions = [...expensesWithDetails, ...chargesWithDetails]
         .filter(t => t.date)
         .sort((a, b) => new Date(b.date) - new Date(a.date));
-    const transactionsHtml = allTransactions.map(t => { /* ... کد این بخش بدون تغییر است ... */ }).join('');
+
+    // --- ۳. ساخت HTML ---
+    const transactionsHtml = allTransactions.map(t => {
+        const isExpense = t.type === 'expense';
+        const cardName = isExpense ? (state.pettyCashCards.find(c => c.firestoreId === t.cardId)?.name || 'نامشخص') : '';
+        
+        return `
+            <div class="flex items-center gap-4 py-4 px-2 border-b border-slate-100">
+                <div class="w-10 h-10 rounded-full ${isExpense ? 'bg-red-100' : 'bg-green-100'} flex items-center justify-center">
+                    <i data-lucide="${isExpense ? 'arrow-down' : 'arrow-up'}" class="w-5 h-5 ${isExpense ? 'text-red-500' : 'text-green-500'}"></i>
+                </div>
+                <div class="flex-grow">
+                    <p class="font-semibold text-slate-800">${t.item}</p>
+                    <p class="text-xs text-slate-500">${toPersianDate(t.date)} ${isExpense ? ` - ${cardName}` : ''}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${t.invoiceUrl ? `<a href="${t.invoiceUrl}" target="_blank" class="text-blue-500 hover:underline text-xs">رسید</a>` : ''}
+                    <p class="w-28 text-left font-mono font-semibold ${isExpense ? 'text-red-600' : 'text-green-600'}">
+                        ${isExpense ? '-' : '+'}${t.amount.toLocaleString('fa-IR')}
+                    </p>
+                </div>
+            </div>
+        `;
+    }).join('');
     
-    // --- کد جدید برای دکمه‌های ویرایش و حذف ---
     const cardsListHtml = state.pettyCashCards.map(card => `
         <div class="p-3 border-b border-slate-100">
             <div class="flex justify-between items-start">
@@ -1157,7 +1182,21 @@ expenses: () => {
             </div>
 
             <div class="lg:col-span-1 space-y-6">
-                 <div class="card p-0">
+                <div class="card p-4 space-y-4">
+                    <div class="p-3 rounded-lg bg-green-50">
+                        <p class="text-sm text-green-800">مجموع واریز</p>
+                        <p class="font-mono text-2xl font-bold text-green-700">${totalCharges.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-red-50">
+                        <p class="text-sm text-red-800">مجموع برداشت</p>
+                        <p class="font-mono text-2xl font-bold text-red-700">${totalExpenses.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-slate-100">
+                        <p class="text-sm text-slate-800">موجودی نهایی</p>
+                        <p class="font-mono text-2xl font-bold text-slate-900">${currentBalance.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
+                    </div>
+                </div>
+                <div class="card p-0">
                     <div class="p-4 border-b border-slate-200 flex justify-between items-center">
                         <h3 class="font-bold text-lg">کارت‌های تنخواه</h3>
                         ${isAdmin() ? `<button id="add-card-btn" class="bg-slate-800 text-white text-xs py-1 px-3 rounded-md hover:bg-slate-900"><i data-lucide="plus" class="w-4 h-4"></i> افزودن</button>` : ''}
