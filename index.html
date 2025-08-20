@@ -485,7 +485,7 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     $(input).pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
-        // گزینه initialValue را حذف می‌کنیم تا به کتابخانه اجازه پیش‌فرض‌گذاری ندهیم
+        // گزینه initialValue را کاملاً حذف می‌کنیم تا به کتابخانه اجازه پیش‌فرض‌گذاری ندهیم
         observer: true,
         calendar: {
             persian: {
@@ -503,13 +503,16 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
         }
     });
 
-    // ۴. فقط و فقط اگر تاریخ اولیه‌ای از قبل وجود داشت،
-    // آن را با استفاده از متد رسمی خود کتابخانه تنظیم می‌کنیم.
+    // ۴. فقط و فقط اگر تاریخ اولیه‌ای وجود داشت،
+    // آن را با استفاده از متد رسمی خود کتابخانه و به صورت تأخیری تنظیم می‌کنیم.
     if (initialValue) {
-        // تاریخ میلادی را به فرمت timestamp (میلی‌ثانیه) تبدیل می‌کنیم
-        const initialTimestamp = new Date(initialValue).getTime();
-        // از متد setDate خود کتابخانه برای تنظیم دقیق تاریخ استفاده می‌کنیم
-        $(input).pDatepicker('setDate', initialTimestamp);
+        // یک تأخیر کوتاه ایجاد می‌کنیم تا مطمئن شویم تقویم کاملاً ساخته شده است
+        setTimeout(() => {
+            // تاریخ میلادی را به فرمت timestamp (میلی‌ثانیه) تبدیل می‌کنیم
+            const initialTimestamp = new Date(initialValue).getTime();
+            // از متد setDate خود کتابخانه برای تنظیم دقیق تاریخ استفاده می‌کنیم
+            $(input).pDatepicker('setDate', initialTimestamp);
+        }, 10); // ۱۰ میلی‌ثانیه تأخیر کافی است
     }
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
