@@ -4249,11 +4249,31 @@ const showDocumentForm = (emp, docIndex = null) => {
         };
         
         // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeFirebase();
-            setupEventListeners();
-            lucide.createIcons();
-        });
+    // --- INITIALIZATION (نسخه نهایی و ایمن) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // یک تابع چک‌کننده که منتظر می‌ماند تا کتابخانه تقویم بارگذاری شود
+    const waitForCalendarPlugin = setInterval(() => {
+        // آیا متغیر jalali_calendar در سطح کلی برنامه تعریف شده است؟
+        if (typeof window.jalali_calendar !== 'undefined') {
+            // اگر تعریف شده بود:
+            clearInterval(waitForCalendarPlugin); // چک کردن را متوقف کن
+            console.log("کتابخانه تقویم شمسی با موفقیت بارگذاری شد. شروع به کار برنامه...");
+            
+            // حالا که همه چیز آماده است، برنامه اصلی را اجرا کن
+            initializeApp(); 
+        } else {
+            // اگر هنوز تعریف نشده بود، در کنسول یک پیام انتظار نمایش بده
+            console.log("در حال انتظار برای بارگذاری کتابخانه تقویم شمسی...");
+        }
+    }, 100); // هر ۱۰۰ میلی‌ثانیه چک کن
+
+    // تمام منطق شروع برنامه را در این تابع قرار می‌دهیم
+    function initializeApp() {
+        initializeFirebase();
+        setupEventListeners();
+        lucide.createIcons();
+    }
+});
 
     </script>
 </body>
