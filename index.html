@@ -28,94 +28,114 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
 <style>
-    /* 🎨 NEW MODERN UI DESIGN LANGUAGE */
+    /* New modern, minimal color palette & design language */
     :root {
-        --color-primary: #5E5DF0;        /* A vibrant, modern purple-blue */
-        --color-primary-light: #F2F2FF;  /* A very light, complementary lavender */
-        --color-accent: #22D3EE;         /* A bright cyan for accents */
-        --color-text-primary: #111827;   /* Almost black for high contrast text */
-        --color-text-secondary: #6B7280; /* Muted gray for supporting text */
-        --color-bg: #F9FAFB;             /* A very light, clean gray background */
-        --color-surface: #FFFFFF;         /* Pure white for cards and elements */
-        --color-border: #E5E7EB;         /* Light gray border for inputs etc. */
-        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        --border-radius: 1rem; /* 16px */
+        --color-primary: #3b82f6;      /* A clean, professional blue */
+        --color-primary-light: #eff6ff; /* A very light version for backgrounds */
+        --color-accent: #6366f1;        /* A subtle indigo for secondary accents */
+        --color-text-primary: #1e293b;  /* Dark slate for high contrast text */
+        --color-text-secondary: #6b7280;/* Muted gray for supporting text */
+        --color-bg: #f5f6fa;           /* A light, non-stark white background */
+        --color-surface: #ffffff;       /* Pure white for cards and elements */
+        --color-border: #e2e8f0;       /* Light gray border */
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+        --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
     }
-
     body {
         font-family: 'Vazirmatn', sans-serif;
         background-color: var(--color-bg);
         color: var(--color-text-primary);
         line-height: 1.6;
         font-size: 16px;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
     }
-
     .sidebar {
         background-color: var(--color-surface);
         border-left: 1px solid var(--color-border);
+        box-shadow: var(--shadow-md);
     }
-
     .sidebar-item {
         color: var(--color-text-secondary);
         transition: all 0.2s ease-in-out;
-        border-right: 4px solid transparent;
-        margin-right: -8px; /* Adjust based on padding */
-        padding-right: 12px;
+        border-right: 3px solid transparent;
+        margin-right: -8px;
+        padding-right: 11px;
     }
-
     .sidebar-item.active, .sidebar-item:hover {
         color: var(--color-primary);
         background-color: var(--color-primary-light);
         border-right-color: var(--color-primary);
-        font-weight: 600;
     }
-    
-    .card {
-        background-color: var(--color-surface);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--color-border);
-        transition: box-shadow 0.2s ease-in-out, transform 0.2s ease;
-        padding: 1.5rem; /* 24px */
-    }
-
+.card {
+    background-color: var(--color-surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    transition: box-shadow 0.2s ease-in-out, transform 0.2s ease;
+    padding: 1.5rem;
+}
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
     .card:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-4px);
-    }
-
-    .metric-card {
-        background-color: var(--color-surface);
-        border-radius: var(--border-radius);
         box-shadow: var(--shadow-md);
-        border: 1px solid var(--color-border);
-        padding: 1.5rem;
-        transition: all 0.2s ease;
+        transform: translateY(-2px);
     }
-    
+    .metric-card {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background-color: var(--color-surface);
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
     .metric-card:hover {
         transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--color-primary);
+        box-shadow: var(--shadow-md);
     }
-    
+    .grid-metrics {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1.5rem;
+    }
+    @media (min-width: 640px) {
+        .grid-metrics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    @media (min-width: 1024px) {
+        .grid-metrics {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+    .grid-main-content {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    @media (min-width: 1024px) {
+        .grid-main-content {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    
-    #loading-overlay { position: fixed; inset: 0; background-color: rgba(249, 250, 251, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .progress-bar { background-color: #e2e8f0; border-radius: 9999px; overflow: hidden; height: 8px; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(to right, #60a5fa, #8b5cf6); border-radius: 9999px; transition: width 0.5s ease-in-out; }
+    #loading-overlay { position: fixed; inset: 0; background-color: rgba(248, 250, 252, 0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
     .spinner { width: 56px; height: 56px; border: 6px solid var(--color-primary-light); border-top: 6px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
-    /* Toast & Modal styles remain largely the same, but can be updated if needed */
+    .profile-tab { cursor: pointer; padding: 12px 20px; border-bottom: 2px solid transparent; transition: all 0.2s; color: var(--color-text-secondary); }
+    .profile-tab.active, .profile-tab:hover { border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
+    .profile-tab-content { display: none; }
+    .profile-tab-content.active { display: block; }
     #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
     .toast { display: flex; align-items: center; padding: 12px 20px; border-radius: 8px; box-shadow: var(--shadow-lg); color: white; opacity: 0; transform: translateY(20px); animation: slideUp 0.5s forwards, fadeOutToast 0.5s 4.5s forwards; }
-    .toast.success { background: linear-gradient(to right, #10b981, #22c55e); }
+    .toast.success { background: linear-gradient(to right, #22c55e, #10b981); }
     .toast.error { background: linear-gradient(to right, #f43f5e, #e11d48); }
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeOutToast { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
@@ -848,68 +868,112 @@ const pages = {
 dashboard: () => {
     calculateDashboardMetrics();
     const metrics = state.dashboardMetrics;
-    if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 card"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-slate-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" style="background-color: var(--color-primary);" class="mt-6 text-white py-2 px-5 rounded-lg hover:opacity-90 transition">افزودن کارمند</button></div>`;
-
+    if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
+    
     const highRiskEmployees = state.employees
         .filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60)
-        .sort((a, b) => b.attritionRisk.score - a.attritionRisk.score)
-        .slice(0, 5);
+        .sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
 
-    const highRiskHtml = highRiskEmployees.length > 0
-        ? highRiskEmployees.map(emp => `
-            <div class="flex items-center p-2 hover:bg-slate-50 rounded-lg transition-colors duration-200">
-                <img src="${emp.avatar}" class="w-10 h-10 rounded-full object-cover ml-3 shrink-0">
-                <div class="flex-grow">
-                    <p class="font-semibold text-sm text-slate-800">${emp.name}</p>
-                    <p class="text-xs text-slate-500">${emp.jobTitle || 'بدون سمت'}</p>
-                </div>
-                <div class="text-right">
-                    <span class="font-bold text-sm text-red-500">${emp.attritionRisk.score}%</span>
-                </div>
-            </div>
-        `).join('')
-        : '<div class="text-center py-8"><i data-lucide="shield-check" class="mx-auto w-10 h-10 text-green-500"></i><p class="text-sm text-slate-500 mt-2">موردی با ریسک بالا یافت نشد.</p></div>';
-    
+    const highRiskHtml = highRiskEmployees.length > 0 
+        ? highRiskEmployees.map(emp => {
+            const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
+            return `<div class="p-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div>
+                                <div><p class="text-sm font-semibold text-purple-800">${emp.name}</p></div>
+                            </div>
+                            <span class="text-lg font-bold text-purple-600">${emp.attritionRisk.score}%</span>
+                        </div>
+                        <div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div>
+                    </div>`
+        }).join(' ') 
+        : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
+
     return `
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-800">داشبورد</h1>
-                <p class="text-sm text-slate-500 mt-1">نمای کلی سازمان شما در یک نگاه.</p>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد</h1>
+        
+        <div class="grid-metrics mb-6">
+            <div class="metric-card">
+                <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
+                <div><p class="text-gray-500 text-sm">تعداد کل پرسنل</p><p class="text-2xl font-bold text-gray-800">${metrics.totalEmployees}</p></div>
             </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-blue-100 p-3 rounded-xl mr-4"><i data-lucide="users" class="text-blue-600"></i></div><div><p class="text-slate-500 text-sm">پرسنل فعال</p><p class="text-2xl font-bold text-slate-800">${metrics.totalEmployees}</p></div></div></div>
-            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-green-100 p-3 rounded-xl mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div><div><p class="text-slate-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-slate-800">${metrics.retentionRate}%</p></div></div></div>
-            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-violet-100 p-3 rounded-xl mr-4"><i data-lucide="heart-pulse" class="text-violet-600"></i></div><div><p class="text-slate-500 text-sm">امتیاز مشارکت</p><p class="text-2xl font-bold text-slate-800">${metrics.engagementScore || 0}%</p></div></div></div>
-            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-red-100 p-3 rounded-xl mr-4"><i data-lucide="shield-alert" class="text-red-600"></i></div><div><p class="text-slate-500 text-sm">استعدادهای پرخطر</p><p class="text-2xl font-bold text-slate-800">${highRiskEmployees.length} نفر</p></div></div></div>
+            <div class="metric-card">
+                <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div>
+                <div><p class="text-gray-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-gray-800">${metrics.retentionRate}%</p></div>
+            </div>
+            <div class="metric-card">
+                <div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div>
+                <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
+            </div>
+            <div class="metric-card">
+                <div class="bg-purple-100 p-3 rounded-full mr-4"><i data-lucide="recycle" class="text-purple-600"></i></div>
+                <div><p class="text-gray-500 text-sm">جابجایی داخلی</p><p class="text-2xl font-bold text-gray-800">${metrics.internalMobilityRate}%</p></div>
+            </div>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            
-            <div class="card p-6 min-h-[420px] flex flex-col">
-                <h3 class="font-semibold text-lg mb-4 flex items-center">استعدادهای پرخطر</h3>
-                <div class="flex-grow">${highRiskHtml}</div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                <div class="card flex-grow">
+                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="bar-chart-3" class="ml-2 text-indigo-600"></i>نمودارهای کلیدی</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="flex flex-col items-center justify-center">
+                            <p class="text-gray-500 text-sm mb-2">توزیع استعدادها</p>
+                            <div class="relative w-full h-48"><canvas id="nineBoxChart"></canvas></div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center">
+                            <p class="text-gray-500 text-sm mb-2">توزیع دپارتمان‌ها</p>
+                            <div class="relative w-full h-48"><canvas id="departmentDistributionChart"></canvas></div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center">
+                            <p class="text-gray-500 text-sm mb-2">ترکیب جنسیتی</p>
+                            <div class="relative w-full h-48"><canvas id="genderCompositionChart"></canvas></div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center">
+                            <p class="text-gray-500 text-sm mb-2">سابقه کار</p>
+                            <div class="relative w-full h-48"><canvas id="tenureDistributionChart"></canvas></div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center">
+                            <p class="text-gray-500 text-sm mb-2">توزیع سنی</p>
+                            <div class="relative w-full h-48"><canvas id="ageDistributionChart"></canvas></div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center">
+                            <p class="text-gray-500 text-sm mb-2">میانگین شایستگی تیم‌ها</p>
+                            <div class="relative w-full h-48"><canvas id="teamCompetencyRadarChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="card p-6 min-h-[420px] flex flex-col">
-                <h3 class="font-semibold text-lg mb-4 flex items-center">یادآور هوشمند</h3>
-                <div id="remindersList" class="flex-grow space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">${renderAllReminders()}</div>
-                 ${canEdit() ? `<div class="border-t pt-4 mt-auto">
-                    <form id="add-reminder-form" class="space-y-3">
-                        <input type="text" id="reminderText" placeholder="افزودن یادآور دستی..." class="w-full p-2 border rounded-md text-sm">
-                        <input type="text" id="reminderDate" class="w-full p-2 border rounded-md text-sm" placeholder="انتخاب تاریخ">
-                        <button type="submit" id="addReminderBtn" class="w-full bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 transition text-sm">افزودن</button>
-                    </form>
-                </div>` : ''}
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <div class="card">
+                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
+                    <div id="remindersList" class="space-y-4 mb-4 max-h-64 overflow-y-auto pr-2">${renderAllReminders()}</div>
+                    ${canEdit() ? `<div class="border-t pt-4 mt-auto">
+                        <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
+                        <div class="flex flex-wrap gap-2">
+                            <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="flex-grow p-2 border rounded-md text-sm">
+                            <input type="text" id="reminderDate" class="w-32 p-2 border rounded-md text-sm" placeholder="تاریخ">
+                            <input type="number" id="reminderDaysBefore" title="از چند روز قبل نمایش داده شود؟" value="7" class="w-20 p-2 border rounded-md text-sm">
+                            <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
+                        </div>
+                    </div>` : ''}
+                </div>
+                <div class="card h-full">
+                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="heart-pulse" class="ml-2 text-green-500"></i>امتیاز مشارکت کارکنان</h3>
+                    <div class="relative w-48 h-24 mx-auto my-4">
+                        <canvas id="engagementGaugeDashboard"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center -bottom-4">
+                            <span class="text-4xl font-bold text-green-600">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card h-full flex-grow overflow-hidden">
+                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="shield-alert" class="ml-2 text-purple-500"></i>ریسک خروج استعدادهای کلیدی</h3>
+                    <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-2">${highRiskHtml}</div>
+                </div>
             </div>
-            
-            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">توزیع دپارتمان‌ها</h3><div class="relative flex-grow"><canvas id="departmentDistributionChart"></canvas></div></div>
-            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">ترکیب جنسیتی</h3><div class="relative flex-grow"><canvas id="genderCompositionChart"></canvas></div></div>
-            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">توزیع سنی</h3><div class="relative flex-grow"><canvas id="ageDistributionChart"></canvas></div></div>
-            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">سابقه کار</h3><div class="relative flex-grow"><canvas id="tenureDistributionChart"></canvas></div></div>
-            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">توزیع استعدادها</h3><div class="relative flex-grow"><canvas id="nineBoxChart"></canvas></div></div>
-            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">شایستگی تیم‌ها</h3><div class="relative flex-grow"><canvas id="teamCompetencyRadarChart"></canvas></div></div>
         </div>
     `;
 },
@@ -1764,41 +1828,206 @@ const renderDashboardCharts = () => {
     destroyCharts();
     const metrics = state.dashboardMetrics;
     if (Object.keys(metrics).length === 0) return;
+    renderEngagementGauge('engagementGaugeDashboard', metrics.engagementScore);
 
-    // --- رندر کردن 6 نمودار اصلی در کارت‌های مجزا ---
+    // Gender Composition (Doughnut Chart)
     const genderCtx = document.getElementById('genderCompositionChart')?.getContext('2d');
-    if (genderCtx && metrics.genderComposition) {
-        charts.gender = new Chart(genderCtx, { type: 'pie', data: { labels: Object.keys(metrics.genderComposition), datasets: [{ data: Object.values(metrics.genderComposition), backgroundColor: ['#5E5DF0', '#8B5CF6', '#94A3B8'], hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+    if (genderCtx && metrics.genderComposition) { 
+        charts.gender = new Chart(genderCtx, { 
+            type: 'doughnut', 
+            data: { 
+                labels: Object.keys(metrics.genderComposition), 
+                datasets: [{ 
+                    data: Object.values(metrics.genderComposition), 
+                    backgroundColor: ['#3b82f6', '#f43f5e', '#94a3b8'],
+                    hoverOffset: 4
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            } 
+        }); 
     }
 
+    // Department Distribution (Bar Chart)
     const departmentCtx = document.getElementById('departmentDistributionChart')?.getContext('2d');
-    if (departmentCtx) {
-        charts.department = new Chart(departmentCtx, { type: 'bar', data: { labels: Object.keys(metrics.departmentDistribution), datasets: [{ data: Object.values(metrics.departmentDistribution), backgroundColor: '#22D3EE', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+    if (departmentCtx) { 
+        charts.department = new Chart(departmentCtx, { 
+            type: 'bar', 
+            data: { 
+                labels: Object.keys(metrics.departmentDistribution), 
+                datasets: [{ 
+                    label: 'تعداد', 
+                    data: Object.values(metrics.departmentDistribution), 
+                    backgroundColor: '#10b981',
+                    borderRadius: 5
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false } 
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            } 
+        }); 
     }
     
-    const tenureCtx = document.getElementById('tenureDistributionChart')?.getContext('2d');
-    const tenureData = state.employees.reduce((acc, emp) => { if (!emp.startDate) return acc; const years = (new Date() - new Date(emp.startDate)) / (365 * 24 * 60 * 60 * 1000); if (years < 2) acc['کمتر از ۲ سال'] = (acc['کمتر از ۲ سال'] || 0) + 1; else if (years < 5) acc['۲ تا ۵ سال'] = (acc['۲ تا ۵ سال'] || 0) + 1; else acc['بیش از ۵ سال'] = (acc['بیش از ۵ سال'] || 0) + 1; return acc; }, {});
-    if (tenureCtx) {
-        charts.tenure = new Chart(tenureCtx, { type: 'doughnut', data: { labels: Object.keys(tenureData), datasets: [{ data: Object.values(tenureData), backgroundColor: ['#FACC15', '#F97316', '#EF4444'], hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
-    }
-
-    const ageCtx = document.getElementById('ageDistributionChart')?.getContext('2d');
-    const ageData = state.employees.reduce((acc, emp) => { if (!emp.personalInfo?.birthDate) return acc; const age = new Date().getFullYear() - new Date(emp.personalInfo.birthDate).getFullYear(); if (age < 30) acc['زیر ۳۰'] = (acc['زیر ۳۰'] || 0) + 1; else if (age <= 45) acc['۳۰-۴۵'] = (acc['۳۰-۴۵'] || 0) + 1; else acc['بالای ۴۵'] = (acc['بالای ۴۵'] || 0) + 1; return acc; }, {});
-    if (ageCtx) {
-        charts.age = new Chart(ageCtx, { type: 'bar', data: { labels: Object.keys(ageData), datasets: [{ data: Object.values(ageData), backgroundColor: '#E879F9', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
-    }
-
+    // Nine Box Distribution (Bar Chart)
     const nineBoxCtx = document.getElementById('nineBoxChart')?.getContext('2d');
-    if (nineBoxCtx && metrics.nineBoxDistribution) {
-        charts.nineBox = new Chart(nineBoxCtx, { type: 'bar', data: { labels: Object.keys(metrics.nineBoxDistribution), datasets: [{ data: Object.values(metrics.nineBoxDistribution), backgroundColor: '#6366F1', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { font: { size: 9 } } } } } });
+    if (nineBoxCtx && metrics.nineBoxDistribution) { 
+        charts.nineBox = new Chart(nineBoxCtx, { 
+            type: 'bar', 
+            data: { 
+                labels: Object.keys(metrics.nineBoxDistribution), 
+                datasets: [{ 
+                    label: 'تعداد', 
+                    data: Object.values(metrics.nineBoxDistribution), 
+                    backgroundColor: '#6366f1',
+                    borderRadius: 5
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false } 
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            } 
+        }); 
     }
 
+    // New: Tenure Distribution (Pie Chart)
+    const tenureCtx = document.getElementById('tenureDistributionChart')?.getContext('2d');
+    const tenureData = state.employees.reduce((acc, emp) => {
+        if (!emp.startDate) return acc;
+        const years = (new Date() - new Date(emp.startDate)) / (1000 * 60 * 60 * 24 * 365);
+        if (years < 2) acc['کمتر از ۲ سال'] = (acc['کمتر از ۲ سال'] || 0) + 1;
+        else if (years < 5) acc['۲ تا ۵ سال'] = (acc['۲ تا ۵ سال'] || 0) + 1;
+        else acc['بیش از ۵ سال'] = (acc['بیش از ۵ سال'] || 0) + 1;
+        return acc;
+    }, {});
+    if (tenureCtx) {
+        charts.tenure = new Chart(tenureCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(tenureData),
+                datasets: [{
+                    data: Object.values(tenureData),
+                    backgroundColor: ['#facc15', '#f97316', '#ef4444'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // New: Age Distribution (Bar Chart)
+    const ageCtx = document.getElementById('ageDistributionChart')?.getContext('2d');
+    const ageData = state.employees.reduce((acc, emp) => {
+        if (!emp.personalInfo?.birthDate) return acc;
+        const age = new Date().getFullYear() - new Date(emp.personalInfo.birthDate).getFullYear();
+        if (age < 30) acc['زیر ۳۰ سال'] = (acc['زیر ۳۰ سال'] || 0) + 1;
+        else if (age <= 45) acc['۳۱-۴۵ سال'] = (acc['۳۱-۴۵ سال'] || 0) + 1;
+        else acc['بالای ۴۵ سال'] = (acc['بالای ۴۵ سال'] || 0) + 1;
+        return acc;
+    }, {});
+    if (ageCtx) {
+        charts.age = new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(ageData),
+                datasets: [{
+                    label: 'تعداد',
+                    data: Object.values(ageData),
+                    backgroundColor: '#e879f9',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // New: Team Competency Radar Chart
     const teamCompetencyCtx = document.getElementById('teamCompetencyRadarChart')?.getContext('2d');
     const competencyScores = {};
-    state.teams.forEach(team => { team.memberIds?.forEach(memberId => { const member = state.employees.find(e => e.id === memberId); if (member && member.competencies) { Object.entries(member.competencies).forEach(([name, score]) => { if (!competencyScores[name]) { competencyScores[name] = { total: 0, count: 0 }; } competencyScores[name].total += score; competencyScores[name].count++; }); } }); });
-    const avgCompetencies = Object.entries(competencyScores).reduce((acc, [name, data]) => { acc[name] = data.count > 0 ? (data.total / data.count).toFixed(1) : 0; return acc; }, {});
+    state.teams.forEach(team => {
+        team.memberIds?.forEach(memberId => {
+            const member = state.employees.find(e => e.id === memberId);
+            if (member && member.competencies) {
+                Object.entries(member.competencies).forEach(([name, score]) => {
+                    if (!competencyScores[name]) {
+                        competencyScores[name] = { total: 0, count: 0 };
+                    }
+                    competencyScores[name].total += score;
+                    competencyScores[name].count++;
+                });
+            }
+        });
+    });
+    const avgCompetencies = Object.entries(competencyScores).reduce((acc, [name, data]) => {
+        acc[name] = data.count > 0 ? (data.total / data.count).toFixed(1) : 0;
+        return acc;
+    }, {});
     if (teamCompetencyCtx && Object.keys(avgCompetencies).length > 0) {
-        charts.teamCompetency = new Chart(teamCompetencyCtx, { type: 'radar', data: { labels: Object.keys(avgCompetencies), datasets: [{ data: Object.values(avgCompetencies), fill: true, backgroundColor: 'rgba(22, 163, 74, 0.2)', borderColor: '#16A34A', pointBackgroundColor: '#16A34A' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { suggestedMin: 0, suggestedMax: 5 } } } });
+        charts.teamCompetency = new Chart(teamCompetencyCtx, {
+            type: 'radar',
+            data: {
+                labels: Object.keys(avgCompetencies),
+                datasets: [{
+                    label: 'میانگین امتیاز',
+                    data: Object.values(avgCompetencies),
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#3b82f6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#e2e8f0' },
+                        grid: { color: '#e2e8f0' },
+                        pointLabels: { color: '#6b7280' },
+                        suggestedMin: 0,
+                        suggestedMax: 5,
+                        ticks: { stepSize: 1, display: false }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
     }
 };
 
