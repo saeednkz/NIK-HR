@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -5,21 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سیستم مدیریت منابع انسانی NikHR</title>
     
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/d-calendar@latest/dist/d-calendar.picker.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/d-calendar@latest/dist/d-calendar.picker.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
+    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
 <style>
-    /* ... کدهای CSS شما از اینجا شروع می‌شود ... */
-    /* ... کدهای CSS شما از اینجا شروع می‌شود ... */
-    /* ... کدهای CSS شما از اینجا شروع می‌شود ... */
-    /* ... کدهای CSS شما از اینجا شروع می‌شود ... */
     /* New modern, minimal color palette & design language */
     :root {
         --color-primary: #3b82f6;      /* A clean, professional blue */
@@ -409,72 +406,114 @@ const teamVisualsPalette = [
             .replace(/۹/g, '9')
             .replace(/۰/g, '0');
     };
-// این تابع را با نسخه جدید جایگزین کنید
 const toPersianDate = (dateInput) => {
     if (!dateInput) return 'نامشخص';
     try {
-        let date = dateInput.toDate ? dateInput.toDate() : new Date(dateInput);
-        if (isNaN(date.getTime())) return 'تاریخ نامعتبر';
-        
+        let date;
+        if (dateInput.toDate) { // Handle Firebase Timestamps
+            date = dateInput.toDate();
+        } else {
+            date = new Date(dateInput);
+        }
+
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+            return 'تاریخ نامعتبر';
+        }
+
         const gYear = date.getFullYear();
-        const gMonth = date.getMonth() + 1;
+        const gMonth = date.getMonth() + 1; // JS month is 0-indexed
         const gDay = date.getDate();
-        
+
         const jalaaliDate = jalaali.toJalaali(gYear, gMonth, gDay);
-        
+
+        // Add leading zero to month and day if needed
         const jm = String(jalaaliDate.jm).padStart(2, '0');
         const jd = String(jalaaliDate.jd).padStart(2, '0');
-        
+
         return `${jalaaliDate.jy}/${jm}/${jd}`;
     } catch (error) {
-        console.error("Error in toPersianDate:", dateInput, error);
+        console.error("Error converting date:", dateInput, error);
         return 'نامشخص';
     }
 };
 // --- تابع جدید برای تبدیل تاریخ شمسی ورودی به فرمت میلادی برای ذخیره ---
-// این تابع را با نسخه جدید جایگزین کنید
 const persianToEnglishDate = (persianDateStr) => {
-    if (!persianDateStr) return null;
-    
-    let englishDateStr = convertPersianNumbersToEnglish(persianDateStr);
-    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(englishDateStr)) {
-        console.error("Invalid Persian date format:", englishDateStr);
-        return null;
-    }
-    
-    try {
-        const [jy, jm, jd] = englishDateStr.split('/').map(Number);
-        const gregorian = jalaali.toGregorian(jy, jm, jd);
-        
-        // فرمت YYYY-MM-DD را برای سازگاری با new Date() برمی‌گردانیم
-        return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
-    } catch (error) {
-        console.error("Error in persianToEnglishDate:", error);
-        return null;
-    }
-};
+        if (!persianDateStr) return null;
+
+        // ابتدا اعداد فارسی را به انگلیسی تبدیل می‌کنیم
+        let englishDateStr = convertPersianNumbersToEnglish(persianDateStr);
+
+        if (!isNaN(englishDateStr) && typeof englishDateStr !== 'string') {
+            const date = new persianDate(parseInt(englishDateStr));
+            englishDateStr = date.format('YYYY/MM/DD');
+        }
+
+        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(englishDateStr)) {
+            console.error("Invalid Persian date format. Expected YYYY/MM/DD, but got:", englishDateStr);
+            return null;
+        }
+        try {
+            const [jy, jm, jd] = englishDateStr.split('/').map(Number);
+            const gregorian = jalaali.toGregorian(jy, jm, jd);
+            return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
+        } catch (error) {
+            console.error("Error converting Persian to Gregorian:", error);
+            return null;
+        }
+    };
 
 // --- تابع جدید برای فعال‌سازی تقویم شمسی روی یک فیلد ---
-// این تابع را با نسخه جدید جایگزین کنید
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
-    // پاک کردن هرگونه نمونه قبلی (اگر کتابخانه قبلی هنوز اثری گذاشته باشد)
-    // این خط دیگر برای کتابخانه جدید لازم نیست اما برای اطمینان نگه می‌داریم
-    if (input.dcalendarpicker) {
-        input.dcalendarpicker.destroy();
+    // ۱. ابتدا هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
+    try {
+        $(input).pDatepicker('destroy');
+    } catch (e) {
+        // اگر تقویمی از قبل وجود نداشته باشد، مشکلی نیست.
     }
     
-    input.value = initialValue ? toPersianDate(initialValue) : '';
+    // ۲. تمام مقادیر و تنظیمات قبلی را پاک می‌کنیم
+    input.setAttribute('type', 'text');
+    input.setAttribute('placeholder', 'مثال: ۱۴۰۳/۰۵/۲۸');
+    input.setAttribute('autocomplete', 'off');
+    input.value = ''; // فیلد را به صورت دستی کاملاً خالی می‌کنیم
 
-    // مقداردهی اولیه کتابخانه جدید (d-calendar)
-    dcalendarpicker.init(`#${elementId}`, {
-        // تنظیم تقویم به نوع جلالی
-        jalali: true,
-        // فرمت نمایش تاریخ
-        format: "YYYY/MM/DD"
+    // ۳. تقویم را بدون هیچ مقدار اولیه‌ای و به صورت خالی می‌سازیم
+    $(input).pDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        // گزینه initialValue را کاملاً حذف می‌کنیم تا به کتابخانه اجازه پیش‌فرض‌گذاری ندهیم
+        observer: true,
+        calendar: {
+            persian: {
+                locale: 'fa'
+            }
+        },
+        navigator: {
+            enabled: true,
+            scroll: {
+                enabled: false
+            }
+        },
+        timePicker: {
+            enabled: false
+        }
     });
+
+    // ۴. فقط و فقط اگر تاریخ اولیه‌ای وجود داشت،
+    // آن را با استفاده از متد رسمی خود کتابخانه و به صورت تأخیری تنظیم می‌کنیم.
+    if (initialValue) {
+        // یک تأخیر کوتاه ایجاد می‌کنیم تا مطمئن شویم تقویم کاملاً ساخته شده است
+        setTimeout(() => {
+            // تاریخ میلادی را به فرمت timestamp (میلی‌ثانیه) تبدیل می‌کنیم
+            const initialTimestamp = new Date(initialValue).getTime();
+            // از متد setDate خود کتابخانه برای تنظیم دقیق تاریخ استفاده می‌کنیم
+            $(input).pDatepicker('setDate', initialTimestamp);
+        }, 10); // ۱۰ میلی‌ثانیه تأخیر کافی است
+    }
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
