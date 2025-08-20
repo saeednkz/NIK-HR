@@ -10,17 +10,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
+    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     
-    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-
     <script type="text/javascript">
-        // با این کد، قابلیت مزاحم Observer را برای همیشه خاموش می‌کنیم
-        $.fn.pDatepicker.defaults.observer = false;
+        // این تابع تضمین می‌کند که کد داخلش فقط بعد از لود کامل jQuery و پلاگین‌ها اجرا شود
+        $(function() {
+            // با این کد، قابلیت مزاحم Observer را برای همیشه خاموش می‌کنیم
+            if ($.fn.pDatepicker) { // یک بررسی اضافه برای اطمینان محض
+                $.fn.pDatepicker.defaults.observer = false;
+            }
+        });
     </script>
-    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
 <style>
@@ -485,9 +491,8 @@ const persianToEnglishDate = (persianDateStr) => {
     }
 };
 
-// --- نسخه نهایی و ضد خطا برای فعال‌سازی تقویم شمسی ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
-    // برای اطمینان از سازگاری کامل، از سلکتور jQuery استفاده می‌کنیم
+    // برای هماهنگی با کتابخانه، از سلکتور jQuery استفاده می‌کنیم
     const input = $(`#${elementId}`);
     if (!input.length) {
         console.error(`المان تقویم با آیدی "${elementId}" پیدا نشد.`);
@@ -499,46 +504,45 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
         input.pDatepicker('destroy');
     } catch(e) { /* اگر از قبل ساخته نشده بود، مشکلی نیست */ }
 
-    // ۲. ورودی را فقط خواندنی می‌کنیم تا کاربر مجبور به استفاده از تقویم شود
+    // ۲. ورودی را فقط خواندنی (readonly) می‌کنیم تا کاربر مجبور به استفاده از تقویم شود
     input.attr('readonly', true).css('background-color', '#fff');
 
-    // ۳. تقویم را با تنظیمات اصلی و مهم‌تر از همه، بدون مقدار اولیه می‌سازیم
-    // با initialValue: false به کتابخانه می‌گوییم که حق ندارد تاریخ امروز را انتخاب کند!
+    // ۳. تقویم را با تنظیمات اصلی و بدون مقدار اولیه می‌سازیم
+    // با initialValue: false به کتابخانه می‌گوییم که حق ندارد تاریخ امروز را به عنوان پیش‌فرض انتخاب کند
     input.pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
-        observer: false, // این گزینه حیاتی است تا تقویم خودسرانه مقدار را عوض نکند
-        initialValue: false // <<<--- این کلید حل مشکل است!
+        observer: false, // این گزینه برای اطمینان بیشتر اینجا هم تکرار می‌شود
+        initialValue: false // <<--- این کلید اصلی حل مشکل است!
     });
 
-    // ۴. حالا که تقویم "خام" ساخته شد، خودمان به صورت دستی مقدار اولیه را ست می‌کنیم
+    // ۴. حالا که تقویم خام ساخته شد، خودمان به صورت دستی مقدار اولیه را ست می‌کنیم
     if (initialValue) {
         let dateObject;
         // ورودی می‌تواند Timestamp فایربیس یا یک رشته تاریخ میلادی باشد
         if (initialValue.toDate) {
-            dateObject = initialValue.toDate();
+            dateObject = initialValue.toDate(); // مخصوص فرمت تاریخ فایربیس
         } else if (typeof initialValue === 'string' && initialValue.trim() !== '') {
-            // new Date() با رشته YYYY-MM-DD به درستی کار می‌کند
-            dateObject = new Date(initialValue);
+            dateObject = new Date(initialValue); // مخصوص رشته تاریخ مثل '2024-05-20'
         }
 
-        // فقط در صورتی که یک تاریخ معتبر ساخته شد، آن را در تقویم تنظیم می‌کنیم
+        // ۵. فقط در صورتی که یک تاریخ معتبر ساخته شد، آن را در تقویم تنظیم می‌کنیم
         if (dateObject && !isNaN(dateObject.getTime())) {
-            // یک تأخیر بسیار کوتاه می‌دهیم تا مطمئن شویم تقویم کاملاً آماده است
+            // یک تأخیر کوتاه برای اطمینان از آماده بودن کامل تقویم
             setTimeout(() => {
                 try {
-                    // متد setDate کتابخانه یک timestamp عددی (میلی‌ثانیه) می‌خواهد
+                    // متد setDate یک timestamp عددی (میلی‌ثانیه) دریافت می‌کند
                     input.pDatepicker('setDate', dateObject.getTime());
                 } catch(e) {
                     console.error("خطا در تنظیم تاریخ اولیه برای تقویم:", e);
                 }
-            }, 50); // 50 میلی‌ثانیه تأخیر امن‌تری است
+            }, 50);
         } else {
              // اگر initialValue معتبر نبود، فیلد را خالی می‌کنیم
              input.val('');
         }
     } else {
-        // اگر تاریخ اولیه‌ای وجود نداشت (مثلا در فرم "افزودن جدید")، فیلد را خالی می‌کنیم
+        // اگر تاریخ اولیه‌ای وجود نداشت (مثلا در فرم افزودن)، فیلد را خالی می‌کنیم
         input.val('');
     }
 };
