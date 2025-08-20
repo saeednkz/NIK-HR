@@ -438,30 +438,45 @@ const toPersianDate = (dateInput) => {
     }
 };
 // --- تابع جدید برای تبدیل تاریخ شمسی ورودی به فرمت میلادی برای ذخیره ---
+// --- نسخه نهایی و بسیار قوی‌تر برای تبدیل تاریخ شمسی به میلادی ---
 const persianToEnglishDate = (persianDateStr) => {
-        if (!persianDateStr) return null;
+    // اگر ورودی خالی یا null است، null برگردان
+    if (!persianDateStr) return null;
 
-        // ابتدا اعداد فارسی را به انگلیسی تبدیل می‌کنیم
-        let englishDateStr = convertPersianNumbersToEnglish(persianDateStr);
+    // گاهی اوقات کتابخانه تقویم ممکن است یک timestamp عددی برگرداند
+    // اگر ورودی یک عدد است، آن را مستقیماً به تاریخ میلادی تبدیل کن
+    if (!isNaN(persianDateStr) && typeof persianDateStr !== 'string') {
+        const date = new persianDate(parseInt(persianDateStr));
+        const formatted = date.format('YYYY-MM-DD');
+        console.log(`ورودی عددی شناسایی شد، تبدیل شده به: ${formatted}`);
+        return formatted;
+    }
+    
+    // اعداد فارسی را به انگلیسی تبدیل کن
+    let englishDateStr = convertPersianNumbersToEnglish(persianDateStr);
 
-        if (!isNaN(englishDateStr) && typeof englishDateStr !== 'string') {
-            const date = new persianDate(parseInt(englishDateStr));
-            englishDateStr = date.format('YYYY/MM/DD');
-        }
+    // چک کن که فرمت تاریخ YYYY/MM/DD باشد
+    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(englishDateStr)) {
+        console.error("فرمت تاریخ شمسی نامعتبر است. فرمت مورد انتظار YYYY/MM/DD است اما ورودی:", englishDateStr);
+        // اگر فرمت اشتباه بود، null برگردان تا دیتای اشتباه ذخیره نشود
+        return null;
+    }
 
-        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(englishDateStr)) {
-            console.error("Invalid Persian date format. Expected YYYY/MM/DD, but got:", englishDateStr);
-            return null;
+    try {
+        const [jy, jm, jd] = englishDateStr.split('/').map(Number);
+        // اطمینان از معتبر بودن اعداد سال، ماه و روز
+        if (jy < 1000 || jm < 1 || jm > 12 || jd < 1 || jd > 31) {
+             console.error("اعداد تاریخ شمسی نامعتبر است:", { jy, jm, jd });
+             return null;
         }
-        try {
-            const [jy, jm, jd] = englishDateStr.split('/').map(Number);
-            const gregorian = jalaali.toGregorian(jy, jm, jd);
-            return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
-        } catch (error) {
-            console.error("Error converting Persian to Gregorian:", error);
-            return null;
-        }
-    };
+        const gregorian = jalaali.toGregorian(jy, jm, jd);
+        // نتیجه نهایی را با فرمت YYYY-MM-DD برگردان
+        return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
+    } catch (error) {
+        console.error("خطا در تبدیل تاریخ شمسی به میلادی:", error);
+        return null;
+    }
+};
 
 // --- نسخه نهایی و قطعی: غیرفعال کردن Observer برای جلوگیری از آپدیت خودکار ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
