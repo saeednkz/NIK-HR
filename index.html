@@ -1321,12 +1321,12 @@ settings: () => {
         return `<div class="text-center p-10 card"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">دسترسی غیر مجاز</h2><p class="mt-2 text-slate-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
     }
 
-    // آماده‌سازی لیست کاربران با طراحی جدید
+    // آماده‌سازی لیست کاربران با طراحی جدید و ریسپانسیو
     const usersHtml = state.users.map(user => {
         const userInitial = user.name ? user.name.substring(0, 1) : user.email.substring(0, 1).toUpperCase();
         const isCurrentUser = user.firestoreId === state.currentUser.uid;
         return `
-            <div class="flex items-center justify-between p-4 border-b border-slate-100 last:border-b-0">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between p-4 gap-4 border-b border-slate-100 last:border-b-0">
                 <div class="flex items-center">
                     <div class="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm ml-4 shrink-0">
                         ${userInitial}
@@ -1336,16 +1336,16 @@ settings: () => {
                         <p class="text-xs text-slate-500">${user.email}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-white text-sm" ${isCurrentUser ? 'disabled' : ''}>
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-white text-sm flex-grow" ${isCurrentUser ? 'disabled' : ''}>
                         <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>مشاهده‌گر</option>
                         <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>ویرایشگر</option>
                         <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>مدیر</option>
                     </select>
-                     ${!isCurrentUser ? `
-                    <button class="edit-user-btn p-2 text-slate-500 hover:text-blue-600" data-uid="${user.firestoreId}" title="ویرایش کاربر"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                    <button class="delete-user-btn p-2 text-slate-500 hover:text-red-600" data-uid="${user.firestoreId}" title="حذف کاربر"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    ` : '<div class="w-16"></div>'}
+                    ${!isCurrentUser ? `
+                    <button class="edit-user-btn p-2 text-slate-500 hover:text-blue-600 shrink-0" data-uid="${user.firestoreId}" title="ویرایش کاربر"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                    <button class="delete-user-btn p-2 text-slate-500 hover:text-red-600 shrink-0" data-uid="${user.firestoreId}" title="حذف کاربر"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    ` : '<div class="w-16 hidden md:block"></div>'}
                 </div>
             </div>
         `;
