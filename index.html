@@ -10,10 +10,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
-    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+ <head>
+    <link rel="stylesheet" href="https://unpkg.com/@majidh1/pwt.datepicker/dist/css/pwt.datepicker.min.css">
+    <script src="https://unpkg.com/@majidh1/pwt.datepicker/dist/pwt.datepicker.min.js"></script>
+    </head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
 <style>
@@ -468,52 +468,24 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
-    // ۱. ابتدا هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
-    try {
-        $(input).pDatepicker('destroy');
-    } catch (e) {
-        // اگر تقویمی از قبل وجود نداشته باشد، مشکلی نیست.
-    }
+    // تنظیمات کتابخانه جدید از طریق data-attribute ها
+    input.setAttribute('data-pdp-format', 'YYYY/MM/DD');
+    input.setAttribute('data-pdp-auto-close', 'true');
     
-    // ۲. تمام مقادیر و تنظیمات قبلی را پاک می‌کنیم
-    input.setAttribute('type', 'text');
-    input.setAttribute('placeholder', 'مثال: ۱۴۰۳/۰۵/۲۸');
-    input.setAttribute('autocomplete', 'off');
-    input.value = ''; // فیلد را به صورت دستی کاملاً خالی می‌کنیم
-
-    // ۳. تقویم را بدون هیچ مقدار اولیه‌ای و به صورت خالی می‌سازیم
-    $(input).pDatepicker({
-        format: 'YYYY/MM/DD',
-        autoClose: true,
-        // گزینه initialValue را کاملاً حذف می‌کنیم تا به کتابخانه اجازه پیش‌فرض‌گذاری ندهیم
-        observer: true,
-        calendar: {
-            persian: {
-                locale: 'fa'
-            }
-        },
-        navigator: {
-            enabled: true,
-            scroll: {
-                enabled: false
-            }
-        },
-        timePicker: {
-            enabled: false
-        }
-    });
-
-    // ۴. فقط و فقط اگر تاریخ اولیه‌ای وجود داشت،
-    // آن را با استفاده از متد رسمی خود کتابخانه و به صورت تأخیری تنظیم می‌کنیم.
+    // اگر تاریخ اولیه‌ای وجود داشت، آن را به عنوان مقدار پیش‌فرض تنظیم می‌کنیم
     if (initialValue) {
-        // یک تأخیر کوتاه ایجاد می‌کنیم تا مطمئن شویم تقویم کاملاً ساخته شده است
-        setTimeout(() => {
-            // تاریخ میلادی را به فرمت timestamp (میلی‌ثانیه) تبدیل می‌کنیم
-            const initialTimestamp = new Date(initialValue).getTime();
-            // از متد setDate خود کتابخانه برای تنظیم دقیق تاریخ استفاده می‌کنیم
-            $(input).pDatepicker('setDate', initialTimestamp);
-        }, 10); // ۱۰ میلی‌ثانیه تأخیر کافی است
+        input.setAttribute('data-pdp-initial-value', 'true');
+        input.value = toPersianDate(initialValue);
+    } else {
+        // اگر تاریخی وجود نداشت، مقدار را خالی می‌گذاریم
+        input.setAttribute('data-pdp-initial-value', 'false');
+        input.value = '';
     }
+
+    // مقداردهی اولیه کتابخانه جدید
+    new PwtDatepicker({
+        selector: `#${elementId}`,
+    });
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
