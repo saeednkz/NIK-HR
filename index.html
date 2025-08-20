@@ -468,11 +468,19 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
+    // --- کد جدید: نمونه قبلی تقویم را از بین می‌بریم ---
+    // این کار از تداخل و ریست شدن تاریخ جلوگیری می‌کند
+    try {
+        $(input).pDatepicker('destroy');
+    } catch (e) {
+        // اگر تقویمی از قبل وجود نداشته باشد و این خط خطا بدهد، مشکلی نیست و ادامه می‌دهیم.
+    }
+    
+    // بقیه کد مثل قبل است
     input.setAttribute('type', 'text');
-    input.setAttribute('placeholder', 'مثال: 1403/05/28');
+    input.setAttribute('placeholder', 'مثال: ۱۴۰۳/۰۵/۲۸');
     input.setAttribute('autocomplete', 'off');
 
-    // تغییر کلیدی: اگر مقدار اولیه وجود نداشت، مقدار input را خالی می‌کنیم
     if (initialValue) {
         input.value = toPersianDate(initialValue);
     } else {
@@ -499,6 +507,11 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
             enabled: false
         }
     });
+
+    // برای اطمینان، اگر مقدار اولیه وجود نداشت، دوباره فیلد را خالی می‌کنیم
+    if (!initialValue) {
+        $(input).val('');
+    }
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
