@@ -1321,13 +1321,14 @@ settings: () => {
         return `<div class="text-center p-10 card"><i data-lucide="lock" class="mx-auto w-16 h-16 text-red-500"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">دسترسی غیر مجاز</h2><p class="mt-2 text-slate-500">شما برای مشاهده این صفحه دسترسی لازم را ندارید.</p></div>`;
     }
 
-    // آماده‌سازی لیست کاربران با طراحی جدید و کاملا ریسپانسیو
+    // -- بخش کاربران --
     const usersHtml = state.users.map(user => {
         const userInitial = user.name ? user.name.substring(0, 1) : user.email.substring(0, 1).toUpperCase();
         const isCurrentUser = user.firestoreId === state.currentUser.uid;
+        // هر کاربر یک "کارت کوچک" و ریسپانسیو خواهد بود
         return `
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between p-4 gap-4 border-b border-slate-100 last:border-b-0">
-                <div class="flex items-center w-full md:w-auto">
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex items-center w-full sm:w-auto min-w-0">
                     <div class="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm ml-4 shrink-0">
                         ${userInitial}
                     </div>
@@ -1336,54 +1337,63 @@ settings: () => {
                         <p class="text-xs text-slate-500 truncate">${user.email}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2 w-full md:w-auto shrink-0">
+                <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
                     <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-white text-sm flex-grow" ${isCurrentUser ? 'disabled' : ''}>
                         <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>مشاهده‌گر</option>
                         <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>ویرایشگر</option>
                         <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>مدیر</option>
                     </select>
                     ${!isCurrentUser ? `
-                    <button class="edit-user-btn p-2 text-slate-500 hover:text-blue-600 shrink-0" data-uid="${user.firestoreId}" title="ویرایش کاربر"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                    <button class="delete-user-btn p-2 text-slate-500 hover:text-red-600 shrink-0" data-uid="${user.firestoreId}" title="حذف کاربر"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    ` : '<div class="w-16 hidden md:block"></div>'}
+                    <button class="edit-user-btn p-2 text-slate-500 hover:text-blue-600" data-uid="${user.firestoreId}" title="ویرایش"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                    <button class="delete-user-btn p-2 text-slate-500 hover:text-red-600" data-uid="${user.firestoreId}" title="حذف"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    ` : '<div class="w-12"></div>'}
                 </div>
             </div>
         `;
     }).join('');
 
-    // آماده‌سازی لیست شایستگی‌ها با طراحی جدید
+    // -- بخش شایستگی‌ها --
     const competenciesHtml = state.competencies.map(c => `
         <div class="inline-flex items-center bg-slate-100 text-slate-700 text-sm font-medium px-3 py-1.5 rounded-full">
             <span>${c.name}</span>
-            <button class="delete-competency-btn text-slate-400 hover:text-red-500 mr-2" data-id="${c.firestoreId}">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
+            <button class="delete-competency-btn text-slate-400 hover:text-red-500 mr-2" data-id="${c.firestoreId}"><i data-lucide="x" class="w-4 h-4"></i></button>
         </div>
     `).join('') || '<p class="text-sm text-slate-500">هنوز شایستگی‌ای تعریف نشده است.</p>';
 
     return `
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-800">تنظیمات سیستم</h1>
-                <p class="text-sm text-slate-500 mt-1">مدیریت کاربران، دسترسی‌ها و پیکربندی‌های اصلی سازمان</p>
-            </div>
+        <div>
+            <h1 class="text-3xl font-bold text-slate-800">تنظیمات سیستم</h1>
+            <p class="text-sm text-slate-500 mt-1 mb-6">مدیریت کاربران، دسترسی‌ها و پیکربندی‌های اصلی سازمان</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            <div class="card p-0">
-                <div class="flex flex-col sm:flex-row justify-between items-center p-5 border-b border-slate-200 gap-3">
-                    <h3 class="font-semibold text-lg flex items-center"><i data-lucide="users" class="ml-2 text-indigo-500"></i>مدیریت کاربران</h3>
-                    <button id="add-user-btn" class="bg-blue-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center gap-2 w-full sm:w-auto">
-                        <i data-lucide="plus" class="w-4 h-4"></i> کاربر جدید
-                    </button>
-                </div>
-                <div id="users-list-container">
-                    ${usersHtml}
+        <div class="border-b border-slate-200 mb-6">
+            <nav id="settings-tabs" class="flex -mb-px space-x-6 space-x-reverse" aria-label="Tabs">
+                <button data-tab="users" class="settings-tab shrink-0 border-b-2 font-semibold px-1 py-3 text-sm border-blue-600 text-blue-600">
+                    مدیریت کاربران و دسترسی
+                </button>
+                <button data-tab="configs" class="settings-tab shrink-0 border-b-2 font-semibold px-1 py-3 text-sm border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300">
+                    پیکربندی سازمان
+                </button>
+            </nav>
+        </div>
+
+        <div id="settings-tab-content">
+            <div id="tab-users" class="settings-tab-pane">
+                <div class="card p-0">
+                    <div class="flex flex-col sm:flex-row justify-between items-center p-5 border-b border-slate-200 gap-3">
+                        <h3 class="font-semibold text-lg flex items-center"><i data-lucide="users" class="ml-2 text-indigo-500"></i>لیست کاربران سیستم</h3>
+                        <button id="add-user-btn" class="bg-blue-600 text-white text-sm py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center gap-2 w-full sm:w-auto">
+                            <i data-lucide="plus" class="w-4 h-4"></i> کاربر جدید
+                        </button>
+                    </div>
+                    <div id="users-list-container" class="p-5 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                        ${usersHtml}
+                    </div>
                 </div>
             </div>
 
-            <div class="card p-6 space-y-8">
-                <div>
+            <div id="tab-configs" class="settings-tab-pane hidden">
+                <div class="card p-6">
                     <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="star" class="ml-2 text-amber-500"></i>مدیریت شایستگی‌ها</h3>
                     <div id="competencies-list" class="flex flex-wrap gap-2 mb-4">
                         ${competenciesHtml}
@@ -2510,16 +2520,31 @@ const setupSettingsPageListeners = () => {
     const mainContentArea = document.getElementById('main-content');
     if (!mainContentArea) return;
 
-    // --- مدیریت رویدادهای کلیک در کل صفحه تنظیمات ---
+    // --- منطق جدید برای فعال‌سازی تب‌ها ---
+    const tabs = document.querySelectorAll('.settings-tab');
+    const panes = document.querySelectorAll('.settings-tab-pane');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => {
+                t.classList.remove('border-blue-600', 'text-blue-600');
+                t.classList.add('border-transparent', 'text-slate-500');
+            });
+            tab.classList.add('border-blue-600', 'text-blue-600');
+            tab.classList.remove('border-transparent', 'text-slate-500');
+            panes.forEach(pane => {
+                pane.classList.toggle('hidden', pane.id !== `tab-${tab.dataset.tab}`);
+            });
+        });
+    });
+
+    // --- مدیریت رویدادهای کلیک (مثل قبل) ---
     mainContentArea.addEventListener('click', (e) => {
         const addUserBtn = e.target.closest('#add-user-btn');
         const editUserBtn = e.target.closest('.edit-user-btn');
         const deleteUserBtn = e.target.closest('.delete-user-btn');
         const deleteCompetencyBtn = e.target.closest('.delete-competency-btn');
         
-        if (addUserBtn) {
-            showAddUserForm();
-        }
+        if (addUserBtn) showAddUserForm();
 
         if (editUserBtn) {
             const user = state.users.find(u => u.firestoreId === editUserBtn.dataset.uid);
@@ -2528,10 +2553,7 @@ const setupSettingsPageListeners = () => {
 
         if (deleteUserBtn) {
             const userToDelete = state.users.find(u => u.firestoreId === deleteUserBtn.dataset.uid);
-            showConfirmationModal('حذف کاربر', `آیا از حذف کاربر "${userToDelete.name || userToDelete.email}" مطمئن هستید؟ این عمل غیرقابل بازگشت است.`, async () => {
-                showToast("در حال حذف کاربر... این عمل در Firebase نیازمند احراز هویت مجدد است و در این نسخه ساده‌سازی شده است.", "error");
-                // نکته: حذف کاربران در فایربیس به دلایل امنیتی پیچیده است و معمولاً از طریق Cloud Functions انجام می‌شود.
-                // در این نسخه، ما فقط داکیومنت کاربر را از Firestore پاک می‌کنیم، اما خود کاربر از Authentication پاک نمی‌شود.
+            showConfirmationModal('حذف کاربر', `آیا از حذف کاربر "${userToDelete.name || userToDelete.email}" مطمئن هستید؟`, async () => {
                 try {
                     await deleteDoc(doc(db, `artifacts/${appId}/public/data/users`, userToDelete.firestoreId));
                     showToast("اطلاعات کاربر از سیستم حذف شد.");
@@ -2544,7 +2566,7 @@ const setupSettingsPageListeners = () => {
 
         if (deleteCompetencyBtn) {
             const competencyId = deleteCompetencyBtn.dataset.id;
-            showConfirmationModal('حذف شایستگی', 'آیا از حذف این شایستگی مطمئن هستید؟ این عمل بر پروفایل کارمندان تاثیر خواهد گذاشت.', async () => {
+            showConfirmationModal('حذف شایستگی', 'آیا از حذف این شایستگی مطمئن هستید؟', async () => {
                 try {
                     await deleteDoc(doc(db, `artifacts/${appId}/public/data/competencies`, competencyId));
                     showToast("شایستگی با موفقیت حذف شد.");
@@ -2556,37 +2578,31 @@ const setupSettingsPageListeners = () => {
         }
     });
 
-    // --- مدیریت فرم‌ها ---
+    // --- مدیریت فرم‌ها و تغییر نقش (مثل قبل) ---
     const addCompetencyForm = document.getElementById('add-competency-form');
     if (addCompetencyForm) {
         addCompetencyForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('new-competency-name');
-            const competencyName = nameInput.value.trim();
-            if (competencyName) {
+            if (nameInput.value.trim()) {
                 try {
-                    await addDoc(collection(db, `artifacts/${appId}/public/data/competencies`), { name: competencyName });
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/competencies`), { name: nameInput.value.trim() });
                     showToast("شایستگی جدید اضافه شد.");
                     nameInput.value = '';
                 } catch (error) {
-                    console.error("Error adding competency:", error);
                     showToast("خطا در افزودن شایستگی.", "error");
                 }
             }
         });
     }
     
-    // --- مدیریت تغییر نقش کاربر ---
     document.querySelectorAll('.role-select').forEach(select => {
         select.addEventListener('change', async (e) => {
-            const uid = e.target.dataset.uid;
-            const newRole = e.target.value;
             try {
-                const userRef = doc(db, `artifacts/${appId}/public/data/users`, uid);
-                await updateDoc(userRef, { role: newRole });
+                const userRef = doc(db, `artifacts/${appId}/public/data/users`, e.target.dataset.uid);
+                await updateDoc(userRef, { role: e.target.value });
                 showToast("نقش کاربر با موفقیت تغییر کرد.");
             } catch (error) {
-                console.error("Error updating role:", error);
                 showToast("خطا در تغییر نقش کاربر.", "error");
             }
         });
