@@ -465,43 +465,36 @@ const persianToEnglishDate = (persianDateStr) => {
 
 // --- تابع جدید برای فعال‌سازی تقویم شمسی روی یک فیلد ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
-    console.log(`[مرحله ۲] activatePersianDatePicker برای #${elementId} فراخوانی شد.`);
-    console.log(`[مرحله ۲] مقدار اولیه ورودی:`, initialValue);
-
     const input = document.getElementById(elementId);
     if (!input) return;
 
+    // ۱. نمونه قبلی تقویم را به طور کامل از بین می‌بریم
     try {
         $(input).pDatepicker('destroy');
-    } catch (e) {
-        // مشکلی نیست
-    }
+    } catch (e) { /* مشکلی نیست */ }
     
     input.setAttribute('type', 'text');
     input.setAttribute('placeholder', 'مثال: ۱۴۰۳/۰۵/۲۸');
     input.setAttribute('autocomplete', 'off');
+    input.value = ''; // فیلد را کاملاً خالی می‌کنیم
 
-    if (initialValue) {
-        input.value = toPersianDate(initialValue);
-    } else {
-        input.value = '';
-    }
-    console.log(`[مرحله ۲] مقدار input.value قبل از ساخت تقویم: "${input.value}"`);
-
+    // ۲. تقویم را بدون هیچ مقدار اولیه‌ای می‌سازیم
     $(input).pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
-        initialValue: !!initialValue,
         observer: true,
         calendar: { persian: { locale: 'fa' } },
         navigator: { enabled: true, scroll: { enabled: false } },
         timePicker: { enabled: false }
     });
 
-    if (!initialValue) {
-        $(input).val('');
+    // ۳. فقط و فقط اگر تاریخ اولیه‌ای وجود داشت، آن را با استفاده از متد خود کتابخانه تنظیم می‌کنیم
+    if (initialValue) {
+        // تاریخ میلادی را به فرمت timestamp (میلی‌ثانیه) تبدیل می‌کنیم
+        const initialTimestamp = new Date(initialValue).getTime();
+        // از متد setDate خود کتابخانه برای تنظیم دقیق تاریخ استفاده می‌کنیم
+        $(input).pDatepicker('setDate', initialTimestamp);
     }
-    console.log(`[مرحله ۲] مقدار input.value بعد از ساخت تقویم: "${$(input).val()}"`);
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
