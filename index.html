@@ -869,70 +869,47 @@ dashboard: () => {
             </div>
         `).join('')
         : '<div class="text-center py-8"><i data-lucide="shield-check" class="mx-auto w-10 h-10 text-green-500"></i><p class="text-sm text-slate-500 mt-2">موردی با ریسک بالا یافت نشد.</p></div>';
-
+    
     return `
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-slate-800">داشبورد</h1>
-                <p class="text-sm text-slate-500 mt-1">خوش آمدید! خلاصه‌ای از وضعیت سازمان شما.</p>
+                <p class="text-sm text-slate-500 mt-1">نمای کلی سازمان شما در یک نگاه.</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-blue-100 p-3 rounded-xl mr-4"><i data-lucide="users" class="text-blue-600"></i></div><div><p class="text-slate-500 text-sm">پرسنل فعال</p><p class="text-2xl font-bold text-slate-800">${metrics.totalEmployees}</p></div></div></div>
+            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-green-100 p-3 rounded-xl mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div><div><p class="text-slate-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-slate-800">${metrics.retentionRate}%</p></div></div></div>
+            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-violet-100 p-3 rounded-xl mr-4"><i data-lucide="heart-pulse" class="text-violet-600"></i></div><div><p class="text-slate-500 text-sm">امتیاز مشارکت</p><p class="text-2xl font-bold text-slate-800">${metrics.engagementScore || 0}%</p></div></div></div>
+            <div class="metric-card p-5"><div class="flex items-center"><div class="bg-red-100 p-3 rounded-xl mr-4"><i data-lucide="shield-alert" class="text-red-600"></i></div><div><p class="text-slate-500 text-sm">استعدادهای پرخطر</p><p class="text-2xl font-bold text-slate-800">${highRiskEmployees.length} نفر</p></div></div></div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             
-            <div class="lg:col-span-1 space-y-8">
-                <div class="card p-6 text-center">
-                    <h3 class="font-semibold text-lg mb-2">امتیاز مشارکت</h3>
-                    <p class="text-5xl font-bold" style="color: var(--color-primary);">${metrics.engagementScore || 0}<span class="text-3xl">%</span></p>
-                    <p class="text-xs text-slate-500 mt-2">میانگین مشارکت کل کارکنان</p>
-                </div>
-
-                <div class="card p-6">
-                    <h3 class="font-semibold text-lg mb-4 flex items-center">استعدادهای پرخطر</h3>
-                    <div class="mt-2 space-y-2">${highRiskHtml}</div>
-                </div>
-
-                <div class="card p-6">
-                    <h3 class="font-semibold text-lg mb-4 flex items-center">یادآور هوشمند</h3>
-                    <div id="remindersList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">${renderAllReminders()}</div>
-                     ${canEdit() ? `<div class="border-t pt-4 mt-auto">
-                        <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
-                        <form id="add-reminder-form" class="space-y-3">
-                            <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="w-full p-2 border rounded-md text-sm">
-                            <div class="flex gap-2">
-                                <input type="text" id="reminderDate" class="w-full p-2 border rounded-md text-sm" placeholder="تاریخ">
-                                <input type="number" id="reminderDaysBefore" title="از چند روز قبل نمایش داده شود؟" value="7" class="w-24 p-2 border rounded-md text-sm">
-                            </div>
-                            <button type="submit" id="addReminderBtn" class="w-full bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 transition text-sm">افزودن</button>
-                        </form>
-                    </div>` : ''}
-                </div>
+            <div class="card p-6 min-h-[420px] flex flex-col">
+                <h3 class="font-semibold text-lg mb-4 flex items-center">استعدادهای پرخطر</h3>
+                <div class="flex-grow">${highRiskHtml}</div>
             </div>
 
-            <div class="lg:col-span-2 space-y-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    <div class="metric-card p-5"><div class="flex items-center"><div class="bg-blue-100 p-3 rounded-xl mr-4"><i data-lucide="users" class="text-blue-600"></i></div><div><p class="text-slate-500 text-sm">پرسنل فعال</p><p class="text-2xl font-bold text-slate-800">${metrics.totalEmployees}</p></div></div></div>
-                    <div class="metric-card p-5"><div class="flex items-center"><div class="bg-green-100 p-3 rounded-xl mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div><div><p class="text-slate-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-slate-800">${metrics.retentionRate}%</p></div></div></div>
-                </div>
-
-                <div class="card p-6">
-                    <h3 class="font-semibold text-lg mb-4">تحلیل نیروی کار</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
-                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع دپارتمان‌ها</p><div class="relative h-52"><canvas id="departmentDistributionChart"></canvas></div></div>
-                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">ترکیب جنسیتی</p><div class="relative h-52"><canvas id="genderCompositionChart"></canvas></div></div>
-                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع سنی</p><div class="relative h-52"><canvas id="ageDistributionChart"></canvas></div></div>
-                        <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">سابقه کار</p><div class="relative h-52"><canvas id="tenureDistributionChart"></canvas></div></div>
-                    </div>
-                </div>
-                
-                 <div class="card p-6">
-                    <h3 class="font-semibold text-lg mb-4">تحلیل استعدادها و شایستگی‌ها</h3>
-                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
-                         <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">توزیع استعدادها (9-Box)</p><div class="relative h-52"><canvas id="nineBoxChart"></canvas></div></div>
-                         <div class="flex flex-col"><p class="text-slate-600 text-sm font-medium text-center mb-2">میانگین شایستگی تیم‌ها</p><div class="relative h-52"><canvas id="teamCompetencyRadarChart"></canvas></div></div>
-                     </div>
-                </div>
+            <div class="card p-6 min-h-[420px] flex flex-col">
+                <h3 class="font-semibold text-lg mb-4 flex items-center">یادآور هوشمند</h3>
+                <div id="remindersList" class="flex-grow space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">${renderAllReminders()}</div>
+                 ${canEdit() ? `<div class="border-t pt-4 mt-auto">
+                    <form id="add-reminder-form" class="space-y-3">
+                        <input type="text" id="reminderText" placeholder="افزودن یادآور دستی..." class="w-full p-2 border rounded-md text-sm">
+                        <input type="text" id="reminderDate" class="w-full p-2 border rounded-md text-sm" placeholder="انتخاب تاریخ">
+                        <button type="submit" id="addReminderBtn" class="w-full bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 transition text-sm">افزودن</button>
+                    </form>
+                </div>` : ''}
             </div>
+            
+            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">توزیع دپارتمان‌ها</h3><div class="relative flex-grow"><canvas id="departmentDistributionChart"></canvas></div></div>
+            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">ترکیب جنسیتی</h3><div class="relative flex-grow"><canvas id="genderCompositionChart"></canvas></div></div>
+            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">توزیع سنی</h3><div class="relative flex-grow"><canvas id="ageDistributionChart"></canvas></div></div>
+            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">سابقه کار</h3><div class="relative flex-grow"><canvas id="tenureDistributionChart"></canvas></div></div>
+            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">توزیع استعدادها</h3><div class="relative flex-grow"><canvas id="nineBoxChart"></canvas></div></div>
+            <div class="card p-6 min-h-[420px] flex flex-col"><h3 class="font-semibold text-lg mb-2 text-center">شایستگی تیم‌ها</h3><div class="relative flex-grow"><canvas id="teamCompetencyRadarChart"></canvas></div></div>
         </div>
     `;
 },
@@ -1788,65 +1765,32 @@ const renderDashboardCharts = () => {
     const metrics = state.dashboardMetrics;
     if (Object.keys(metrics).length === 0) return;
 
-    // --- نمودار جدید و زیبای امتیاز مشارکت ---
-    const engagementFocusCtx = document.getElementById('engagementFocusChart')?.getContext('2d');
-    if (engagementFocusCtx) {
-        const score = metrics.engagementScore || 0;
-        const engagementText = document.getElementById('engagement-focus-text');
-        if (engagementText) {
-            if (score >= 85) engagementText.innerText = "فوق‌العاده! کارکنان شما بسیار مشارکت دارند.";
-            else if (score >= 70) engagementText.innerText = "وضعیت خوب است، جای پیشرفت وجود دارد.";
-            else if (score >= 50) engagementText.innerText = "نیاز به توجه و بهبود فرآیندها.";
-            else engagementText.innerText = "هشدار! نیاز به اقدام فوری.";
-        }
-        
-        charts.engagementFocus = new Chart(engagementFocusCtx, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [score, 100 - score],
-                    backgroundColor: ['#ffffff', 'rgba(255, 255, 255, 0.2)'],
-                    borderWidth: 0,
-                    borderRadius: 20,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '80%',
-                plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                animation: { animateRotate: true, animateScale: false }
-            }
-        });
-    }
-
-    // --- 4 نمودار تحلیل نیروی کار ---
+    // --- رندر کردن 6 نمودار اصلی در کارت‌های مجزا ---
     const genderCtx = document.getElementById('genderCompositionChart')?.getContext('2d');
     if (genderCtx && metrics.genderComposition) {
-        charts.gender = new Chart(genderCtx, { type: 'pie', data: { labels: Object.keys(metrics.genderComposition), datasets: [{ data: Object.values(metrics.genderComposition), backgroundColor: ['#3b82f6', '#f43f5e', '#94a3b8'], hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels:{font:{size: 10}} } } } });
+        charts.gender = new Chart(genderCtx, { type: 'pie', data: { labels: Object.keys(metrics.genderComposition), datasets: [{ data: Object.values(metrics.genderComposition), backgroundColor: ['#5E5DF0', '#8B5CF6', '#94A3B8'], hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
     }
 
     const departmentCtx = document.getElementById('departmentDistributionChart')?.getContext('2d');
     if (departmentCtx) {
-        charts.department = new Chart(departmentCtx, { type: 'bar', data: { labels: Object.keys(metrics.departmentDistribution), datasets: [{ label: 'تعداد', data: Object.values(metrics.departmentDistribution), backgroundColor: '#10b981', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
+        charts.department = new Chart(departmentCtx, { type: 'bar', data: { labels: Object.keys(metrics.departmentDistribution), datasets: [{ data: Object.values(metrics.departmentDistribution), backgroundColor: '#22D3EE', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
     }
     
     const tenureCtx = document.getElementById('tenureDistributionChart')?.getContext('2d');
-    const tenureData = state.employees.reduce((acc, emp) => { if (!emp.startDate) return acc; const years = (new Date() - new Date(emp.startDate)) / (1000 * 60 * 60 * 24 * 365); if (years < 2) acc['کمتر از ۲ سال'] = (acc['کمتر از ۲ سال'] || 0) + 1; else if (years < 5) acc['۲ تا ۵ سال'] = (acc['۲ تا ۵ سال'] || 0) + 1; else acc['بیش از ۵ سال'] = (acc['بیش از ۵ سال'] || 0) + 1; return acc; }, {});
+    const tenureData = state.employees.reduce((acc, emp) => { if (!emp.startDate) return acc; const years = (new Date() - new Date(emp.startDate)) / (365 * 24 * 60 * 60 * 1000); if (years < 2) acc['کمتر از ۲ سال'] = (acc['کمتر از ۲ سال'] || 0) + 1; else if (years < 5) acc['۲ تا ۵ سال'] = (acc['۲ تا ۵ سال'] || 0) + 1; else acc['بیش از ۵ سال'] = (acc['بیش از ۵ سال'] || 0) + 1; return acc; }, {});
     if (tenureCtx) {
-        charts.tenure = new Chart(tenureCtx, { type: 'pie', data: { labels: Object.keys(tenureData), datasets: [{ data: Object.values(tenureData), backgroundColor: ['#facc15', '#f97316', '#ef4444'], hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels:{font:{size: 10}} } } } });
+        charts.tenure = new Chart(tenureCtx, { type: 'doughnut', data: { labels: Object.keys(tenureData), datasets: [{ data: Object.values(tenureData), backgroundColor: ['#FACC15', '#F97316', '#EF4444'], hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
     }
 
     const ageCtx = document.getElementById('ageDistributionChart')?.getContext('2d');
-    const ageData = state.employees.reduce((acc, emp) => { if (!emp.personalInfo?.birthDate) return acc; const age = new Date().getFullYear() - new Date(emp.personalInfo.birthDate).getFullYear(); if (age < 30) acc['زیر ۳۰ سال'] = (acc['زیر ۳۰ سال'] || 0) + 1; else if (age <= 45) acc['۳۱-۴۵ سال'] = (acc['۳۱-۴۵ سال'] || 0) + 1; else acc['بالای ۴۵ سال'] = (acc['بالای ۴۵ سال'] || 0) + 1; return acc; }, {});
+    const ageData = state.employees.reduce((acc, emp) => { if (!emp.personalInfo?.birthDate) return acc; const age = new Date().getFullYear() - new Date(emp.personalInfo.birthDate).getFullYear(); if (age < 30) acc['زیر ۳۰'] = (acc['زیر ۳۰'] || 0) + 1; else if (age <= 45) acc['۳۰-۴۵'] = (acc['۳۰-۴۵'] || 0) + 1; else acc['بالای ۴۵'] = (acc['بالای ۴۵'] || 0) + 1; return acc; }, {});
     if (ageCtx) {
-        charts.age = new Chart(ageCtx, { type: 'bar', data: { labels: Object.keys(ageData), datasets: [{ label: 'تعداد', data: Object.values(ageData), backgroundColor: '#e879f9', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } } });
+        charts.age = new Chart(ageCtx, { type: 'bar', data: { labels: Object.keys(ageData), datasets: [{ data: Object.values(ageData), backgroundColor: '#E879F9', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
     }
 
-    // --- بازگرداندن 2 نمودار حذف شده ---
     const nineBoxCtx = document.getElementById('nineBoxChart')?.getContext('2d');
     if (nineBoxCtx && metrics.nineBoxDistribution) {
-        charts.nineBox = new Chart(nineBoxCtx, { type: 'bar', data: { labels: Object.keys(metrics.nineBoxDistribution), datasets: [{ label: 'تعداد', data: Object.values(metrics.nineBoxDistribution), backgroundColor: '#6366f1', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { font: { size: 9 } } } } } });
+        charts.nineBox = new Chart(nineBoxCtx, { type: 'bar', data: { labels: Object.keys(metrics.nineBoxDistribution), datasets: [{ data: Object.values(metrics.nineBoxDistribution), backgroundColor: '#6366F1', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { font: { size: 9 } } } } } });
     }
 
     const teamCompetencyCtx = document.getElementById('teamCompetencyRadarChart')?.getContext('2d');
@@ -1854,7 +1798,7 @@ const renderDashboardCharts = () => {
     state.teams.forEach(team => { team.memberIds?.forEach(memberId => { const member = state.employees.find(e => e.id === memberId); if (member && member.competencies) { Object.entries(member.competencies).forEach(([name, score]) => { if (!competencyScores[name]) { competencyScores[name] = { total: 0, count: 0 }; } competencyScores[name].total += score; competencyScores[name].count++; }); } }); });
     const avgCompetencies = Object.entries(competencyScores).reduce((acc, [name, data]) => { acc[name] = data.count > 0 ? (data.total / data.count).toFixed(1) : 0; return acc; }, {});
     if (teamCompetencyCtx && Object.keys(avgCompetencies).length > 0) {
-        charts.teamCompetency = new Chart(teamCompetencyCtx, { type: 'radar', data: { labels: Object.keys(avgCompetencies), datasets: [{ label: 'میانگین امتیاز', data: Object.values(avgCompetencies), fill: true, backgroundColor: 'rgba(22, 163, 74, 0.2)', borderColor: '#16a34a', pointBackgroundColor: '#16a34a' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { suggestedMin: 0, suggestedMax: 5, ticks: { stepSize: 1, display: false } } }, plugins: { legend: { display: false } } } });
+        charts.teamCompetency = new Chart(teamCompetencyCtx, { type: 'radar', data: { labels: Object.keys(avgCompetencies), datasets: [{ data: Object.values(avgCompetencies), fill: true, backgroundColor: 'rgba(22, 163, 74, 0.2)', borderColor: '#16A34A', pointBackgroundColor: '#16A34A' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { suggestedMin: 0, suggestedMax: 5 } } } });
     }
 };
 
