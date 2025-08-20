@@ -1236,103 +1236,69 @@ expenses: () => {
     `;
 },
 analytics: () => {
-    // --- محاسبات برای کارت‌های بالای صفحه ---
-    const metrics = state.dashboardMetrics;
-    const highRiskCount = state.employees.filter(e => e.attritionRisk?.score > 70).length;
-    const totalActiveEmployees = state.employees.filter(e => e.status === 'فعال').length || 1;
-    const highRiskPercentage = ((highRiskCount / totalActiveEmployees) * 100).toFixed(0);
-    const starPerformersCount = Object.values(metrics.nineBoxDistribution || {}).filter((key, index) => Object.keys(metrics.nineBoxDistribution)[index].includes('ستاره')).reduce((a, b) => a + b, 0);
-
-    const totalTeamHealth = state.teams.reduce((sum, team) => {
-        const scores = Object.values(team.healthMetrics || {});
-        if (scores.length === 0) return sum;
-        const avgHealth = scores.reduce((a, b) => a + b, 0) / scores.length;
-        return sum + avgHealth;
-    }, 0);
-    const averageTeamHealth = state.teams.length > 0 ? (totalTeamHealth / state.teams.length).toFixed(0) : 0;
-
-    const engagementBreakdownHtml = state.orgAnalytics?.engagementBreakdown
-        ?.sort((a, b) => b.score - a.score)
-        .map(cat => `
-            <div>
-                <div class="flex justify-between items-center mb-1 text-sm">
-                    <span class="text-slate-600">${cat.name}</span>
-                    <span class="font-semibold text-blue-600">${cat.score}%</span>
-                </div>
-                <div class="progress-bar w-full">
-                    <div class="progress-bar-fill" style="width: ${cat.score}%;"></div>
-                </div>
-            </div>
-        `).join('') || '<p class="text-sm text-slate-500">هنوز داده‌ای برای تحلیل مشارکت وجود ندارد.</p>';
-
     return `
-        <h1 class="text-3xl font-bold text-slate-800 mb-2">تحلیل هوشمند استعدادها</h1>
-        <p class="text-slate-500 mb-8">نگاهی عمیق به داده‌های سرمایه‌های انسانی سازمان</p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="metric-card p-5">
-                <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="heart-pulse" class="text-green-600"></i></div>
-                <div><p class="text-slate-500 text-sm">میانگین مشارکت</p><p class="text-2xl font-bold text-slate-800">${metrics.engagementScore || 0}%</p></div>
-            </div>
-            <div class="metric-card p-5">
-                <div class="bg-red-100 p-3 rounded-full mr-4"><i data-lucide="shield-alert" class="text-red-600"></i></div>
-                <div><p class="text-slate-500 text-sm">ریسک خروج بالا</p><p class="text-2xl font-bold text-slate-800">${highRiskPercentage}%</p></div>
-            </div>
-            <div class="metric-card p-5">
-                <div class="bg-sky-100 p-3 rounded-full mr-4"><i data-lucide="star" class="text-sky-600"></i></div>
-                <div><p class="text-slate-500 text-sm">استعدادهای برتر</p><p class="text-2xl font-bold text-slate-800">${starPerformersCount}</p></div>
-            </div>
-            <div class="metric-card p-5">
-                <div class="bg-amber-100 p-3 rounded-full mr-4"><i data-lucide="activity" class="text-amber-600"></i></div>
-                <div><p class="text-slate-500 text-sm">میانگین سلامت تیم‌ها</p><p class="text-2xl font-bold text-slate-800">${averageTeamHealth}%</p></div>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">تحلیل هوشمند</h1>
+                <p class="text-sm text-slate-500 mt-1">مرکز فرماندهی داده‌های استعدادهای سازمان</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <div class="lg:col-span-2 space-y-8">
-                
-                <div class="card p-6">
-                    <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="layout-grid" class="ml-2 text-indigo-500"></i>ماتریس استعداد ۹-جعبه‌ای</h3>
-                    <div class="flex">
-                        <div class="flex flex-col justify-between text-xs text-slate-500 font-medium py-4 -ml-4" style="writing-mode: vertical-rl; transform: rotate(180deg);">
-                            <span>پتانسیل کم</span>
-                            <span>پتانسیل متوسط</span>
-                            <span>پتانسیل بالا</span>
+        <div class="mb-6 border-b border-slate-200">
+            <nav id="analytics-tabs" class="flex -mb-px space-x-6 space-x-reverse" aria-label="Tabs">
+                <button data-tab="overview" class="analytics-tab shrink-0 border-b-2 font-semibold px-1 py-3 text-sm border-blue-600 text-blue-600">
+                    نمای کلی استعدادها
+                </button>
+                <button data-tab="health" class="analytics-tab shrink-0 border-b-2 font-semibold px-1 py-3 text-sm border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300">
+                    سلامت سازمان
+                </button>
+                <button data-tab="tools" class="analytics-tab shrink-0 border-b-2 font-semibold px-1 py-3 text-sm border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300">
+                    ابزارهای تحلیلی
+                </button>
+            </nav>
+        </div>
+
+        <div id="analytics-tab-content">
+            <div id="tab-overview" class="analytics-tab-pane space-y-8">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <div class="xl:col-span-2 card p-6">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="layout-grid" class="ml-2 text-indigo-500"></i>ماتریس استعداد ۹-جعبه‌ای</h3>
+                        <div class="flex">
+                             <div class="flex flex-col justify-between text-xs text-slate-500 font-medium py-4 -ml-4" style="writing-mode: vertical-rl; transform: rotate(180deg);">
+                                <span>پتانسیل کم</span>
+                                <span>متوسط</span>
+                                <span>پتانسیل بالا</span>
+                            </div>
+                            <div id="nine-box-grid-container" class="w-full"></div>
                         </div>
-                        <div class="w-full">
-                            <div id="nine-box-grid-container" class="grid grid-cols-3 gap-1 border-t-2 border-l-2 border-slate-200 bg-slate-50"></div>
-                             <div class="flex justify-between text-xs text-slate-500 font-medium px-4 mt-2">
+                        <div class="flex justify-between text-xs text-slate-500 font-medium px-4 mt-2">
                                 <span>عملکرد پایین</span>
                                 <span>عملکرد متوسط</span>
                                 <span>عملکرد بالا</span>
-                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="card p-6">
-                    <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="pie-chart" class="ml-2 text-blue-500"></i>تحلیل مشارکت سازمانی</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                        ${engagementBreakdownHtml}
+                    <div class="card p-6">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="flame" class="ml-2 text-red-500"></i>نقاط داغ ریسک خروج</h3>
+                        <div id="attrition-hotspot-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2"></div>
                     </div>
                 </div>
-
             </div>
 
-            <div class="lg:col-span-1 space-y-8">
+            <div id="tab-health" class="analytics-tab-pane hidden space-y-8">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card p-6">
+                         <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="pie-chart" class="ml-2 text-blue-500"></i>تحلیل مشارکت سازمانی</h3>
+                         <div class="relative h-80"><canvas id="engagementBreakdownChart"></canvas></div>
+                    </div>
+                    <div class="card p-6">
+                         <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="activity" class="ml-2 text-green-500"></i>نمره سلامت تیم‌ها</h3>
+                         <div class="relative h-80"><canvas id="teamHealthChart"></canvas></div>
+                    </div>
+                 </div>
+            </div>
 
-                <div class="card p-6">
-                    <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="flame" class="ml-2 text-red-500"></i>نقاط داغ ریسک خروج</h3>
-                    <div id="attrition-hotspot-list" class="space-y-4 max-h-80 overflow-y-auto pr-2"></div>
-                </div>
-                
-                <div class="card p-6">
-                     <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="activity" class="ml-2 text-green-500"></i>وضعیت سلامت تیم‌ها</h3>
-                    <div id="team-health-dashboard" class="space-y-4"></div>
-                </div>
-
-                <div class="card p-6">
+            <div id="tab-tools" class="analytics-tab-pane hidden space-y-8">
+                <div class="card p-6 max-w-2xl mx-auto">
                     <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="file-search" class="ml-2 text-teal-500"></i>تحلیل شکاف مهارتی</h3>
                     <div class="flex flex-col gap-3">
                         <select id="skill-team-select" class="w-full p-2 border border-slate-300 rounded-lg bg-white">
@@ -2512,72 +2478,180 @@ const setupOrganizationPageListeners = () => {
                 }
             });
         };
-        const setupAnalyticsPage = () => {
-            const renderAttritionHotspots = () => {
-                const container = document.getElementById('attrition-hotspot-list');
-                if (!container) return;
-                const highRiskEmployees = state.employees.filter(emp => emp.attritionRisk && emp.attritionRisk.score > 50).sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
-                if (highRiskEmployees.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">هیچ کارمندی با ریسک خروج بالا شناسایی نشد.</p>'; return; }
-                container.innerHTML = highRiskEmployees.map(emp => `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${emp.name}</span><span class="font-semibold text-red-600">${emp.attritionRisk.score}%</span></div><div class="progress-bar w-full bg-red-100"><div class="progress-bar-fill bg-red-500" style="width: ${emp.attritionRisk.score}%;"></div></div></div>`).join('');
-            };
+const setupAnalyticsPage = () => {
+    // --- منطق تب‌ها ---
+    const tabs = document.querySelectorAll('.analytics-tab');
+    const panes = document.querySelectorAll('.analytics-tab-pane');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => {
+                t.classList.remove('border-blue-600', 'text-blue-600');
+                t.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+            });
+            tab.classList.add('border-blue-600', 'text-blue-600');
+            tab.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
 
-            const renderTeamHealth = () => {
-                const container = document.getElementById('team-health-dashboard');
-                if (!container) return;
-                if (state.teams.length === 0) { container.innerHTML = '<p class="text-sm text-gray-500">تیمی برای نمایش وجود ندارد.</p>'; return; }
-                container.innerHTML = state.teams.map(team => {
-                    const metrics = team.healthMetrics || {};
-                    const scores = Object.values(metrics);
-                    const avgHealth = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
-                    return `<div><div class="flex justify-between items-center mb-1 text-sm"><span class="font-medium text-gray-700">${team.name}</span><span class="font-semibold text-green-600">${Math.round(avgHealth)}%</span></div><div class="progress-bar w-full bg-green-100"><div class="progress-bar-fill bg-green-500" style="width: ${avgHealth}%;"></div></div></div>`;
-                }).join('');
-            };
+            panes.forEach(pane => {
+                pane.classList.toggle('hidden', pane.id !== `tab-${tab.dataset.tab}`);
+            });
+            // برای اطمینان از رندر شدن صحیح نمودارها هنگام نمایش تب
+            window.dispatchEvent(new Event('resize'));
+        });
+    });
 
-            const renderNineBoxGrid = () => {
-                const container = document.getElementById('nine-box-grid-container');
-                if (!container) return;
-                const gridMap = { 'معما': { row: 1, col: 1 }, 'عملکرد قابل اتکا': { row: 2, col: 1 }, 'مهره کلیدی': { row: 3, col: 1 }, 'پتانسیل بالا': { row: 2, col: 3 }, 'ستاره': { row: 3, col: 3 } };
-                const grid = Array(3).fill(null).map(() => Array(3).fill(null).map(() => []));
-                state.employees.forEach(emp => { const pos = gridMap[emp.nineBox]; if (pos) { grid[pos.row - 1][pos.col - 1].push(emp); } });
-                let html = '';
-                for (let i = 2; i >= 0; i--) { for (let j = 0; j < 3; j++) { const employeesInCell = grid[i][j]; html += `<div class="border-b-2 border-r-2 border-gray-200 min-h-[80px] p-1 flex flex-wrap items-start justify-center gap-1">${employeesInCell.map(emp => `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0 bg-gray-200"><img src="${emp.avatar}" alt="${emp.name}" title="${emp.name}" class="w-full h-full object-cover"></div>`).join('')}</div>`; } }
-                container.innerHTML = html;
-            };
+    // --- توابع رندر داده‌ها ---
+    const renderAttritionHotspots = () => {
+        const container = document.getElementById('attrition-hotspot-list');
+        if (!container) return;
+        const highRiskEmployees = state.employees.filter(emp => emp.attritionRisk && emp.attritionRisk.score > 60).sort((a, b) => b.attritionRisk.score - a.attritionRisk.score).slice(0, 10);
+        if (highRiskEmployees.length === 0) {
+            container.innerHTML = '<p class="text-sm text-slate-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
+            return;
+        }
+        container.innerHTML = highRiskEmployees.map(emp => `
+            <div class="flex items-center">
+                <img src="${emp.avatar}" class="w-9 h-9 rounded-full object-cover ml-3">
+                <div class="flex-grow">
+                    <p class="font-semibold text-sm text-slate-800">${emp.name}</p>
+                    <p class="text-xs text-slate-500">${emp.jobTitle || ''}</p>
+                </div>
+                <span class="font-bold text-sm text-red-500">${emp.attritionRisk.score}%</span>
+            </div>
+        `).join('');
+    };
 
-            const setupSkillGapFinder = () => {
-                const findBtn = document.getElementById('find-skill-gap-btn');
-                const teamSelect = document.getElementById('skill-team-select');
-                const skillInput = document.getElementById('skill-search-input');
-                const resultsContainer = document.getElementById('skill-gap-results');
-                if (!findBtn) return;
-                findBtn.addEventListener('click', () => {
-                    const teamId = teamSelect.value;
-                    const skillName = skillInput.value.trim().toLowerCase();
-                    if (!skillName) { resultsContainer.innerHTML = '<p class="text-sm text-red-500">لطفا نام یک مهارت را وارد کنید.</p>'; return; }
-                    let targetEmployees = state.employees;
-                    if (teamId !== 'all') { const team = state.teams.find(t => t.firestoreId === teamId); if (team) { targetEmployees = state.employees.filter(emp => team.memberIds.includes(emp.id)); } }
-                    const skillAnalysis = { expert: [], intermediate: [], beginner: [], none: [] };
-                    targetEmployees.forEach(emp => {
-                        const skills = emp.skills || {};
-                        const skillKeys = Object.keys(skills).map(k => k.toLowerCase());
-                        const skillIndex = skillKeys.findIndex(k => k.includes(skillName));
-                        if (skillIndex > -1) {
-                            const originalKey = Object.keys(skills)[skillIndex];
-                            const level = skills[originalKey];
-                            if (level >= 4) skillAnalysis.expert.push(emp);
-                            else if (level >= 2) skillAnalysis.intermediate.push(emp);
-                            else skillAnalysis.beginner.push(emp);
-                        } else { skillAnalysis.none.push(emp); }
-                    });
-                    resultsContainer.innerHTML = `<h4 class="font-bold mb-2">نتایج برای مهارت: <span class="text-blue-600">${skillInput.value}</span></h4><div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"><div><p class="font-semibold text-lg">${skillAnalysis.expert.length}</p><p class="text-xs text-gray-500">متخصص (4-5)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.intermediate.length}</p><p class="text-xs text-gray-500">متوسط (2-3)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.beginner.length}</p><p class="text-xs text-gray-500">مبتدی (1)</p></div><div><p class="font-semibold text-lg">${skillAnalysis.none.length}</p><p class="text-xs text-gray-500">فاقد مهارت</p></div></div><p class="text-xs text-gray-600 mt-4"><strong>متخصصین:</strong> ${skillAnalysis.expert.map(e => e.name).join(', ') || 'هیچ'}</p>`;
-                });
-            };
+    const renderNineBoxGrid = () => {
+        const container = document.getElementById('nine-box-grid-container');
+        if (!container) return;
 
-            renderAttritionHotspots();
-            renderTeamHealth();
-            renderNineBoxGrid();
-            setupSkillGapFinder();
-        };
+        const nineBoxData = [
+            { id: 'enigma', title: 'معما', color: 'bg-yellow-100', textColor: 'text-yellow-800' },
+            { id: 'needs-improvement', title: 'نیازمند بهبود', color: 'bg-yellow-100', textColor: 'text-yellow-800' },
+            { id: 'high-potential', title: 'پتانسیل بالا', color: 'bg-green-100', textColor: 'text-green-800' },
+            { id: 'average-performer', title: 'عملکرد متوسط', color: 'bg-slate-100', textColor: 'text-slate-800' },
+            { id: 'solid-performer', title: 'عملکرد قابل اتکا', color: 'bg-blue-100', textColor: 'text-blue-800' },
+            { id: 'core-talent', title: 'استعداد کلیدی', color: 'bg-green-100', textColor: 'text-green-800' },
+            { id: 'risk', title: 'ریسک', color: 'bg-red-100', textColor: 'text-red-800' },
+            { id: 'key-player', title: 'مهره کلیدی', color: 'bg-blue-100', textColor: 'text-blue-800' },
+            { id: 'star', title: 'ستاره', color: 'bg-green-100', textColor: 'text-green-800' },
+        ];
+        
+        const distribution = state.dashboardMetrics.nineBoxDistribution || {};
+        
+        container.innerHTML = `<div class="grid grid-cols-3 gap-1 h-full">
+            ${nineBoxData.map(box => {
+                const count = distribution[box.title + ' (Solid Performer)'] || distribution[box.title] || 0;
+                return `<div class="nine-box-cell ${box.color} ${box.textColor} rounded-lg p-3 flex flex-col justify-center items-center text-center">
+                    <span class="text-2xl font-bold">${count}</span>
+                    <span class="text-xs mt-1">${box.title}</span>
+                </div>`
+            }).reverse().join('')}
+        </div>`;
+    };
+
+    const renderEngagementBreakdownChart = () => {
+        const ctx = document.getElementById('engagementBreakdownChart')?.getContext('2d');
+        if (!ctx || !state.orgAnalytics?.engagementBreakdown) return;
+
+        const data = state.orgAnalytics.engagementBreakdown;
+        charts.engagementBreakdown = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.map(d => d.name),
+                datasets: [{
+                    label: 'امتیاز مشارکت',
+                    data: data.map(d => d.score),
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f97316', '#ef4444', '#64748b'],
+                    hoverOffset: 4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    };
+    
+    const renderTeamHealthChart = () => {
+        const ctx = document.getElementById('teamHealthChart')?.getContext('2d');
+        if (!ctx || state.teams.length === 0) return;
+
+        const teamData = state.teams.map(team => {
+            const scores = Object.values(team.healthMetrics || {});
+            const avgHealth = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+            return { name: team.name, health: avgHealth };
+        }).sort((a,b) => b.health - a.health);
+
+        charts.teamHealth = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: teamData.map(t => t.name),
+                datasets: [{
+                    label: 'نمره سلامت',
+                    data: teamData.map(t => t.health),
+                    backgroundColor: '#22c55e',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y', // for horizontal bar chart
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, max: 100 } }
+            }
+        });
+    };
+
+    const setupSkillGapFinder = () => {
+        const findBtn = document.getElementById('find-skill-gap-btn');
+        const resultsContainer = document.getElementById('skill-gap-results');
+        if (!findBtn) return;
+        findBtn.addEventListener('click', () => {
+            const teamId = document.getElementById('skill-team-select').value;
+            const skillName = document.getElementById('skill-search-input').value.trim().toLowerCase();
+            if (!skillName) {
+                resultsContainer.innerHTML = '<p class="text-sm text-center text-red-500">لطفا نام یک مهارت را وارد کنید.</p>';
+                return;
+            }
+            let targetEmployees = state.employees.filter(e => e.status === 'فعال');
+            if (teamId !== 'all') {
+                const team = state.teams.find(t => t.firestoreId === teamId);
+                if (team) targetEmployees = state.employees.filter(emp => team.memberIds?.includes(emp.id));
+            }
+            const skillAnalysis = { expert: [], intermediate: [], beginner: [], none: [] };
+            targetEmployees.forEach(emp => {
+                const skills = emp.skills || {};
+                const skillKeys = Object.keys(skills).map(k => k.toLowerCase());
+                const skillIndex = skillKeys.findIndex(k => k.includes(skillName));
+                if (skillIndex > -1) {
+                    const originalKey = Object.keys(skills)[skillIndex];
+                    const level = skills[originalKey];
+                    if (level >= 4) skillAnalysis.expert.push(emp.name);
+                    else if (level >= 2) skillAnalysis.intermediate.push(emp.name);
+                    else skillAnalysis.beginner.push(emp.name);
+                } else {
+                    skillAnalysis.none.push(emp.name);
+                }
+            });
+            resultsContainer.innerHTML = `
+                <h4 class="font-bold mb-3">نتایج برای: <span class="text-teal-600">${skillName}</span></h4>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-slate-100 p-2 rounded-md"><p class="font-semibold text-lg">${skillAnalysis.expert.length}</p><p class="text-xs text-slate-500">متخصص (۴-۵)</p></div>
+                    <div class="bg-slate-100 p-2 rounded-md"><p class="font-semibold text-lg">${skillAnalysis.intermediate.length}</p><p class="text-xs text-slate-500">متوسط (۲-۳)</p></div>
+                    <div class="bg-slate-100 p-2 rounded-md"><p class="font-semibold text-lg">${skillAnalysis.beginner.length}</p><p class="text-xs text-slate-500">مبتدی (۱)</p></div>
+                    <div class="bg-slate-100 p-2 rounded-md"><p class="font-semibold text-lg">${skillAnalysis.none.length}</p><p class="text-xs text-slate-500">فاقد مهارت</p></div>
+                </div>
+                <div class="mt-3 text-xs text-slate-600"><strong class="font-semibold">متخصصین:</strong> ${skillAnalysis.expert.join(', ') || 'هیچ'}</div>
+            `;
+        });
+    };
+    
+    // --- اجرای توابع ---
+    destroyCharts(); // پاک کردن نمودارهای قبلی
+    renderAttritionHotspots();
+    renderNineBoxGrid();
+    renderEngagementBreakdownChart();
+    renderTeamHealthChart();
+    setupSkillGapFinder();
+};
         
         // --- [FIX START] ADDED EXPENSES PAGE LISTENERS AND HELPERS ---
 const setupExpensesPageListeners = () => {
