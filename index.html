@@ -1101,95 +1101,97 @@ surveys: () => {
     `;
 },
 expenses: () => {
-    // --- بخش ۱: محاسبات اولیه ---
-    const totalBalance = state.pettyCashCards.reduce((sum, card) => sum + (card.balance || 0), 0);
+    // --- ۱. محاسبات اولیه ---
+    const totalCharges = state.chargeHistory.reduce((sum, chg) => sum + chg.amount, 0);
     const totalExpenses = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const currentBalance = totalCharges - totalExpenses;
 
-    // لیست هزینه‌ها و شارژها را ترکیب و مرتب می‌کنیم
+    // --- ۲. ترکیب و مرتب‌سازی تراکنش‌ها ---
     const expensesWithDetails = state.expenses.map(exp => ({ ...exp, type: 'expense' }));
-    const chargesWithDetails = state.chargeHistory.map(chg => ({ ...chg, type: 'charge', date: chg.chargedAt?.toDate() }));
-    
+    const chargesWithDetails = state.chargeHistory.map(chg => ({ ...chg, type: 'charge', date: chg.chargedAt?.toDate(), item: `شارژ کارت ${chg.cardName}` }));
+
     const allTransactions = [...expensesWithDetails, ...chargesWithDetails]
-        .filter(t => t.date) // فقط آیتم‌هایی که تاریخ معتبر دارند
+        .filter(t => t.date)
         .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // --- بخش ۲: ساخت HTML ---
+    // --- ۳. ساخت HTML ---
     const transactionsHtml = allTransactions.map(t => {
-        if (t.type === 'expense') {
-            const cardName = state.pettyCashCards.find(c => c.firestoreId === t.cardId)?.name || 'نامشخص';
-            return `
-                <tr class="border-b border-slate-200">
-                    <td class="p-4 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                            <i data-lucide="arrow-down" class="w-5 h-5 text-red-500"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-slate-800">${t.item}</p>
-                            <p class="text-xs text-slate-500">${toPersianDate(t.date)} - کارت: ${cardName}</p>
-                        </div>
-                    </td>
-                    <td class="p-4 text-left font-mono font-semibold text-red-600">
-                        -${t.amount.toLocaleString('fa-IR')}
-                    </td>
-                </tr>
-            `;
-        } else { // type === 'charge'
-            return `
-                <tr class="border-b border-slate-200">
-                    <td class="p-4 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                            <i data-lucide="arrow-up" class="w-5 h-5 text-green-500"></i>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-slate-800">شارژ کارت ${t.cardName}</p>
-                            <p class="text-xs text-slate-500">${toPersianDate(t.date)} - توسط: ${t.chargedBy}</p>
-                        </div>
-                    </td>
-                    <td class="p-4 text-left font-mono font-semibold text-green-600">
-                        +${t.amount.toLocaleString('fa-IR')}
-                    </td>
-                </tr>
-            `;
-        }
+        const isExpense = t.type === 'expense';
+        const cardName = isExpense ? (state.pettyCashCards.find(c => c.firestoreId === t.cardId)?.name || 'نامشخص') : '';
+
+        return `
+            <div class="flex items-center gap-4 py-4 px-2 border-b border-slate-100">
+                <div class="w-10 h-10 rounded-full ${isExpense ? 'bg-red-100' : 'bg-green-100'} flex items-center justify-center">
+                    <i data-lucide="${isExpense ? 'arrow-down' : 'arrow-up'}" class="w-5 h-5 ${isExpense ? 'text-red-500' : 'text-green-500'}"></i>
+                </div>
+                <div class="flex-grow">
+                    <p class="font-semibold text-slate-800">${t.item}</p>
+                    <p class="text-xs text-slate-500">${toPersianDate(t.date)} ${isExpense ? ` - ${cardName}` : ''}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${t.invoiceUrl ? `<a href="${t.invoiceUrl}" target="_blank" class="text-blue-500 hover:underline text-xs">رسید</a>` : ''}
+                    <p class="w-28 text-left font-mono font-semibold ${isExpense ? 'text-red-600' : 'text-green-600'}">
+                        ${isExpense ? '-' : '+'}${t.amount.toLocaleString('fa-IR')}
+                    </p>
+                </div>
+            </div>
+        `;
     }).join('');
 
+    const cardsListHtml = state.pettyCashCards.map(card => `
+        <div class="p-3 border-b border-slate-100">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="font-semibold text-slate-700">${card.name}</p>
+                    <p class="text-xs text-slate-500 font-mono">${card.cardNumber || 'بدون شماره'}</p>
+                </div>
+                <p class="font-mono font-bold text-slate-800">${card.balance.toLocaleString('fa-IR')}</p>
+            </div>
+        </div>
+    `).join('');
+
     return `
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-800">مدیریت هزینه‌ها</h1>
-                <p class="text-sm text-slate-500 mt-1">بررسی و ثبت تراکنش‌های تنخواه</p>
-            </div>
-            <div class="flex items-center gap-2 w-full md:w-auto">
-                ${isAdmin() ? `<button id="add-card-btn" class="bg-slate-200 text-slate-800 py-2 px-4 rounded-lg hover:bg-slate-300 transition flex items-center gap-2 w-full md:w-auto"><i data-lucide="credit-card"></i> مدیریت کارت‌ها</button>` : ''}
-                ${canEdit() ? `<button id="add-expense-btn" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 shadow-md transition flex items-center gap-2 w-full md:w-auto"><i data-lucide="plus"></i> افزودن هزینه</button>` : ''}
-            </div>
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800">داشبورد مالی</h1>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="card bg-white p-6">
-                <p class="text-slate-500 flex items-center gap-2"><i data-lucide="wallet" class="w-4 h-4"></i>موجودی کل تنخواه</p>
-                <p class="text-3xl font-bold text-slate-800 mt-2 font-mono">${totalBalance.toLocaleString('fa-IR')} <span class="text-lg font-sans">تومان</span></p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="flex items-center gap-2">
+                    ${canEdit() ? `<button id="add-expense-btn" class="flex-1 bg-red-500 text-white py-3 px-4 rounded-lg hover:bg-red-600 shadow-md transition flex items-center justify-center gap-2"><i data-lucide="plus"></i> افزودن هزینه</button>` : ''}
+                    ${canEdit() ? `<button id="charge-card-btn" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 shadow-md transition flex items-center justify-center gap-2"><i data-lucide="zap"></i> شارژ کارت</button>` : ''}
+                </div>
+                <div class="card p-4">
+                    <h3 class="font-bold text-lg mb-2">تاریخچه تراکنش‌ها</h3>
+                    <div>
+                        ${transactionsHtml.length > 0 ? transactionsHtml : `<div class="text-center p-8 text-slate-500">هیچ تراکنشی ثبت نشده است.</div>`}
+                    </div>
+                </div>
             </div>
-            <div class="card bg-white p-6">
-                <p class="text-slate-500 flex items-center gap-2"><i data-lucide="trending-down" class="w-4 h-4"></i>جمع کل هزینه‌ها</p>
-                <p class="text-3xl font-bold text-red-600 mt-2 font-mono">${totalExpenses.toLocaleString('fa-IR')} <span class="text-lg font-sans">تومان</span></p>
-            </div>
-        </div>
 
-        <h3 class="text-xl font-bold text-slate-700 mb-4">آخرین تراکنش‌ها</h3>
-        <div class="card p-0 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-slate-50 text-slate-600 text-sm">
-                        <tr>
-                            <th class="p-4 text-right font-semibold">شرح تراکنش</th>
-                            <th class="p-4 text-left font-semibold">مبلغ (تومان)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${transactionsHtml.length > 0 ? transactionsHtml : `<tr><td colspan="2" class="text-center p-8 text-slate-500">هیچ تراکنشی برای نمایش وجود ندارد.</td></tr>`}
-                    </tbody>
-                </table>
+            <div class="lg:col-span-1 space-y-6">
+                <div class="card p-4 space-y-4">
+                    <div class="p-3 rounded-lg bg-green-50">
+                        <p class="text-sm text-green-800">مجموع واریز</p>
+                        <p class="font-mono text-2xl font-bold text-green-700">${totalCharges.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-red-50">
+                        <p class="text-sm text-red-800">مجموع برداشت</p>
+                        <p class="font-mono text-2xl font-bold text-red-700">${totalExpenses.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-slate-100">
+                        <p class="text-sm text-slate-800">موجودی نهایی</p>
+                        <p class="font-mono text-2xl font-bold text-slate-900">${currentBalance.toLocaleString('fa-IR')} <span class="text-sm font-sans">تومان</span></p>
+                    </div>
+                </div>
+                <div class="card p-0">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                        <h3 class="font-bold text-lg">کارت‌های تنخواه</h3>
+                        ${isAdmin() ? `<button id="add-card-btn" class="bg-slate-800 text-white text-xs py-1 px-3 rounded-md hover:bg-slate-900"><i data-lucide="plus" class="w-4 h-4"></i> افزودن</button>` : ''}
+                    </div>
+                    <div>
+                        ${cardsListHtml.length > 0 ? cardsListHtml : `<div class="p-4 text-center text-sm text-slate-500">کارتی تعریف نشده است.</div>`}
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -2420,92 +2422,117 @@ const setupOrganizationPageListeners = () => {
         
         // --- [FIX START] ADDED EXPENSES PAGE LISTENERS AND HELPERS ---
 const setupExpensesPageListeners = () => {
-    // اتصال دکمه‌های اصلی بالای صفحه
-    document.getElementById('add-card-btn')?.addEventListener('click', showPettyCashManagementModal);
-    document.getElementById('add-expense-btn')?.addEventListener('click', () => showExpenseForm());
-
-    // استفاده از Event Delegation برای دکمه‌های داخل مودال مدیریت کارت‌ها
-    modalContent.addEventListener('click', (e) => {
-        const deleteCardBtn = e.target.closest('.delete-card-btn');
-        const chargeCardBtn = e.target.closest('.charge-card-btn');
-        const addNewCardBtn = e.target.closest('#add-new-card-modal-btn');
-
-        if (chargeCardBtn) {
-            const cardId = chargeCardBtn.dataset.id;
-            const cardName = chargeCardBtn.dataset.name;
-            showChargeCardForm(cardId, cardName);
-        }
-
-        if (deleteCardBtn) {
-            const cardId = deleteCardBtn.dataset.id;
-            showConfirmationModal('حذف کارت تنخواه', 'آیا از حذف این کارت مطمئن هستید؟', async () => {
-                try {
-                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId));
-                    showToast('کارت با موفقیت حذف شد.');
-                    showPettyCashManagementModal(); // رفرش کردن مودال
-                } catch (error) {
-                    console.error("Error deleting card:", error);
-                    showToast('خطا در حذف کارت.', 'error');
-                }
-            });
-        }
-
-        if (addNewCardBtn) {
-            showPettyCashCardForm();
-        }
-    });
-
-    // این Event Listener برای حذف هزینه‌ها و سوابق شارژ است و باید باقی بماند
+    // Event Listenerها به کل صفحه متصل می‌شوند تا بعد از هر بار رندر شدن کار کنند
     mainContent.addEventListener('click', (e) => {
-        const deleteExpenseBtn = e.target.closest('.delete-expense-btn');
-        const deleteChargeLogBtn = e.target.closest('.delete-charge-log-btn');
+        const addExpenseBtn = e.target.closest('#add-expense-btn');
+        const chargeCardBtn = e.target.closest('#charge-card-btn');
+        const addCardBtn = e.target.closest('#add-card-btn');
 
-        if (deleteChargeLogBtn) {
-            const logId = deleteChargeLogBtn.dataset.id;
-            showConfirmationModal('حذف سابقه شارژ', 'آیا مطمئن هستید؟ مبلغ شارژ از موجودی کارت کسر خواهد شد.', async () => {
-                // ... (منطق حذف سابقه شارژ بدون تغییر)
-            });
+        if (addExpenseBtn) {
+            showExpenseForm();
         }
-
-        if (deleteExpenseBtn) {
-            const expenseId = deleteExpenseBtn.dataset.id;
-            showConfirmationModal('حذف هزینه', 'آیا از حذف این هزینه مطمئن هستید؟ مبلغ آن به کارت بازگردانده می‌شود.', async () => {
-                // ... (منطق حذف هزینه بدون تغییر)
-            });
+        if (chargeCardBtn) {
+            showNewChargeForm();
+        }
+        if (addCardBtn) {
+            showPettyCashCardForm();
         }
     });
 };
 
-        const showPettyCashCardForm = (cardId = null) => {
-            const isEditing = cardId !== null;
-            const card = isEditing ? state.pettyCashCards.find(c => c.firestoreId === cardId) : {};
-            modalTitle.innerText = isEditing ? 'ویرایش کارت تنخواه' : 'افزودن کارت تنخواه';
-            modalContent.innerHTML = `
-                <form id="card-form" class="space-y-4">
-                    <div><label class="block font-medium">نام کارت</label><input type="text" id="card-name" value="${card.name || ''}" class="w-full p-2 border rounded-md" required></div>
-                    <div><label class="block font-medium">موجودی اولیه (تومان)</label><input type="number" id="card-balance" value="${card.balance || ''}" class="w-full p-2 border rounded-md" ${isEditing ? 'readonly' : ''} required></div>
-                    <div class="pt-6 flex justify-end"><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div>
-                </form>
-            `;
-            openModal(mainModal, mainModalContainer);
-            document.getElementById('card-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = {
-                    name: document.getElementById('card-name').value,
-                    balance: Number(document.getElementById('card-balance').value)
-                };
-                try {
-                    const collectionRef = collection(db, `artifacts/${appId}/public/data/pettyCashCards`);
-                    await addDoc(collectionRef, formData);
-                    closeModal(mainModal, mainModalContainer);
-                    showToast('کارت با موفقیت اضافه شد.');
-                } catch (error) {
-                    console.error("Error saving card:", error);
-                    showToast('خطا در ذخیره کارت.', 'error');
-                }
-            });
-        };
+const showPettyCashCardForm = (cardId = null) => {
+    const isEditing = cardId !== null;
+    const card = isEditing ? state.pettyCashCards.find(c => c.firestoreId === cardId) : {};
+    modalTitle.innerText = isEditing ? 'ویرایش کارت تنخواه' : 'افزودن کارت تنخواه';
+    modalContent.innerHTML = `
+        <form id="card-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label class="block font-medium">نام کارت (مثال: کارت بانک ملت)</label><input type="text" id="card-name" value="${card.name || ''}" class="w-full p-2 border rounded-md" required></div>
+                <div><label class="block font-medium">شماره کارت (اختیاری)</label><input type="text" id="card-number" value="${card.cardNumber || ''}" class="w-full p-2 border rounded-md"></div>
+            </div>
+            <div><label class="block font-medium">موجودی اولیه (تومان)</label><input type="number" id="card-balance" value="${card.balance || '0'}" class="w-full p-2 border rounded-md" ${isEditing ? 'readonly' : ''} required></div>
+            <div class="pt-6 flex justify-end"><button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره</button></div>
+        </form>
+    `;
+    openModal(mainModal, mainModalContainer);
 
+    document.getElementById('card-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = {
+            name: document.getElementById('card-name').value,
+            cardNumber: document.getElementById('card-number').value,
+            balance: Number(document.getElementById('card-balance').value)
+        };
+        try {
+            const docRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, isEditing ? cardId : formData.name.replace(/\s+/g, '-'));
+            await setDoc(docRef, formData, { merge: isEditing });
+            closeModal(mainModal, mainModalContainer);
+            showToast('کارت با موفقیت ذخیره شد.');
+        } catch (error) {
+            console.error("Error saving card:", error);
+            showToast('خطا در ذخیره کارت.', 'error');
+        }
+    });
+};
+const showNewChargeForm = () => {
+    modalTitle.innerText = 'شارژ کارت تنخواه';
+    const cardOptions = state.pettyCashCards.map(c => `<option value="${c.firestoreId}">${c.name} (${c.cardNumber || ''})</option>`).join('');
+
+    modalContent.innerHTML = `
+        <form id="charge-card-form" class="space-y-4">
+            <div><label class="block font-medium">کارت مورد نظر</label><select id="charge-card-select" class="w-full p-2 border rounded-md" required>${cardOptions}</select></div>
+            <div><label class="block font-medium">تاریخ شارژ</label><input type="text" id="charge-date" class="w-full p-2 border rounded-md" required></div>
+            <div><label class="block font-medium">مبلغ شارژ (تومان)</label><input type="number" id="charge-amount" class="w-full p-2 border rounded-md" required></div>
+            <div class="pt-6 flex justify-end">
+                <button type="submit" id="submit-charge-btn" class="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700">تایید و شارژ</button>
+            </div>
+        </form>
+    `;
+    openModal(mainModal, mainModalContainer);
+    activatePersianDatePicker('charge-date', new Date());
+
+    document.getElementById('charge-card-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submit-charge-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'در حال پردازش...';
+
+        const cardId = document.getElementById('charge-card-select').value;
+        const amount = Number(document.getElementById('charge-amount').value);
+        const gregorianDate = persianToEnglishDate(document.getElementById('charge-date').value);
+
+        try {
+            const cardRef = doc(db, `artifacts/${appId}/public/data/pettyCashCards`, cardId);
+            const cardSnap = await getDoc(cardRef);
+
+            if (cardSnap.exists()) {
+                const cardData = cardSnap.data();
+                const batch = writeBatch(db);
+
+                batch.update(cardRef, { balance: cardData.balance + amount });
+
+                const chargeHistoryRef = collection(db, `artifacts/${appId}/public/data/chargeHistory`);
+                batch.set(doc(chargeHistoryRef), {
+                    cardId: cardId,
+                    cardName: cardData.name,
+                    amount: amount,
+                    chargedAt: new Date(gregorianDate),
+                    chargedBy: state.currentUser.email
+                });
+
+                await batch.commit();
+                closeModal(mainModal, mainModalContainer);
+                showToast(`کارت ${cardData.name} با موفقیت شارژ شد.`);
+            }
+        } catch (error) {
+            console.error("Error charging card:", error);
+            showToast("خطا در عملیات شارژ.", "error");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'تایید و شارژ';
+        }
+    });
+};
 const showExpenseForm = () => {
         modalTitle.innerText = 'افزودن هزینه جدید';
         const cardOptions = state.pettyCashCards.map(c => `<option value="${c.firestoreId}">${c.name}</option>`).join('');
