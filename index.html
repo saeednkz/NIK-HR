@@ -11,10 +11,9 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/jalali-flatpickr/dist/jalali-flatpickr.min.js"></script>
-    
+    <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css"/>
+    <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
     
 <style>
@@ -438,20 +437,40 @@ const toPersianDate = (dateInput) => {
         return 'نامشخص';
     }
 };
+// --- تابع جدید برای تبدیل تاریخ شمسی ورودی به فرمت میلادی برای ذخیره ---
+// --- نسخه نهایی و بسیار قوی‌تر برای تبدیل تاریخ شمسی به میلادی ---
 const persianToEnglishDate = (persianDateStr) => {
+    // اگر ورودی خالی یا null است، null برگردان
     if (!persianDateStr) return null;
 
-    let englishDateStr = convertPersianNumbersToEnglish(String(persianDateStr));
-
-    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(englishDateStr)) {
-        console.error("فرمت تاریخ شمسی نامعتبر است:", englishDateStr);
-        // برای جلوگیری از ذخیره تاریخ اشتباه، null برمی‌گردانیم
-        const today = new Date();
-        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    // گاهی اوقات کتابخانه تقویم ممکن است یک timestamp عددی برگرداند
+    // اگر ورودی یک عدد است، آن را مستقیماً به تاریخ میلادی تبدیل کن
+    if (!isNaN(persianDateStr) && typeof persianDateStr !== 'string') {
+        const date = new persianDate(parseInt(persianDateStr));
+        const formatted = date.format('YYYY-MM-DD');
+        console.log(`ورودی عددی شناسایی شد، تبدیل شده به: ${formatted}`);
+        return formatted;
     }
+    
+    // اعداد فارسی را به انگلیسی تبدیل کن
+    let englishDateStr = convertPersianNumbersToEnglish(persianDateStr);
+
+    // چک کن که فرمت تاریخ YYYY/MM/DD باشد
+    if (!/^\d{4}\/\d{2}\/\d{2}$/.test(englishDateStr)) {
+        console.error("فرمت تاریخ شمسی نامعتبر است. فرمت مورد انتظار YYYY/MM/DD است اما ورودی:", englishDateStr);
+        // اگر فرمت اشتباه بود، null برگردان تا دیتای اشتباه ذخیره نشود
+        return null;
+    }
+
     try {
         const [jy, jm, jd] = englishDateStr.split('/').map(Number);
+        // اطمینان از معتبر بودن اعداد سال، ماه و روز
+        if (jy < 1000 || jm < 1 || jm > 12 || jd < 1 || jd > 31) {
+             console.error("اعداد تاریخ شمسی نامعتبر است:", { jy, jm, jd });
+             return null;
+        }
         const gregorian = jalaali.toGregorian(jy, jm, jd);
+        // نتیجه نهایی را با فرمت YYYY-MM-DD برگردان
         return `${gregorian.gy}-${String(gregorian.gm).padStart(2, '0')}-${String(gregorian.gd).padStart(2, '0')}`;
     } catch (error) {
         console.error("خطا در تبدیل تاریخ شمسی به میلادی:", error);
@@ -459,31 +478,55 @@ const persianToEnglishDate = (persianDateStr) => {
     }
 };
 
-// --- نسخه نهایی با پلاگین جدید و مطمئن jalali-flatpickr ---
+// --- نسخه نهایی و قطعی: غیرفعال کردن Observer برای جلوگیری از آپدیت خودکار ---
+// --- نسخه نهایی و قطعی با Readonly و متد setDate ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
-    let defaultValue = null;
-    if (initialValue) {
-        // تاریخ اولیه را به فرمت استاندارد جاوااسکریپت تبدیل می‌کنیم
-        const dateObject = initialValue.toDate ? initialValue.toDate() : new Date(initialValue);
-        if (dateObject && !isNaN(dateObject.getTime())) {
-            defaultValue = dateObject;
-        }
+    // ۱. هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
+    try {
+        $(input).pDatepicker('destroy');
+    } catch (e) {
+        // مشکلی نیست اگر از قبل وجود نداشته باشد
     }
 
-    // اگر نمونه قبلی از تقویم وجود دارد، آن را از بین می‌بریم
-    if (input._flatpickr) {
-        input._flatpickr.destroy();
+    // ۲. ورودی را غیرقابل ویرایش مستقیم می‌کنیم
+    input.setAttribute('readonly', true);
+    input.setAttribute('placeholder', 'انتخاب از تقویم...');
+    input.style.backgroundColor = '#fff'; // برای اینکه ظاهرش شبیه فیلد غیرفعال نشود
+
+    // ۳. تقویم را بدون هیچ مقدار اولیه‌ای راه‌اندازی می‌کنیم
+    const options = {
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        // observer را هم برای اطمینان false نگه می‌داریم
+        observer: false, 
+        calendar: {
+            persian: { locale: 'fa' }
+        }
+    };
+    $(input).pDatepicker(options);
+
+    // ۴. فقط اگر تاریخ اولیه معتبر بود، آن را به صورت دستوری تنظیم می‌کنیم
+    if (initialValue) {
+        let dateObject;
+        if (initialValue.toDate) {
+            // حالت فایربیس Timestamp
+            dateObject = initialValue.toDate();
+        } else if (typeof initialValue === 'string' || typeof initialValue === 'number') {
+            // حالت رشته یا عدد
+            dateObject = new Date(initialValue);
+        }
+
+        // اگر تاریخ معتبر است، با متد setDate آن را تنظیم کن
+        if (dateObject && !isNaN(dateObject.getTime())) {
+            // یک تأخیر بسیار کوتاه (۱۰ میلی‌ثانیه) می‌دهیم تا مطمئن شویم تقویم کاملا ساخته شده
+            setTimeout(() => {
+                $(input).pDatepicker('setDate', dateObject.getTime());
+            }, 10);
+        }
     }
-    
-    // راه‌اندازی تقویم بسیار ساده است. فقط کافیست زبان فارسی را انتخاب کنیم!
-    flatpickr(input, {
-        locale: 'fa', // این پلاگین به صورت خودکار تقویم را شمسی می‌کند
-        dateFormat: "Y/m/d",
-        defaultDate: defaultValue
-    });
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
@@ -4246,13 +4289,11 @@ const showDocumentForm = (emp, docIndex = null) => {
         };
         
         // --- INITIALIZATION ---
-    // --- INITIALIZATION (نسخه نهایی و ایمن) ---
-// --- INITIALIZATION (نسخه ساده و صحیح) ---
-document.addEventListener('DOMContentLoaded', () => {
-    initializeFirebase();
-    setupEventListeners();
-    lucide.createIcons();
-});
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFirebase();
+            setupEventListeners();
+            lucide.createIcons();
+        });
 
     </script>
 </body>
