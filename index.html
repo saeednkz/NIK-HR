@@ -463,9 +463,7 @@ const persianToEnglishDate = (persianDateStr) => {
         }
     };
 
-// --- تابع جدید برای فعال‌سازی تقویم شمسی روی یک فیلد ---
-// --- تابع جدید و اصلاح شده برای فعال‌سازی تقویم شمسی ---
-// --- تابع جدید و اصلاح شده برای فعال‌سازی تقویم شمسی ---
+// --- نسخه نهایی و اصلاح شده برای فعال‌سازی تقویم شمسی (با پشتیبانی از آبجکت فایربیس) ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
@@ -494,15 +492,25 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
         }
     };
 
-    // ۳. فقط اگر تاریخ اولیه معتبر بود، آن را به گزینه‌ها اضافه می‌کنیم
+    // ۳. فقط اگر تاریخ اولیه وجود داشت، آن را به گزینه‌ها اضافه می‌کنیم
     if (initialValue) {
-        const initialTimestamp = new Date(initialValue).getTime();
-        // چک می‌کنیم که تاریخ ورودی، یک تاریخ معتبر باشد
-        if (!isNaN(initialTimestamp)) {
-            // از آپشن unix برای تنظیم تاریخ اولیه در لحظه ساخت استفاده می‌کنیم
-            options.unix = initialTimestamp;
+        let dateObject;
+
+        // --- این بخش کلیدی‌ترین تغییر است ---
+        if (initialValue.toDate) {
+            // حالت اول: مقدار ورودی یک آبجکت Timestamp از فایربیس است
+            dateObject = initialValue.toDate();
+        } else if (typeof initialValue === 'string' || typeof initialValue === 'number') {
+            // حالت دوم: مقدار ورودی یک رشته تاریخ یا عدد timestamp است
+            dateObject = new Date(initialValue);
+        }
+        // --- پایان بخش کلیدی ---
+
+        // اگر یک آبجکت تاریخ معتبر داریم، آن را به فرمت unix تبدیل می‌کنیم
+        if (dateObject && !isNaN(dateObject.getTime())) {
+            options.unix = dateObject.getTime();
         } else {
-            console.warn(`مقدار تاریخ اولیه نامعتبر است: ${initialValue}`);
+            console.warn(`مقدار تاریخ اولیه نامعتبر دریافت شد:`, initialValue);
         }
     }
     
