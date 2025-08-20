@@ -490,61 +490,42 @@ const persianToEnglishDate = (persianDateStr) => {
         return null;
     }
 };
-
+// --- نسخه نهایی و قطعی با کنترل کامل دستی ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
-    // برای هماهنگی با کتابخانه، از سلکتور jQuery استفاده می‌کنیم
     const input = $(`#${elementId}`);
-    if (!input.length) {
-        console.error(`المان تقویم با آیدی "${elementId}" پیدا نشد.`);
-        return;
-    }
+    if (!input.length) return;
 
-    // ۱. هر نمونه‌ی قبلی تقویم را به طور کامل از بین می‌بریم تا تداخل ایجاد نشود
+    // ۱. هر نمونه‌ی قبلی تقویم را از بین می‌بریم
     try {
         input.pDatepicker('destroy');
-    } catch(e) { /* اگر از قبل ساخته نشده بود، مشکلی نیست */ }
+    } catch (e) { /* Ignore */ }
 
-    // ۲. ورودی را فقط خواندنی (readonly) می‌کنیم تا کاربر مجبور به استفاده از تقویم شود
+    // ۲. ورودی را فقط خواندنی می‌کنیم
     input.attr('readonly', true).css('background-color', '#fff');
 
-    // ۳. تقویم را با تنظیمات اصلی و بدون مقدار اولیه می‌سازیم
-    // با initialValue: false به کتابخانه می‌گوییم که حق ندارد تاریخ امروز را به عنوان پیش‌فرض انتخاب کند
+    // ۳. *** تغییر کلیدی و نهایی اینجاست ***
+    // ما خودمان مقدار اولیه را قبل از هر کاری در فیلد می‌نویسیم
+    if (initialValue) {
+        // از تابع toPersianDate که از قبل داشتیم و درست کار می‌کند استفاده می‌کنیم
+        const persianDateString = toPersianDate(initialValue);
+        
+        // مطمئن می‌شویم که تاریخ معتبر است و بعد در فیلد قرار می‌دهیم
+        if (persianDateString !== 'نامشخص' && persianDateString !== 'تاریخ نامعتبر') {
+            input.val(persianDateString);
+        } else {
+            input.val(''); // اگر تاریخ اولیه خراب بود، فیلد را خالی کن
+        }
+    } else {
+        input.val(''); // اگر تاریخ اولیه وجود نداشت (برای فرم جدید)، فیلد را خالی کن
+    }
+
+    // ۴. حالا که فیلد input مقدار صحیح را به صورت متنی دارد، تقویم را روی آن میسازیم.
+    // کتابخانه به صورت خودکار مقدار موجود در فیلد را می‌خواند.
     input.pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
-        observer: false, // این گزینه برای اطمینان بیشتر اینجا هم تکرار می‌شود
-        initialValue: false // <<--- این کلید اصلی حل مشکل است!
+        observer: false // این همچنان برای جلوگیری از رفتارهای ناخواسته مهم است
     });
-
-    // ۴. حالا که تقویم خام ساخته شد، خودمان به صورت دستی مقدار اولیه را ست می‌کنیم
-    if (initialValue) {
-        let dateObject;
-        // ورودی می‌تواند Timestamp فایربیس یا یک رشته تاریخ میلادی باشد
-        if (initialValue.toDate) {
-            dateObject = initialValue.toDate(); // مخصوص فرمت تاریخ فایربیس
-        } else if (typeof initialValue === 'string' && initialValue.trim() !== '') {
-            dateObject = new Date(initialValue); // مخصوص رشته تاریخ مثل '2024-05-20'
-        }
-
-        // ۵. فقط در صورتی که یک تاریخ معتبر ساخته شد، آن را در تقویم تنظیم می‌کنیم
-        if (dateObject && !isNaN(dateObject.getTime())) {
-            // یک تأخیر کوتاه برای اطمینان از آماده بودن کامل تقویم
-            setTimeout(() => {
-                try {
-                    // متد setDate یک timestamp عددی (میلی‌ثانیه) دریافت می‌کند
-                    input.pDatepicker('setDate', dateObject.getTime());
-                } catch(e) {
-                    console.error("خطا در تنظیم تاریخ اولیه برای تقویم:", e);
-                }
-            }, 50);
-        } else {
-             // اگر initialValue معتبر نبود، فیلد را خالی می‌کنیم
-             input.val('');
-        }
-    } else {
-        // اگر تاریخ اولیه‌ای وجود نداشت (مثلا در فرم افزودن)، فیلد را خالی می‌کنیم
-        input.val('');
-    }
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
