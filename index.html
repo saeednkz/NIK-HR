@@ -464,56 +464,49 @@ const persianToEnglishDate = (persianDateStr) => {
     };
 
 // --- تابع جدید برای فعال‌سازی تقویم شمسی روی یک فیلد ---
+// --- تابع جدید و اصلاح شده برای فعال‌سازی تقویم شمسی ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = document.getElementById(elementId);
     if (!input) return;
 
-    // ۱. ابتدا هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
+    // ۱. هر نمونه قبلی تقویم را به طور کامل از بین می‌بریم
     try {
         $(input).pDatepicker('destroy');
     } catch (e) {
-        // اگر تقویمی از قبل وجود نداشته باشد، مشکلی نیست.
+        // اگر تقویمی از قبل وجود نداشته باشد، مشکلی نیست
     }
     
-    // ۲. تمام مقادیر و تنظیمات قبلی را پاک می‌کنیم
-    input.setAttribute('type', 'text');
-    input.setAttribute('placeholder', 'مثال: ۱۴۰۳/۰۵/۲۸');
-    input.setAttribute('autocomplete', 'off');
-    input.value = ''; // فیلد را به صورت دستی کاملاً خالی می‌کنیم
-
-    // ۳. تقویم را بدون هیچ مقدار اولیه‌ای و به صورت خالی می‌سازیم
-    $(input).pDatepicker({
+    // ۲. گزینه‌های اصلی تقویم را تعریف می‌کنیم
+    const options = {
         format: 'YYYY/MM/DD',
         autoClose: true,
-        // گزینه initialValue را کاملاً حذف می‌کنیم تا به کتابخانه اجازه پیش‌فرض‌گذاری ندهیم
         observer: true,
         calendar: {
-            persian: {
-                locale: 'fa'
-            }
+            persian: { locale: 'fa' }
         },
         navigator: {
             enabled: true,
-            scroll: {
-                enabled: false
-            }
+            scroll: { enabled: false }
         },
         timePicker: {
             enabled: false
         }
-    });
+    };
 
-    // ۴. فقط و فقط اگر تاریخ اولیه‌ای وجود داشت،
-    // آن را با استفاده از متد رسمی خود کتابخانه و به صورت تأخیری تنظیم می‌کنیم.
+    // ۳. فقط اگر تاریخ اولیه معتبر بود، آن را به گزینه‌ها اضافه می‌کنیم
     if (initialValue) {
-        // یک تأخیر کوتاه ایجاد می‌کنیم تا مطمئن شویم تقویم کاملاً ساخته شده است
-        setTimeout(() => {
-            // تاریخ میلادی را به فرمت timestamp (میلی‌ثانیه) تبدیل می‌کنیم
-            const initialTimestamp = new Date(initialValue).getTime();
-            // از متد setDate خود کتابخانه برای تنظیم دقیق تاریخ استفاده می‌کنیم
-            $(input).pDatepicker('setDate', initialTimestamp);
-        }, 10); // ۱۰ میلی‌ثانیه تأخیر کافی است
+        const initialTimestamp = new Date(initialValue).getTime();
+        // چک می‌کنیم که تاریخ ورودی، یک تاریخ معتبر باشد
+        if (!isNaN(initialTimestamp)) {
+            // از آپشن unix برای تنظیم تاریخ اولیه در لحظه ساخت استفاده می‌کنیم
+            options.unix = initialTimestamp;
+        } else {
+            console.warn(`مقدار تاریخ اولیه نامعتبر است: ${initialValue}`);
+        }
     }
+    
+    // ۴. تقویم را با تمام گزینه‌های آماده شده، یک‌جا راه‌اندازی می‌کنیم
+    $(input).pDatepicker(options);
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
