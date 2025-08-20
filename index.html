@@ -1323,7 +1323,8 @@ settings: () => {
 
     // آماده‌سازی لیست کاربران با طراحی جدید
     const usersHtml = state.users.map(user => {
-        const userInitial = user.email.substring(0, 2).toUpperCase();
+        const userInitial = user.name ? user.name.substring(0, 1) : user.email.substring(0, 1).toUpperCase();
+        const isCurrentUser = user.firestoreId === state.currentUser.uid;
         return `
             <div class="flex items-center justify-between p-4 border-b border-slate-100 last:border-b-0">
                 <div class="flex items-center">
@@ -1331,16 +1332,20 @@ settings: () => {
                         ${userInitial}
                     </div>
                     <div>
-                        <p class="font-semibold text-sm text-slate-800">${user.email}</p>
-                        <p class="text-xs text-slate-500">عضویت در: ${toPersianDate(user.createdAt)}</p>
+                        <p class="font-semibold text-sm text-slate-800">${user.name || 'نامشخص'} ${isCurrentUser ? '<span class="text-xs text-blue-600">(شما)</span>' : ''}</p>
+                        <p class="text-xs text-slate-500">${user.email}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-white text-sm" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
-                        <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>مشاهده‌گر (Viewer)</option>
-                        <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>ویرایشگر (Editor)</option>
-                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>مدیر (Admin)</option>
+                <div class="flex items-center gap-2">
+                    <select data-uid="${user.firestoreId}" class="role-select p-2 border border-slate-300 rounded-lg bg-white text-sm" ${isCurrentUser ? 'disabled' : ''}>
+                        <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>مشاهده‌گر</option>
+                        <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>ویرایشگر</option>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>مدیر</option>
                     </select>
+                     ${!isCurrentUser ? `
+                    <button class="edit-user-btn p-2 text-slate-500 hover:text-blue-600" data-uid="${user.firestoreId}" title="ویرایش کاربر"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                    <button class="delete-user-btn p-2 text-slate-500 hover:text-red-600" data-uid="${user.firestoreId}" title="حذف کاربر"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    ` : '<div class="w-16"></div>'}
                 </div>
             </div>
         `;
@@ -1388,20 +1393,60 @@ settings: () => {
                         <button type="submit" class="bg-slate-800 text-white py-2 px-4 rounded-lg hover:bg-slate-900 shrink-0">افزودن</button>
                     </form>
                 </div>
-
-                <hr>
-
-                <div>
-                     <h3 class="font-semibold text-lg mb-4 flex items-center"><i data-lucide="settings-2" class="ml-2 text-slate-500"></i>تنظیمات عمومی</h3>
-                     <p class="text-sm text-slate-500">در این بخش می‌توانید تنظیمات عمومی مربوط به کل سیستم را در آینده مدیریت کنید.</p>
-                     </div>
             </div>
         </div>
     `;
 }
 }; // <<--- آبجکت pages اینجا تمام می‌شود
 
+const showEditUserForm = (user) => {
+    modalTitle.innerText = `ویرایش کاربر: ${user.name}`;
+    modalContent.innerHTML = `
+        <form id="edit-user-form" class="space-y-4">
+            <input type="hidden" id="edit-user-uid" value="${user.firestoreId}">
+            <div>
+                <label for="edit-user-name" class="block text-sm font-medium text-gray-700">نام کامل</label>
+                <input id="edit-user-name" type="text" value="${user.name || ''}" required class="w-full px-3 py-2 mt-1 border rounded-md">
+            </div>
+             <div>
+                <label for="edit-user-email" class="block text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                <input id="edit-user-email" type="email" value="${user.email}" disabled class="w-full px-3 py-2 mt-1 border rounded-md bg-slate-100">
+            </div>
+            <div>
+                <label for="edit-user-role" class="block text-sm font-medium text-gray-700">سطح دسترسی</label>
+                <select id="edit-user-role" class="w-full p-2 mt-1 border rounded-md" ${user.firestoreId === state.currentUser.uid ? 'disabled' : ''}>
+                    <option value="viewer" ${user.role === 'viewer' ? 'selected' : ''}>مشاهده‌گر (Viewer)</option>
+                    <option value="editor" ${user.role === 'editor' ? 'selected' : ''}>ویرایشگر (Editor)</option>
+                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>مدیر (Admin)</option>
+                </select>
+            </div>
+            <div class="pt-4 flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">ذخیره تغییرات</button>
+            </div>
+        </form>
+    `;
+    openModal(mainModal, mainModalContainer);
 
+    document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const uid = document.getElementById('edit-user-uid').value;
+        const name = document.getElementById('edit-user-name').value;
+        const role = document.getElementById('edit-user-role').value;
+
+        try {
+            const userRef = doc(db, `artifacts/${appId}/public/data/users`, uid);
+            await updateDoc(userRef, {
+                name: name,
+                role: role
+            });
+            closeModal(mainModal, mainModalContainer);
+            showToast("اطلاعات کاربر با موفقیت به‌روزرسانی شد.");
+        } catch (error) {
+            console.error("Error updating user:", error);
+            showToast("خطا در به‌روزرسانی اطلاعات کاربر.", "error");
+        }
+    });
+};
 const viewEmployeeProfile = (employeeId) => {
     const emp = state.employees.find(e => e.firestoreId === employeeId);
     if (!emp) return;
@@ -2461,60 +2506,92 @@ const setupOrganizationPageListeners = () => {
         });
     }
 };
-        const setupSettingsPageListeners = () => {
-            document.getElementById('add-user-btn')?.addEventListener('click', showAddUserForm);
-            // Role management
-            document.querySelectorAll('.role-select').forEach(select => {
-                select.addEventListener('change', async (e) => {
-                    const uid = e.target.dataset.uid;
-                    const newRole = e.target.value;
-                    const userRef = doc(db, `artifacts/${appId}/public/data/users`, uid);
-                    try {
-                        await updateDoc(userRef, { role: newRole });
-                        showToast("نقش کاربر با موفقیت تغییر کرد.");
-                    } catch (error) {
-                        console.error("Error updating role:", error);
-                        showToast("خطا در تغییر نقش کاربر.", "error");
-                    }
-                });
-            });
+const setupSettingsPageListeners = () => {
+    const mainContentArea = document.getElementById('main-content');
+    if (!mainContentArea) return;
 
-            // Competency management
-            const addCompetencyForm = document.getElementById('add-competency-form');
-            if (addCompetencyForm) {
-                addCompetencyForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const nameInput = document.getElementById('new-competency-name');
-                    const competencyName = nameInput.value.trim();
-                    if (competencyName) {
-                        try {
-                            await addDoc(collection(db, `artifacts/${appId}/public/data/competencies`), { name: competencyName });
-                            showToast("شایستگی جدید اضافه شد.");
-                            nameInput.value = '';
-                        } catch (error) {
-                            console.error("Error adding competency:", error);
-                            showToast("خطا در افزودن شایستگی.", "error");
-                        }
-                    }
-                });
-            }
+    // --- مدیریت رویدادهای کلیک در کل صفحه تنظیمات ---
+    mainContentArea.addEventListener('click', (e) => {
+        const addUserBtn = e.target.closest('#add-user-btn');
+        const editUserBtn = e.target.closest('.edit-user-btn');
+        const deleteUserBtn = e.target.closest('.delete-user-btn');
+        const deleteCompetencyBtn = e.target.closest('.delete-competency-btn');
+        
+        if (addUserBtn) {
+            showAddUserForm();
+        }
 
-            document.getElementById('competencies-list')?.addEventListener('click', (e) => {
-                const deleteBtn = e.target.closest('.delete-competency-btn');
-                if (deleteBtn) {
-                    const competencyId = deleteBtn.dataset.id;
-                    showConfirmationModal('حذف شایستگی', 'آیا از حذف این شایستگی مطمئن هستید؟ این عمل بر پروفایل کارمندان تاثیر خواهد گذاشت.', async () => {
-                        try {
-                            await deleteDoc(doc(db, `artifacts/${appId}/public/data/competencies`, competencyId));
-                            showToast("شایستگی با موفقیت حذف شد.");
-                        } catch (error) {
-                            console.error("Error deleting competency:", error);
-                            showToast("خطا در حذف شایستگی.", "error");
-                        }
-                    });
+        if (editUserBtn) {
+            const user = state.users.find(u => u.firestoreId === editUserBtn.dataset.uid);
+            if(user) showEditUserForm(user);
+        }
+
+        if (deleteUserBtn) {
+            const userToDelete = state.users.find(u => u.firestoreId === deleteUserBtn.dataset.uid);
+            showConfirmationModal('حذف کاربر', `آیا از حذف کاربر "${userToDelete.name || userToDelete.email}" مطمئن هستید؟ این عمل غیرقابل بازگشت است.`, async () => {
+                showToast("در حال حذف کاربر... این عمل در Firebase نیازمند احراز هویت مجدد است و در این نسخه ساده‌سازی شده است.", "error");
+                // نکته: حذف کاربران در فایربیس به دلایل امنیتی پیچیده است و معمولاً از طریق Cloud Functions انجام می‌شود.
+                // در این نسخه، ما فقط داکیومنت کاربر را از Firestore پاک می‌کنیم، اما خود کاربر از Authentication پاک نمی‌شود.
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/users`, userToDelete.firestoreId));
+                    showToast("اطلاعات کاربر از سیستم حذف شد.");
+                } catch (error) {
+                    console.error("Error deleting user document:", error);
+                    showToast("خطا در حذف اطلاعات کاربر.", "error");
                 }
             });
-        };
+        }
+
+        if (deleteCompetencyBtn) {
+            const competencyId = deleteCompetencyBtn.dataset.id;
+            showConfirmationModal('حذف شایستگی', 'آیا از حذف این شایستگی مطمئن هستید؟ این عمل بر پروفایل کارمندان تاثیر خواهد گذاشت.', async () => {
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/competencies`, competencyId));
+                    showToast("شایستگی با موفقیت حذف شد.");
+                } catch (error) {
+                    console.error("Error deleting competency:", error);
+                    showToast("خطا در حذف شایستگی.", "error");
+                }
+            });
+        }
+    });
+
+    // --- مدیریت فرم‌ها ---
+    const addCompetencyForm = document.getElementById('add-competency-form');
+    if (addCompetencyForm) {
+        addCompetencyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('new-competency-name');
+            const competencyName = nameInput.value.trim();
+            if (competencyName) {
+                try {
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/competencies`), { name: competencyName });
+                    showToast("شایستگی جدید اضافه شد.");
+                    nameInput.value = '';
+                } catch (error) {
+                    console.error("Error adding competency:", error);
+                    showToast("خطا در افزودن شایستگی.", "error");
+                }
+            }
+        });
+    }
+    
+    // --- مدیریت تغییر نقش کاربر ---
+    document.querySelectorAll('.role-select').forEach(select => {
+        select.addEventListener('change', async (e) => {
+            const uid = e.target.dataset.uid;
+            const newRole = e.target.value;
+            try {
+                const userRef = doc(db, `artifacts/${appId}/public/data/users`, uid);
+                await updateDoc(userRef, { role: newRole });
+                showToast("نقش کاربر با موفقیت تغییر کرد.");
+            } catch (error) {
+                console.error("Error updating role:", error);
+                showToast("خطا در تغییر نقش کاربر.", "error");
+            }
+        });
+    });
+};
 const setupAnalyticsPage = () => {
     // --- منطق تب‌ها ---
     const tabs = document.querySelectorAll('.analytics-tab');
@@ -3591,64 +3668,70 @@ const setupProfileModalListeners = (emp) => {
 };
         
         // --- EDIT FORM FUNCTIONS ---
-        const showAddUserForm = () => {
-            modalTitle.innerText = 'افزودن کاربر جدید';
-            modalContent.innerHTML = `
-                <form id="add-user-form" class="space-y-4">
-                    <div>
-                        <label for="new-user-email" class="block text-sm font-medium text-gray-700">آدرس ایمیل</label>
-                        <input id="new-user-email" type="email" required class="w-full px-3 py-2 mt-1 border rounded-md">
-                    </div>
-                    <div>
-                        <label for="new-user-password" class="block text-sm font-medium text-gray-700">رمز عبور موقت</label>
-                        <input id="new-user-password" type="password" required class="w-full px-3 py-2 mt-1 border rounded-md">
-                    </div>
-                    <div>
-                        <label for="new-user-role" class="block text-sm font-medium text-gray-700">سطح دسترسی</label>
-                        <select id="new-user-role" class="w-full p-2 mt-1 border rounded-md">
-                            <option value="viewer">Viewer</option>
-                            <option value="editor">Editor</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    <div class="pt-4 flex justify-end">
-                        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">افزودن کاربر</button>
-                    </div>
-                </form>
-            `;
-            openModal(mainModal, mainModalContainer);
+const showAddUserForm = () => {
+    modalTitle.innerText = 'افزودن کاربر جدید';
+    modalContent.innerHTML = `
+        <form id="add-user-form" class="space-y-4">
+            <div>
+                <label for="new-user-name" class="block text-sm font-medium text-gray-700">نام کامل</label>
+                <input id="new-user-name" type="text" required class="w-full px-3 py-2 mt-1 border rounded-md">
+            </div>
+            <div>
+                <label for="new-user-email" class="block text-sm font-medium text-gray-700">آدرس ایمیل</label>
+                <input id="new-user-email" type="email" required class="w-full px-3 py-2 mt-1 border rounded-md">
+            </div>
+            <div>
+                <label for="new-user-password" class="block text-sm font-medium text-gray-700">رمز عبور موقت</label>
+                <input id="new-user-password" type="password" required class="w-full px-3 py-2 mt-1 border rounded-md">
+            </div>
+            <div>
+                <label for="new-user-role" class="block text-sm font-medium text-gray-700">سطح دسترسی</label>
+                <select id="new-user-role" class="w-full p-2 mt-1 border rounded-md">
+                    <option value="viewer">مشاهده‌گر (Viewer)</option>
+                    <option value="editor">ویرایشگر (Editor)</option>
+                    <option value="admin">مدیر (Admin)</option>
+                </select>
+            </div>
+            <div class="pt-4 flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700">افزودن کاربر</button>
+            </div>
+        </form>
+    `;
+    openModal(mainModal, mainModalContainer);
 
-            document.getElementById('add-user-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('new-user-email').value;
-                const password = document.getElementById('new-user-password').value;
-                const role = document.getElementById('new-user-role').value;
-                
-                showToast("در حال ایجاد کاربر... این کار ممکن است باعث خروج شما از سیستم شود.", "success");
-                
-                try {
-                    // This is a simplified approach. In a real app, you'd use Firebase Functions to create users without logging out the admin.
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const newUser = userCredential.user;
+    document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('new-user-name').value;
+        const email = document.getElementById('new-user-email').value;
+        const password = document.getElementById('new-user-password').value;
+        const role = document.getElementById('new-user-role').value;
+        
+        showToast("در حال ایجاد کاربر... این کار ممکن است باعث خروج شما از سیستم شود.", "success");
+        
+        try {
+            // This is a simplified approach. In a real app, you'd use Firebase Functions to create users without logging out the admin.
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const newUser = userCredential.user;
 
-                    const userRef = doc(db, `artifacts/${appId}/public/data/users`, newUser.uid);
-                    await setDoc(userRef, {
-                        email: newUser.email,
-                        role: role,
-                        createdAt: serverTimestamp()
-                    });
-                    
-                    closeModal(mainModal, mainModalContainer);
-                    showToast("کاربر جدید ایجاد شد. لطفا با حساب ادمین مجددا وارد شوید.");
-                    
-                    await signOut(auth);
-
-                } catch (error) {
-                    console.error("Error creating new user:", error);
-                    showToast(`خطا در ایجاد کاربر: ${error.message}`, "error");
-                }
+            const userRef = doc(db, `artifacts/${appId}/public/data/users`, newUser.uid);
+            await setDoc(userRef, {
+                name: name, //  ذخیره نام کاربر
+                email: newUser.email,
+                role: role,
+                createdAt: serverTimestamp()
             });
-        };
+            
+            closeModal(mainModal, mainModalContainer);
+            showToast("کاربر جدید ایجاد شد. لطفا با حساب ادمین مجددا وارد شوید.");
+            
+            await signOut(auth);
+
+        } catch (error) {
+            console.error("Error creating new user:", error);
+            showToast(`خطا در ایجاد کاربر: ${error.message}`, "error");
+        }
+    });
+};
 
         const showEditOkrsForm = (emp) => {
             modalTitle.innerText = `ویرایش OKR برای ${emp.name}`;
