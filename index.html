@@ -35,12 +35,12 @@
         --color-accent: #6366f1;        /* A subtle indigo for secondary accents */
         --color-text-primary: #1e293b;  /* Dark slate for high contrast text */
         --color-text-secondary: #6b7280;/* Muted gray for supporting text */
-        --color-bg: #f5f6fa;           /* A light, non-stark white background */
+        --color-bg: #f8fafc;            /* A very light, clean background */
         --color-surface: #ffffff;       /* Pure white for cards and elements */
-        --color-border: #e2e8f0;       /* Light gray border */
-        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-        --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
-        --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
+        --color-border: #e2e8f0;        /* Light gray border */
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.05);
+        --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.05);
     }
     body {
         font-family: 'Vazirmatn', sans-serif;
@@ -66,18 +66,13 @@
         background-color: var(--color-primary-light);
         border-right-color: var(--color-primary);
     }
-.card {
-    background-color: var(--color-surface);
-    border-radius: 16px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border);
-    transition: box-shadow 0.2s ease-in-out, transform 0.2s ease;
-    padding: 1.5rem;
-}
-.card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
+    .card {
+        background-color: var(--color-surface);
+        border-radius: 1.5rem; /* گوشه‌های کاملا گرد */
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        transition: box-shadow 0.2s ease-in-out, transform 0.2s ease;
+    }
     .card:hover {
         box-shadow: var(--shadow-md);
         transform: translateY(-2px);
@@ -87,8 +82,9 @@
         align-items: center;
         padding: 1.5rem;
         background-color: var(--color-surface);
-        border-radius: 16px;
-        box-shadow: var(--shadow-sm);
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(226, 232, 240, 0.6);
         transition: transform 0.2s, box-shadow 0.2s;
     }
     .metric-card:hover {
@@ -107,17 +103,7 @@
     }
     @media (min-width: 1024px) {
         .grid-metrics {
-            grid-template-columns: repeat(4, 1fr);
-        }
-    }
-    .grid-main-content {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    @media (min-width: 1024px) {
-        .grid-main-content {
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
         }
     }
     ::-webkit-scrollbar { width: 6px; }
@@ -868,115 +854,56 @@ const pages = {
 dashboard: () => {
     calculateDashboardMetrics();
     const metrics = state.dashboardMetrics;
-    if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-lg shadow-md"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-gray-400"></i><h2 class="mt-4 text-xl font-semibold text-gray-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-gray-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-md hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
-    
-    const highRiskEmployees = state.employees
-        .filter(e => e.status === 'فعال' && e.attritionRisk && e.attritionRisk.score > 60)
-        .sort((a, b) => b.attritionRisk.score - a.attritionRisk.score);
-
-    const highRiskHtml = highRiskEmployees.length > 0 
-        ? highRiskEmployees.map(emp => {
-            const reasonsHtml = emp.attritionRisk.reasons.map(reason => `<span class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-0.5 rounded-full">${reason}</span>`).join(' ');
-            return `<div class="p-3">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full mr-2 shrink-0 overflow-hidden bg-gray-200"><img src="${emp.avatar}" class="w-full h-full object-cover" alt="${emp.name}"></div>
-                                <div><p class="text-sm font-semibold text-purple-800">${emp.name}</p></div>
-                            </div>
-                            <span class="text-lg font-bold text-purple-600">${emp.attritionRisk.score}%</span>
-                        </div>
-                        <div class="mt-2 flex flex-wrap gap-1">${reasonsHtml}</div>
-                    </div>`
-        }).join(' ') 
-        : '<p class="text-xs text-gray-500 text-center">موردی با ریسک بالا یافت نشد.</p>';
+    const userName = state.currentUser?.name || state.currentUser?.email.split('@')[0] || '';
+    if (Object.keys(metrics).length === 0) return `<div class="text-center p-10 bg-white rounded-2xl shadow-lg"><i data-lucide="inbox" class="mx-auto w-16 h-16 text-slate-400"></i><h2 class="mt-4 text-xl font-semibold text-slate-700">به NikHR خوش آمدید!</h2><p class="mt-2 text-slate-500">هنوز هیچ داده‌ای ثبت نشده است. برای شروع یک کارمند جدید اضافه کنید.</p><button onclick="window.location.hash='#talent'" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 transition">افزودن کارمند</button></div>`;
 
     return `
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">داشبورد</h1>
-        
-        <div class="grid-metrics mb-6">
-            <div class="metric-card">
-                <div class="bg-blue-100 p-3 rounded-full mr-4"><i data-lucide="users" class="text-blue-600"></i></div>
-                <div><p class="text-gray-500 text-sm">تعداد کل پرسنل</p><p class="text-2xl font-bold text-gray-800">${metrics.totalEmployees}</p></div>
-            </div>
-            <div class="metric-card">
-                <div class="bg-green-100 p-3 rounded-full mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div>
-                <div><p class="text-gray-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-gray-800">${metrics.retentionRate}%</p></div>
-            </div>
-            <div class="metric-card">
-                <div class="bg-yellow-100 p-3 rounded-full mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div>
-                <div><p class="text-gray-500 text-sm">میانگین سابقه (سال)</p><p class="text-2xl font-bold text-gray-800">${metrics.averageTenure}</p></div>
-            </div>
-            <div class="metric-card">
-                <div class="bg-purple-100 p-3 rounded-full mr-4"><i data-lucide="recycle" class="text-purple-600"></i></div>
-                <div><p class="text-gray-500 text-sm">جابجایی داخلی</p><p class="text-2xl font-bold text-gray-800">${metrics.internalMobilityRate}%</p></div>
-            </div>
+        <div class="p-8 rounded-2xl bg-gradient-to-br from-teal-400 to-blue-500 text-white mb-8 shadow-lg">
+            <h1 class="text-3xl font-bold">سلام ${userName}، خوش آمدید!</h1>
+            <p class="mt-1 opacity-80">نمای کلی سلامت و عملکرد سازمان شما</p>
         </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div class="lg:col-span-2 flex flex-col gap-6">
-                <div class="card flex-grow">
-                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="bar-chart-3" class="ml-2 text-indigo-600"></i>نمودارهای کلیدی</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="flex flex-col items-center justify-center">
-                            <p class="text-gray-500 text-sm mb-2">توزیع استعدادها</p>
-                            <div class="relative w-full h-48"><canvas id="nineBoxChart"></canvas></div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center">
-                            <p class="text-gray-500 text-sm mb-2">توزیع دپارتمان‌ها</p>
-                            <div class="relative w-full h-48"><canvas id="departmentDistributionChart"></canvas></div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center">
-                            <p class="text-gray-500 text-sm mb-2">ترکیب جنسیتی</p>
-                            <div class="relative w-full h-48"><canvas id="genderCompositionChart"></canvas></div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center">
-                            <p class="text-gray-500 text-sm mb-2">سابقه کار</p>
-                            <div class="relative w-full h-48"><canvas id="tenureDistributionChart"></canvas></div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center">
-                            <p class="text-gray-500 text-sm mb-2">توزیع سنی</p>
-                            <div class="relative w-full h-48"><canvas id="ageDistributionChart"></canvas></div>
-                        </div>
-                        <div class="flex flex-col items-center justify-center">
-                            <p class="text-gray-500 text-sm mb-2">میانگین شایستگی تیم‌ها</p>
-                            <div class="relative w-full h-48"><canvas id="teamCompetencyRadarChart"></canvas></div>
-                        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            <div class="lg:col-span-2 flex flex-col gap-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="metric-card"><div class="bg-blue-100 p-3 rounded-2xl mr-4"><i data-lucide="users" class="text-blue-600"></i></div><div><p class="text-slate-500 text-sm">تعداد پرسنل</p><p class="text-2xl font-bold text-slate-800">${metrics.totalEmployees}</p></div></div>
+                    <div class="metric-card"><div class="bg-green-100 p-3 rounded-2xl mr-4"><i data-lucide="trending-up" class="text-green-600"></i></div><div><p class="text-slate-500 text-sm">نرخ ماندگاری</p><p class="text-2xl font-bold text-slate-800">${metrics.retentionRate}%</p></div></div>
+                    <div class="metric-card"><div class="bg-yellow-100 p-3 rounded-2xl mr-4"><i data-lucide="clock" class="text-yellow-600"></i></div><div><p class="text-slate-500 text-sm">میانگین سابقه</p><p class="text-2xl font-bold text-slate-800">${metrics.averageTenure} <span class="text-base font-normal">سال</span></p></div></div>
+                    <div class="metric-card"><div class="bg-purple-100 p-3 rounded-2xl mr-4"><i data-lucide="heart-pulse" class="text-purple-600"></i></div><div><p class="text-slate-500 text-sm">مشارکت کل</p><p class="text-2xl font-bold text-slate-800">${metrics.engagementScore}%</p></div></div>
+                </div>
+                <div class="card p-0">
+                    <div class="p-6 border-b border-slate-100">
+                        <h3 class="font-semibold text-lg text-slate-800">تحلیل سلامت تیم‌ها</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-80"><canvas id="teamHealthBarChart"></canvas></div>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-1 flex flex-col gap-6">
-                <div class="card">
-                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="bell" class="ml-2 text-indigo-600"></i>یادآور هوشمند</h3>
-                    <div id="remindersList" class="space-y-4 mb-4 max-h-64 overflow-y-auto pr-2">${renderAllReminders()}</div>
-                    ${canEdit() ? `<div class="border-t pt-4 mt-auto">
-                        <p class="text-sm font-medium mb-2">افزودن یادآور دستی</p>
-                        <div class="flex flex-wrap gap-2">
-                            <input type="text" id="reminderText" placeholder="عنوان رویداد..." class="flex-grow p-2 border rounded-md text-sm">
-                            <input type="text" id="reminderDate" class="w-32 p-2 border rounded-md text-sm" placeholder="تاریخ">
-                            <input type="number" id="reminderDaysBefore" title="از چند روز قبل نمایش داده شود؟" value="7" class="w-20 p-2 border rounded-md text-sm">
-                            <button id="addReminderBtn" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition text-sm">افزودن</button>
-                        </div>
-                    </div>` : ''}
-                </div>
-                <div class="card h-full">
-                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="heart-pulse" class="ml-2 text-green-500"></i>امتیاز مشارکت کارکنان</h3>
-                    <div class="relative w-48 h-24 mx-auto my-4">
-                        <canvas id="engagementGaugeDashboard"></canvas>
-                        <div class="absolute inset-0 flex items-center justify-center -bottom-4">
-                            <span class="text-4xl font-bold text-green-600">${metrics.engagementScore > 0 ? metrics.engagementScore + '%' : 'N/A'}</span>
-                        </div>
+            <div class="lg:col-span-1 flex flex-col gap-8">
+                <div class="card p-0">
+                    <div class="p-6 border-b border-slate-100">
+                         <h3 class="font-semibold text-lg text-slate-800">رویدادهای مهم</h3>
+                    </div>
+                    <div id="activityFeed" class="divide-y divide-slate-100">
+                        ${renderAllReminders(5)}
                     </div>
                 </div>
-                <div class="card h-full flex-grow overflow-hidden">
-                    <h3 class="font-semibold mb-4 text-lg flex items-center"><i data-lucide="shield-alert" class="ml-2 text-purple-500"></i>ریسک خروج استعدادهای کلیدی</h3>
-                    <div class="mt-3 space-y-2 max-h-48 overflow-y-auto pr-2">${highRiskHtml}</div>
+                <div class="card p-0">
+                    <div class="p-6 border-b border-slate-100">
+                        <h3 class="font-semibold text-lg text-slate-800">توزیع استعدادها</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="relative h-64"><canvas id="talentDistributionDoughnut"></canvas></div>
+                    </div>
                 </div>
             </div>
         </div>
     `;
 },
+// ... (بقیه توابع pages بدون تغییر باقی می‌مانند) ...
 talent: () => {
     return `
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -1828,138 +1755,27 @@ const renderDashboardCharts = () => {
     destroyCharts();
     const metrics = state.dashboardMetrics;
     if (Object.keys(metrics).length === 0) return;
-    renderEngagementGauge('engagementGaugeDashboard', metrics.engagementScore);
 
-    // Gender Composition (Doughnut Chart)
-    const genderCtx = document.getElementById('genderCompositionChart')?.getContext('2d');
-    if (genderCtx && metrics.genderComposition) { 
-        charts.gender = new Chart(genderCtx, { 
-            type: 'doughnut', 
-            data: { 
-                labels: Object.keys(metrics.genderComposition), 
-                datasets: [{ 
-                    data: Object.values(metrics.genderComposition), 
-                    backgroundColor: ['#3b82f6', '#f43f5e', '#94a3b8'],
-                    hoverOffset: 4
-                }] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            } 
-        }); 
-    }
+    const vibrantPalette = ['#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#facc15'];
 
-    // Department Distribution (Bar Chart)
-    const departmentCtx = document.getElementById('departmentDistributionChart')?.getContext('2d');
-    if (departmentCtx) { 
-        charts.department = new Chart(departmentCtx, { 
-            type: 'bar', 
-            data: { 
-                labels: Object.keys(metrics.departmentDistribution), 
-                datasets: [{ 
-                    label: 'تعداد', 
-                    data: Object.values(metrics.departmentDistribution), 
-                    backgroundColor: '#10b981',
-                    borderRadius: 5
-                }] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false } 
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { display: false } },
-                    x: { grid: { display: false } }
-                }
-            } 
-        }); 
-    }
-    
-    // Nine Box Distribution (Bar Chart)
-    const nineBoxCtx = document.getElementById('nineBoxChart')?.getContext('2d');
-    if (nineBoxCtx && metrics.nineBoxDistribution) { 
-        charts.nineBox = new Chart(nineBoxCtx, { 
-            type: 'bar', 
-            data: { 
-                labels: Object.keys(metrics.nineBoxDistribution), 
-                datasets: [{ 
-                    label: 'تعداد', 
-                    data: Object.values(metrics.nineBoxDistribution), 
-                    backgroundColor: '#6366f1',
-                    borderRadius: 5
-                }] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false } 
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { display: false } },
-                    x: { grid: { display: false } }
-                }
-            } 
-        }); 
-    }
+    // Chart 1: Team Health (Main Bar Chart)
+    const teamHealthCtx = document.getElementById('teamHealthBarChart')?.getContext('2d');
+    if (teamHealthCtx) {
+        const teamData = state.teams.map(team => ({
+            name: team.name,
+            score: team.engagementScore || 0
+        })).sort((a, b) => b.score - a.score);
 
-    // New: Tenure Distribution (Pie Chart)
-    const tenureCtx = document.getElementById('tenureDistributionChart')?.getContext('2d');
-    const tenureData = state.employees.reduce((acc, emp) => {
-        if (!emp.startDate) return acc;
-        const years = (new Date() - new Date(emp.startDate)) / (1000 * 60 * 60 * 24 * 365);
-        if (years < 2) acc['کمتر از ۲ سال'] = (acc['کمتر از ۲ سال'] || 0) + 1;
-        else if (years < 5) acc['۲ تا ۵ سال'] = (acc['۲ تا ۵ سال'] || 0) + 1;
-        else acc['بیش از ۵ سال'] = (acc['بیش از ۵ سال'] || 0) + 1;
-        return acc;
-    }, {});
-    if (tenureCtx) {
-        charts.tenure = new Chart(tenureCtx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(tenureData),
-                datasets: [{
-                    data: Object.values(tenureData),
-                    backgroundColor: ['#facc15', '#f97316', '#ef4444'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-    }
-
-    // New: Age Distribution (Bar Chart)
-    const ageCtx = document.getElementById('ageDistributionChart')?.getContext('2d');
-    const ageData = state.employees.reduce((acc, emp) => {
-        if (!emp.personalInfo?.birthDate) return acc;
-        const age = new Date().getFullYear() - new Date(emp.personalInfo.birthDate).getFullYear();
-        if (age < 30) acc['زیر ۳۰ سال'] = (acc['زیر ۳۰ سال'] || 0) + 1;
-        else if (age <= 45) acc['۳۱-۴۵ سال'] = (acc['۳۱-۴۵ سال'] || 0) + 1;
-        else acc['بالای ۴۵ سال'] = (acc['بالای ۴۵ سال'] || 0) + 1;
-        return acc;
-    }, {});
-    if (ageCtx) {
-        charts.age = new Chart(ageCtx, {
+        charts.teamHealth = new Chart(teamHealthCtx, {
             type: 'bar',
             data: {
-                labels: Object.keys(ageData),
+                labels: teamData.map(t => t.name),
                 datasets: [{
-                    label: 'تعداد',
-                    data: Object.values(ageData),
-                    backgroundColor: '#e879f9',
-                    borderRadius: 5
+                    label: 'امتیاز مشارکت',
+                    data: teamData.map(t => t.score),
+                    backgroundColor: vibrantPalette,
+                    borderRadius: 8,
+                    borderSkipped: false,
                 }]
             },
             options: {
@@ -1967,249 +1783,100 @@ const renderDashboardCharts = () => {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, grid: { display: false } },
+                    y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } },
                     x: { grid: { display: false } }
                 }
             }
         });
     }
 
-    // New: Team Competency Radar Chart
-    const teamCompetencyCtx = document.getElementById('teamCompetencyRadarChart')?.getContext('2d');
-    const competencyScores = {};
-    state.teams.forEach(team => {
-        team.memberIds?.forEach(memberId => {
-            const member = state.employees.find(e => e.id === memberId);
-            if (member && member.competencies) {
-                Object.entries(member.competencies).forEach(([name, score]) => {
-                    if (!competencyScores[name]) {
-                        competencyScores[name] = { total: 0, count: 0 };
-                    }
-                    competencyScores[name].total += score;
-                    competencyScores[name].count++;
-                });
-            }
-        });
-    });
-    const avgCompetencies = Object.entries(competencyScores).reduce((acc, [name, data]) => {
-        acc[name] = data.count > 0 ? (data.total / data.count).toFixed(1) : 0;
-        return acc;
-    }, {});
-    if (teamCompetencyCtx && Object.keys(avgCompetencies).length > 0) {
-        charts.teamCompetency = new Chart(teamCompetencyCtx, {
-            type: 'radar',
+    // Chart 2: Talent Distribution (Doughnut Chart)
+    const talentCtx = document.getElementById('talentDistributionDoughnut')?.getContext('2d');
+    if (talentCtx && metrics.nineBoxDistribution) {
+        const nineBoxLabels = Object.keys(metrics.nineBoxDistribution);
+        const nineBoxData = Object.values(metrics.nineBoxDistribution);
+        charts.talent = new Chart(talentCtx, {
+            type: 'doughnut',
             data: {
-                labels: Object.keys(avgCompetencies),
+                labels: nineBoxLabels,
                 datasets: [{
-                    label: 'میانگین امتیاز',
-                    data: Object.values(avgCompetencies),
-                    fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: '#3b82f6',
-                    pointBackgroundColor: '#3b82f6',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#3b82f6'
+                    data: nineBoxData,
+                    backgroundColor: vibrantPalette,
+                    hoverOffset: 8,
+                    borderWidth: 0,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: { color: '#e2e8f0' },
-                        grid: { color: '#e2e8f0' },
-                        pointLabels: { color: '#6b7280' },
-                        suggestedMin: 0,
-                        suggestedMax: 5,
-                        ticks: { stepSize: 1, display: false }
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 15, boxWidth: 12, font: { family: 'Vazirmatn' } }
                     }
-                },
-                plugins: { legend: { display: false } }
+                }
             }
         });
     }
 };
 
-const renderEngagementGauge = (canvasId, score) => {
-    const gaugeCtx = document.getElementById(canvasId)?.getContext('2d');
-    if(gaugeCtx) { 
-        if(charts[canvasId]) charts[canvasId].destroy();
-        charts[canvasId] = new Chart(gaugeCtx, { 
-            type: 'doughnut', 
-            data: { 
-                datasets: [{ 
-                    data: [score, 100 - score], 
-                    backgroundColor: ['#22c55e', '#e5e7eb'], 
-                    borderWidth: 0, 
-                    circumference: 180, 
-                    rotation: 270, 
-                }] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false }, 
-                    tooltip: { enabled: false } 
-                }, 
-                cutout: '80%'
-            } 
-        }); 
-    }
-};
-       
-        const renderSkillRadarChart = (canvasId, skills) => {
-            const skillCtx = document.getElementById(canvasId)?.getContext('2d');
-            if (skillCtx) { if(charts[canvasId]) charts[canvasId].destroy(); charts[canvasId] = new Chart(skillCtx, { type: 'radar', data: { labels: Object.keys(skills), datasets: [{ label: 'سطح مهارت', data: Object.values(skills), fill: true, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgb(59, 130, 246)' }] }, options: { scales: { r: { suggestedMin: 0, suggestedMax: 5, ticks: { stepSize: 1 } } } } }); }
-        };
-
-        // --- PAGE-SPECIFIC LOGIC ---
-const renderAllReminders = () => {
-    const allReminders = [];
+const renderAllReminders = (limit = 0) => {
+    const allEvents = [];
     const now = new Date();
-    // برای دقت بیشتر، ساعت را صفر می‌کنیم تا فقط روزها مقایسه شوند
     now.setHours(0, 0, 0, 0); 
     const oneDay = 1000 * 60 * 60 * 24;
 
-    // --- بخش ۱: یادآورهای دستی و فیلتر شده ---
-    state.reminders.forEach(reminder => {
-        const eventDate = new Date(reminder.date);
-        eventDate.setHours(0, 0, 0, 0);
-
-        const daysUntilEvent = Math.round((eventDate - now) / oneDay);
-        // اگر کاربر مقداری تعیین نکرده بود، پیش‌فرض ۳۰ روز در نظر گرفته می‌شود
-        const daysBefore = reminder.daysBefore ?? 30; 
-
-        // شرط جدید: فقط اگر زمان رویداد در بازه تعیین شده باشد، نمایش بده
-        if (daysUntilEvent >= 0 && daysUntilEvent <= daysBefore) {
-            allReminders.push({
-                date: eventDate,
-                text: reminder.text,
-                subtext: daysUntilEvent === 0 ? 'امروز' : `در ${daysUntilEvent} روز دیگر`,
-                icon: 'calendar-plus',
-                color: 'indigo'
-            });
-        }
-    });
-
-    // --- بخش ۲: رویدادهای هوشمند و خودکار ---
-    const reminderWindowDays = 30;
+    // رویدادهای هوشمند
     state.employees.forEach(emp => {
         if (emp.status !== 'فعال') return;
-
-        // رویداد: اتمام قرارداد (در ۹۰ روز آینده)
         if (emp.contractEndDate) {
             const endDate = new Date(emp.contractEndDate);
             const daysUntilEnd = Math.round((endDate - now) / oneDay);
             if (daysUntilEnd >= 0 && daysUntilEnd <= 90) {
-                allReminders.push({
-                    date: endDate,
-                    text: `تمدید قرارداد: ${emp.name}`,
-                    subtext: `تاریخ اتمام: ${toPersianDate(endDate)}`,
-                    icon: 'file-clock',
-                    color: 'yellow'
-                });
+                allEvents.push({ date: endDate, type: 'reminder', color: 'yellow', icon: 'file-clock', text: `تمدید قرارداد: ${emp.name}`, subtext: `در ${daysUntilEnd} روز دیگر` });
             }
         }
-
-        // رویداد: تولد (در ۳ روز آینده)
         if (emp.personalInfo?.birthDate) {
             const birthDate = new Date(emp.personalInfo.birthDate);
             const nextBirthday = new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-            if (nextBirthday < now) {
-                nextBirthday.setFullYear(now.getFullYear() + 1);
-            }
+            if (nextBirthday < now) nextBirthday.setFullYear(now.getFullYear() + 1);
             const daysUntilBirthday = Math.round((nextBirthday - now) / oneDay);
-            if (daysUntilBirthday >= 0 && daysUntilBirthday <= 3) {
-                allReminders.push({
-                    date: nextBirthday,
-                    text: `تولد: ${emp.name}`,
-                    subtext: `تاریخ تولد: ${toPersianDate(nextBirthday)}`,
-                    icon: 'cake',
-                    color: 'pink'
-                });
-            }
-        }
-
-        // رویداد: سالگرد استخدام (در ۳۰ روز آینده)
-        if (emp.startDate) {
-            const startDate = new Date(emp.startDate);
-            const yearsOfWork = now.getFullYear() - startDate.getFullYear();
-            const nextAnniversary = new Date(now.getFullYear(), startDate.getMonth(), startDate.getDate());
-            if (nextAnniversary < now) {
-                nextAnniversary.setFullYear(now.getFullYear() + 1);
-            }
-            const daysUntilAnniversary = Math.round((nextAnniversary - now) / oneDay);
-            if (daysUntilAnniversary >= 0 && daysUntilAnniversary <= reminderWindowDays && yearsOfWork > 0) {
-                allReminders.push({
-                    date: nextAnniversary,
-                    text: `${yearsOfWork + 1}مین سالگرد استخدام: ${emp.name}`,
-                    subtext: `تاریخ استخدام: ${toPersianDate(emp.startDate)}`,
-                    icon: 'award',
-                    color: 'blue'
-                });
-            }
-        }
-
-        // رویداد: ارزیابی عملکرد معوق (بیش از ۶ ماه گذشته)
-        if (emp.performanceHistory && emp.performanceHistory.length > 0) {
-            const lastReviewDate = new Date(emp.performanceHistory.slice(-1)[0].reviewDate);
-            const monthsSinceReview = (now - lastReviewDate) / (oneDay * 30.44);
-            if (monthsSinceReview > 6) {
-                allReminders.push({
-                    date: new Date(now.getTime() + oneDay), // تاریخ را برای مرتب‌سازی فردا در نظر می‌گیرد
-                    text: `ارزیابی عملکرد معوق: ${emp.name}`,
-                    subtext: `آخرین ارزیابی: ${toPersianDate(lastReviewDate)}`,
-                    icon: 'clipboard-x',
-                    color: 'teal'
-                });
-            }
-        }
-        
-        // رویداد: پیگیری تذکر انضباطی
-        if (emp.disciplinaryHistory && emp.disciplinaryHistory.length > 0) {
-            const lastAction = emp.disciplinaryHistory.slice(-1)[0];
-            if (lastAction.type === 'تذکر') {
-                const actionDate = new Date(lastAction.date);
-                const followupDate = new Date(actionDate.setDate(actionDate.getDate() + 30));
-                const daysUntilFollowup = (followupDate - now) / oneDay;
-                if (daysUntilFollowup >= 0 && daysUntilFollowup <= reminderWindowDays) {
-                    allReminders.push({
-                        date: followupDate,
-                        text: `پیگیری تذکر انضباطی: ${emp.name}`,
-                        subtext: `تاریخ پیگیری: ${toPersianDate(followupDate)}`,
-                        icon: 'message-square-plus',
-                        color: 'gray'
-                    });
-                }
+            if (daysUntilBirthday >= 0 && daysUntilBirthday <= 7) {
+                allEvents.push({ date: nextBirthday, type: 'reminder', color: 'pink', icon: 'cake', text: `تولد: ${emp.name}`, subtext: daysUntilBirthday === 0 ? 'امروز' : `در ${daysUntilBirthday} روز دیگر` });
             }
         }
     });
 
-    // --- بخش ۳: مرتب‌سازی و نمایش نهایی ---
-    allReminders.sort((a, b) => a.date - b.date);
+    // رویدادهای ریسک خروج
+    state.employees.filter(e => e.attritionRisk && e.attritionRisk.score > 60).forEach(emp => {
+        allEvents.push({ date: new Date(), type: 'risk', color: 'red', icon: 'shield-alert', text: `ریسک خروج بالا: ${emp.name}`, subtext: `امتیاز ریسک: ${emp.attritionRisk.score}%` });
+    });
 
-    if (allReminders.length === 0) {
-        return '<p class="text-sm text-gray-500 text-center">هیچ یادآوری فعالی وجود ندارد.</p>';
+    allEvents.sort((a, b) => a.date - b.date);
+    const eventsToShow = limit > 0 ? allEvents.slice(0, limit) : allEvents;
+
+    if (eventsToShow.length === 0) {
+        return '<div class="text-center p-6"><p class="text-sm text-slate-500">هیچ رویداد مهمی برای نمایش وجود ندارد.</p></div>';
     }
-
+    
     const colorClasses = {
-        yellow: { bg: 'bg-yellow-50', text: 'text-yellow-600' },
-        indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600' },
-        pink: { bg: 'bg-pink-50', text: 'text-pink-600' },
-        blue: { bg: 'bg-blue-50', text: 'text-blue-600' },
-        teal: { bg: 'bg-teal-50', text: 'text-teal-600' },
-        gray: { bg: 'bg-gray-100', text: 'text-gray-600' }
+        red: { text: 'text-red-600', bg: 'bg-red-50' },
+        yellow: { text: 'text-amber-600', bg: 'bg-amber-50' },
+        pink: { text: 'text-pink-600', bg: 'bg-pink-50' },
     };
 
-    return allReminders.map(r => {
-        const colors = colorClasses[r.color] || colorClasses.indigo;
-        return `<div class="flex items-start p-3 ${colors.bg} rounded-xl border border-transparent hover:border-blue-200 transition">
-            <i data-lucide="${r.icon}" class="w-5 h-5 ${colors.text} ml-3 mt-1 flex-shrink-0"></i>
-            <div>
-                <p class="font-medium text-sm">${r.text}</p>
-                <p class="text-xs text-gray-500 mt-0.5">${r.subtext || `تاریخ: ${toPersianDate(r.date)}`}</p>
+    return eventsToShow.map(event => {
+        const colors = colorClasses[event.color];
+        return `<div class="p-4 hover:bg-slate-50 transition-colors">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-xl ${colors.bg} flex items-center justify-center shrink-0">
+                    <i data-lucide="${event.icon}" class="w-5 h-5 ${colors.text}"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm text-slate-800">${event.text}</p>
+                    <p class="text-xs text-slate-500">${event.subtext}</p>
+                </div>
             </div>
         </div>`;
     }).join('');
