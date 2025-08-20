@@ -13,7 +13,6 @@
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
-    <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
 <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     
@@ -480,7 +479,7 @@ const persianToEnglishDate = (persianDateStr) => {
         return null;
     }
 };
-// --- نسخه نهایی با استفاده از کتابخانه جدید و پایدار babakhani/pwt.datepicker ---
+// --- نسخه نهایی و بهینه شده برای کتابخانه babakhani/pwt.datepicker ---
 const activatePersianDatePicker = (elementId, initialValue = null) => {
     const input = $(`#${elementId}`);
     if (!input.length) return;
@@ -490,31 +489,27 @@ const activatePersianDatePicker = (elementId, initialValue = null) => {
         input.persianDatepicker('destroy');
     }
 
-    input.attr('readonly', true).css('background-color', '#fff');
-    
-    // ۱. مقدار اولیه را به فرمت timestamp (ثانیه) تبدیل می‌کنیم
-    let initialTimestamp = null;
+    input.attr('readonly', true).css('background-color', '#fff').val('');
+
+    // یک آبجکت برای تنظیمات تقویم آماده می‌کنیم
+    const options = {
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: false // مقداردهی اولیه اتوماتیک را خاموش می‌کنیم
+    };
+
+    // اگر تاریخ اولیه‌ای وجود داشت
     if (initialValue) {
         let dateObject = initialValue.toDate ? initialValue.toDate() : new Date(initialValue);
         if (dateObject && !isNaN(dateObject.getTime())) {
-            // این کتابخانه timestamp را به ثانیه می‌خواهد، نه میلی‌ثانیه
-            initialTimestamp = dateObject.getTime() / 1000;
+            // از آپشن مخصوص خود کتابخانه برای مقداردهی با فرمت timestamp استفاده می‌کنیم
+            // این امن‌ترین راه است
+            options.initialValueUnix = dateObject.getTime() / 1000; // این کتابخانه ثانیه می‌خواهد
         }
     }
 
-    // ۲. تقویم را با تنظیمات جدید می‌سازیم
-    input.persianDatepicker({
-        format: 'YYYY/MM/DD',
-        autoClose: true,
-        initialValue: false // همچنان مقداردهی اولیه اتوماتیک را خاموش می‌کنیم
-    });
-
-    // ۳. اگر تاریخ معتبری داشتیم، آن را به صورت دستی ست می‌کنیم
-    if (initialTimestamp) {
-        input.pdp.setDate(initialTimestamp);
-    } else {
-        input.val(''); // در غیر این صورت فیلد را خالی می‌کنیم
-    }
+    // تقویم را با تنظیمات نهایی خودمان می‌سازیم
+    input.persianDatepicker(options);
 };
         // --- تابع جدید برای ساخت دکمه‌های صفحه‌بندی ---
     const renderPagination = (containerId, currentPage, totalItems, itemsPerPage) => {
